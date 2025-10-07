@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\CarbonTC.CarbonLifecycle.Service.props" />
+</Project>
