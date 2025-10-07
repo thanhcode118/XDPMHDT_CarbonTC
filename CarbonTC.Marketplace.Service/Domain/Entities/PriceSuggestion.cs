@@ -1,5 +1,6 @@
 ﻿using Domain.Common;
 using Domain.Exceptions;
+using Domain.ValueObject;
 
 namespace Domain.Entities
 {
@@ -25,10 +26,10 @@ namespace Domain.Entities
         }
 
         public static PriceSuggestion Create(
-        Guid listingId,
-        decimal suggestedPrice,
-        double confidenceScore,
-        PriceSuggestionReasoning reasoning)
+            Guid listingId,
+            decimal suggestedPrice,
+            double confidenceScore,
+            PriceSuggestionReasoning reasoning)
         {
             if (suggestedPrice <= 0)
                 throw new DomainException("Suggested price must be greater than zero");
