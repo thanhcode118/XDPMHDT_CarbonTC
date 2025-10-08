@@ -2,7 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarbonTC.CarbonLifecycle.Service", "CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service.csproj", "{39A6BEB9-E65A-4845-834C-75E21773638B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonTC.CarbonLifecycle.Service", "CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service.csproj", "{39A6BEB9-E65A-4845-834C-75E21773638B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "..\CarbonTC.Gateway\ApiGateway\ApiGateway.csproj", "{7CFF45D2-1A3E-45BF-B750-EBB53D49DC44}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedLibrary", "..\CarbonTC.SharedLibrary\SharedLibrary\SharedLibrary.csproj", "{E331E2A6-7759-4CA5-956A-27ED737EF307}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +18,14 @@ Global
 		{39A6BEB9-E65A-4845-834C-75E21773638B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39A6BEB9-E65A-4845-834C-75E21773638B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39A6BEB9-E65A-4845-834C-75E21773638B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CFF45D2-1A3E-45BF-B750-EBB53D49DC44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CFF45D2-1A3E-45BF-B750-EBB53D49DC44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CFF45D2-1A3E-45BF-B750-EBB53D49DC44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CFF45D2-1A3E-45BF-B750-EBB53D49DC44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E331E2A6-7759-4CA5-956A-27ED737EF307}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E331E2A6-7759-4CA5-956A-27ED737EF307}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E331E2A6-7759-4CA5-956A-27ED737EF307}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E331E2A6-7759-4CA5-956A-27ED737EF307}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
