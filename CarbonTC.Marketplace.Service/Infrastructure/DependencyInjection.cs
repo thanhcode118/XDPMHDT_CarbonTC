@@ -1,4 +1,6 @@
 ﻿using Application.Common.Interfaces;
+using Domain.Repositories;
+using Infrastructure.Data.Repositories;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,8 +21,14 @@ namespace Infrastructure
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
             // Repositories
+            services.AddScoped<IAuctionBidRepository, AuctionBidRepository>();
+            services.AddScoped<IListingRepository, ListingRepository>();
+            services.AddScoped<IPriceSuggestionRepository, PriceSuggestionRepository>();
+            services.AddScoped<ICreditInventoryRepository, CreditInventoryRepository>();
+            services.AddScoped<ITransactionsRepository, TransactionsRepository>();
 
             // unit of work
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Other services
             services.AddScoped<IDomainEventService, DomainEventService>();
