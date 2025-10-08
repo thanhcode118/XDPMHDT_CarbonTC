@@ -16,7 +16,7 @@ namespace Domain.Entities
 
         public AuctionBid(Guid listingId, Guid bidderId, decimal bidAmount)
         {
-            listingId = ListingId;
+            ListingId = listingId;
             BidderId = bidderId;
             BidAmount = bidAmount;
             BidTime = DateTime.UtcNow;

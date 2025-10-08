@@ -25,6 +25,10 @@ namespace Domain.Entities
         private readonly List<Transactions> _transactions = new();
         public IReadOnlyCollection<Transactions> Transactions => _transactions.AsReadOnly();
 
+        private PriceSuggestion? _priceSuggestion;
+        public PriceSuggestion? PriceSuggestion => _priceSuggestion;
+
+
         private Listing() {}
 
         public Listing(Guid creditId,
