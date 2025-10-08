@@ -1,5 +1,7 @@
 ﻿using Domain.Common;
 using Domain.Enum;
+using Domain.Events.Listing;
+using Domain.Events.AuctionBid;
 using Domain.Exceptions;
 
 namespace Domain.Entities

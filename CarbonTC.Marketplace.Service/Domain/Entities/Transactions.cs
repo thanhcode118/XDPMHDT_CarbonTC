@@ -1,5 +1,6 @@
 ﻿using Domain.Common;
 using Domain.Enum;
+using Domain.Events.Transactions;
 using Domain.Exceptions;
 
 namespace Domain.Entities
