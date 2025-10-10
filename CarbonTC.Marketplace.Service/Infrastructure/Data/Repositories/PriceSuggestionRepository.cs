@@ -2,7 +2,13 @@
 
 namespace Infrastructure.Data.Repositories
 {
-    internal class PriceSuggestionRepository: IPriceSuggestionRepository
+    public class PriceSuggestionRepository: IPriceSuggestionRepository
     {
+        private readonly ApplicationDbContext _dbContext;
+
+        public PriceSuggestionRepository(ApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
     }
 }

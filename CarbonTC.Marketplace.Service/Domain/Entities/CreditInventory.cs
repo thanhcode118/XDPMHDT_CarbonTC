@@ -14,7 +14,7 @@ namespace Domain.Entities
 
         private CreditInventory() {}
 
-        public CreditInventory(Guid creditId, decimal totalAmount)
+        private CreditInventory(Guid creditId, decimal totalAmount)
         {
             Id = Guid.NewGuid();
             CreditId = creditId;

@@ -31,7 +31,7 @@ namespace Domain.Entities
 
         private Listing() {}
 
-        public Listing(Guid creditId,
+        private Listing(Guid creditId,
             Guid ownerId,
             ListingType type,
             decimal pricePerUnit,

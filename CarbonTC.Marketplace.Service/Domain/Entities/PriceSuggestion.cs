@@ -13,7 +13,7 @@ namespace Domain.Entities
 
         private PriceSuggestion() { }
 
-        public PriceSuggestion(
+        private PriceSuggestion(
             Guid listingId,
             decimal suggestedPrice,
             double confidenceScore,

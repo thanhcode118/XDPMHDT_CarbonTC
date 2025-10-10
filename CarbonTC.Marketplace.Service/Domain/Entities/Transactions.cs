@@ -18,7 +18,7 @@ namespace Domain.Entities
 
         private Transactions() {}
 
-        public Transactions(
+        private Transactions(
             Guid buyerId,
             Guid sellerId,
             Guid listingId,

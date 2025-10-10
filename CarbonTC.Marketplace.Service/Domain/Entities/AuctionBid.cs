@@ -14,7 +14,7 @@ namespace Domain.Entities
 
         private AuctionBid() {}
 
-        public AuctionBid(Guid listingId, Guid bidderId, decimal bidAmount)
+        private AuctionBid(Guid listingId, Guid bidderId, decimal bidAmount)
         {
             ListingId = listingId;
             BidderId = bidderId;
