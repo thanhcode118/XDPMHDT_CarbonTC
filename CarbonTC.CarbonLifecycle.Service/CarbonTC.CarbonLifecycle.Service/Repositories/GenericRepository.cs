@@ -1,6 +1,5 @@
 ﻿using CarbonTC.CarbonLifecycle.Service.Data;
 using Microsoft.EntityFrameworkCore;
-using System; // Thêm using System để sử dụng Guid
 using System.Linq.Expressions;
 
 namespace CarbonTC.CarbonLifecycle.Service.Repositories
@@ -13,16 +12,11 @@ namespace CarbonTC.CarbonLifecycle.Service.Repositories
         public GenericRepository(AppDbContext context)
         {
             _context = context;
-            _dbSet = _context.Set<T>();
+            _dbSet = context.Set<T>();
         }
 
-        // Thay đổi int id thành Guid id
         public async Task<T?> GetByIdAsync(Guid id)
         {
-            // FindAsync có thể không hoạt động trực tiếp với Guid cho mọi trường hợp,
-            // nhưng nếu PK của T là Guid, EF Core sẽ xử lý đúng.
-            // Nếu không, cần dùng FirstOrDefaultAsync: return await _dbSet.FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
-            // Tuy nhiên, với convention của EF Core, FindAsync sẽ hoạt động nếu PK là Guid.
             return await _dbSet.FindAsync(id);
         }
 
@@ -31,29 +25,27 @@ namespace CarbonTC.CarbonLifecycle.Service.Repositories
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
         {
-            return await _dbSet.Where(predicate).ToListAsync();
+            return await _dbSet.Where(expression).ToListAsync();
         }
-
+        
         public async Task AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(T entity)
+        public async Task UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(T entity)
+        public async Task DeleteAsync(T entity)
         {
             _dbSet.Remove(entity);
-        }
-
-        public async Task<int> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

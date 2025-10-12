@@ -3,10 +3,14 @@ using CarbonTC.CarbonLifecycle.Service.Data;
 using MySql.EntityFrameworkCore.Extensions; // Import này cần thiết cho AddMySQL
 using CarbonTC.CarbonLifecycle.Service.Repositories;
 using CarbonTC.CarbonLifecycle.Service.Models.Entities; // Import các entities
+using CarbonTC.CarbonLifecycle.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// 2. Đăng ký AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Cấu hình DbContext với MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -14,6 +18,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMySQL(connectionString);
 });
+
+// Đăng ký các Service
+builder.Services.AddScoped<IEmissionCalculationService, EmissionCalculationService>();
+builder.Services.AddScoped<ICVAStandardService, CVAStandardService>();
+builder.Services.AddScoped<IEvJourneyService, EvJourneyService>();
+builder.Services.AddScoped<IVerificationService, VerificationService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

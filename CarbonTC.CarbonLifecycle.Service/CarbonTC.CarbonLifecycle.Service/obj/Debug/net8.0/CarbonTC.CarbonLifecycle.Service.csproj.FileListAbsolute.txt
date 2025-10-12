@@ -125,3 +125,14 @@ D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN\CarbonTC.CarbonLifecycle.Service\CarbonTC.Ca
 D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.pdb
 D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.genruntimeconfig.cache
 D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\ref\CarbonTC.CarbonLifecycle.Service.dll
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.csproj.AssemblyReference.cache
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.GeneratedMSBuildEditorConfig.editorconfig
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.AssemblyInfoInputs.cache
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.AssemblyInfo.cs
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.csproj.CoreCompileInputs.cache
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.MvcApplicationPartsAssemblyInfo.cs
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.MvcApplicationPartsAssemblyInfo.cache
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.sourcelink.json
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.dll
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\refint\CarbonTC.CarbonLifecycle.Service.dll
+D:\UTH\HK-7\XDPMHDT\Cuoiki\DuAn\SLN2\XDPMHDT_CarbonTC\CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service\obj\Debug\net8.0\CarbonTC.CarbonLifecycle.Service.pdb

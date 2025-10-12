@@ -16,7 +16,7 @@ namespace CarbonTC.CarbonLifecycle.Service.Models.Entities
         public string? Description { get; set; }
 
         [Required]
-        public double ConversionRate { get; set; } // Tỷ lệ quy đổi (kg CO2 to 1 credit)
+        public decimal ConversionRate { get; set; } // Tỷ lệ quy đổi (kg CO2 to 1 credit)
 
         public double MinDistanceRequirement { get; set; } // Quãng đường tối thiểu để được cấp tín chỉ
 

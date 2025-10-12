@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
     <!-- Thay đổi các gói này sang phiên bản 8.0.x -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" /> <!-- Cần thêm gói này nếu chưa có -->
