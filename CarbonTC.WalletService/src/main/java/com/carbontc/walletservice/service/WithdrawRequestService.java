@@ -1,4 +1,4 @@
 package com.carbontc.walletservice.service;
 
-public class WithdrawRequestService {
+public interface WithdrawRequestService {
 }

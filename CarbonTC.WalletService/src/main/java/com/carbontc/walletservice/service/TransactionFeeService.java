@@ -1,4 +1,4 @@
 package com.carbontc.walletservice.service;
 
-public class TransactionFeeService {
+public interface TransactionFeeService {
 }
