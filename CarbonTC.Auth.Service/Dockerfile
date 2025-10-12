@@ -1,15 +1,31 @@
-# ============ BUILD STAGE ===============
+# CarbonTC.Auth.Service/Dockerfile
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
+# Copy csproj files
+COPY ["src/CarbonTC.Auth.Api/CarbonTC.Auth.Api.csproj", "src/CarbonTC.Auth.Api/"]
+COPY ["src/CarbonTC.Auth.Application/CarbonTC.Auth.Application.csproj", "src/CarbonTC.Auth.Application/"]
+COPY ["src/CarbonTC.Auth.Domain/CarbonTC.Auth.Domain.csproj", "src/CarbonTC.Auth.Domain/"]
+COPY ["src/CarbonTC.Auth.Infrastructure/CarbonTC.Auth.Infrastructure.csproj", "src/CarbonTC.Auth.Infrastructure/"]
+
+# Restore dependencies
+RUN dotnet restore "src/CarbonTC.Auth.Api/CarbonTC.Auth.Api.csproj"
+
+# Copy everything else
 COPY . .
-RUN dotnet restore CarbonTC.Auth.Service.sln
-RUN dotnet publish src/CarbonTC.Auth.Api/CarbonTC.Auth.Api.csproj -c Release -o /out
+WORKDIR "/src/src/CarbonTC.Auth.Api"
+RUN dotnet build "CarbonTC.Auth.Api.csproj" -c Release -o /app/build
 
-# ============ RUNTIME STAGE ===============
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM build AS publish
+RUN dotnet publish "CarbonTC.Auth.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
 WORKDIR /app
-COPY --from=build /out .
-
-EXPOSE 8080
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "CarbonTC.Auth.Api.dll"]
