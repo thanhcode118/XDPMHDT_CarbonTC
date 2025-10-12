@@ -19,7 +19,7 @@ public class CarbonCreditTransfer {
 
     @ManyToOne
     @JoinColumn(name = " to_wallet_id")
-    private CarbonWallets toWalletId;
+    private CarbonWallets toWallet;
 
     public Long getTransferId() {
         return transferId;
@@ -33,12 +33,12 @@ public class CarbonCreditTransfer {
         this.fromWallet = fromWallet;
     }
 
-    public CarbonWallets getToWalletId() {
-        return toWalletId;
+    public CarbonWallets getToWallet() {
+        return toWallet;
     }
 
     public void setToWalletId(CarbonWallets toWalletId) {
-        this.toWalletId = toWalletId;
+        this.toWallet = toWalletId;
     }
 
     public void setTransferId(Long transferId) {

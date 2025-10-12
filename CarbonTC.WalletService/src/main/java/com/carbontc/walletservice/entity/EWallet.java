@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class EWallet {
 
     private Long userId;
 
-    private Double balance;
+    private BigDecimal balance;
 
     public Long getWalletId() {
         return walletId;
@@ -36,12 +37,12 @@ public class EWallet {
         this.userId = userId;
     }
 
-    public Double getBalance() {
-        return balance;
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
     }
 
-    public void setBalance(Double balance) {
-        this.balance = balance;
+    public BigDecimal getBalance() {
+        return balance;
     }
 
     public String getCurrency() {
