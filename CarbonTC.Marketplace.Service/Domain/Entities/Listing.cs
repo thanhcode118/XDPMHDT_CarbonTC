@@ -203,7 +203,65 @@ namespace Domain.Entities
             ClosedAt = DateTime.UtcNow;
         }
 
+        public void UpdateStatus(ListingStatus newStatus)
+        {
+            if (Status != newStatus)
+            {
+                Status = newStatus;
+                UpdatedAt = DateTime.UtcNow;
 
+                if (newStatus == ListingStatus.Closed || newStatus == ListingStatus.Sold)
+                {
+                    ClosedAt = DateTime.UtcNow;
+                }
+            }
+        }
+
+        public void UpdateClosedAt(DateTime? closedAt)
+        {
+            ClosedAt = closedAt;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void UpdateFixedPrice(decimal pricePerUnit)
+        {
+            if (Type != ListingType.FixedPrice)
+                throw new DomainException("Cannot set fixed price for non-fixed price listing");
+
+            PricePerUnit = pricePerUnit;
+            MinimumBid = null;
+            AuctionEndTime = null;
+            UpdatedAt = DateTime.UtcNow;
+        }
+       
+        public void UpdateType(ListingType newType)
+        {
+            if (Type != newType)
+            {
+                Type = newType;
+                UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        public void UpdateAuctionDetails(decimal minimumBid, DateTime auctionEndTime)
+        {
+            if (Type != ListingType.Auction)
+                throw new DomainException("Cannot set auction details for non-auction listing");
+
+            MinimumBid = minimumBid;
+            AuctionEndTime = auctionEndTime;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public bool HasBids()
+        {
+            return _bids.Any();
+        }
+
+        public bool HasTransactions()
+        {
+            return _transactions.Any();
+        }
 
         private void ValidateListing()
         {

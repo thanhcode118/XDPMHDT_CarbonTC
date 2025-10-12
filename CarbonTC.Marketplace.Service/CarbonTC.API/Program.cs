@@ -1,5 +1,6 @@
 
 using Application;
+using CarbonTC.API.Common.ExceptionHandling;
 using CarbonTC.API.ExceptionHandling;
 using Infrastructure;
 using Microsoft.AspNetCore.Http.Features;
@@ -13,8 +14,11 @@ namespace CarbonTC.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
+            builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
             // Add services to the container.
-            builder.Services.AddProblemDetails();
             builder.Services.AddProblemDetails(options =>
             {
                 options.CustomizeProblemDetails = context =>
@@ -31,9 +35,6 @@ namespace CarbonTC.API
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
-            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-
 
             builder.Services.AddInfrastructure(builder.Configuration);  
             builder.Services.AddApplication();  

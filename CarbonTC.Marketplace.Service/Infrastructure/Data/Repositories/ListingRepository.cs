@@ -18,13 +18,10 @@ namespace Infrastructure.Data.Repositories
             return listing;
         }
 
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(Listing listing, CancellationToken cancellationToken = default)
         {
-            var listing = await GetByIdAsync(id, cancellationToken);
-            if (listing is null) return;
             _dbContext.Listings.Remove(listing);
             await Task.CompletedTask;
-
         }
 
         public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
@@ -35,7 +32,11 @@ namespace Infrastructure.Data.Repositories
 
         public async Task<Listing?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var listing =  await _dbContext.Listings.FirstOrDefaultAsync(l => l.Id == id);
+            var listing = await _dbContext.Listings
+                .Include(l => l.Bids)
+                .Include(l => l.Transactions)
+                .Include(l => l.PriceSuggestion)
+                .FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
             return listing;
         }
 
@@ -45,7 +46,7 @@ namespace Infrastructure.Data.Repositories
                 .Include(l => l.PriceSuggestion)
                 .Include(l => l.Bids)
                 .Include(l => l.Transactions)
-                .FirstOrDefaultAsync(l => l.Id == id);
+                .FirstOrDefaultAsync(l => l.CreditId == id);
             return listing;
         }
 

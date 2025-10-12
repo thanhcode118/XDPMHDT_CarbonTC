@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MediatR;
 using System.Reflection;
+using Application.Common.Behaviours;
 
 namespace Application
 {
@@ -13,7 +14,9 @@ namespace Application
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Common.Behaviours.ValidationBehaviour<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             // services 
 

@@ -11,6 +11,6 @@ namespace Domain.Repositories
         Task<Listing> AddAsync(Listing listing, CancellationToken cancellationToken = default);
         Task UpdateAsync(Listing listing, CancellationToken cancellationToken = default);
         Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
-        Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+        Task DeleteAsync(Listing listing, CancellationToken cancellationToken = default);
     }
 }
