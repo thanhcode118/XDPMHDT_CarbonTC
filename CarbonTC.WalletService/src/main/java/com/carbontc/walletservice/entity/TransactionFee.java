@@ -69,6 +69,18 @@ public class TransactionFee {
 
     private Double percentage;
 
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
     private LocalDateTime calculatedAt;
+
+    @OneToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 
 }

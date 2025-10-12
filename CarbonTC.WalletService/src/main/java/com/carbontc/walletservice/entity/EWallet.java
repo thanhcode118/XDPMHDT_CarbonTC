@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "e_wallets")
@@ -63,4 +64,26 @@ public class EWallet {
 
     private LocalDateTime updatedAt;
 
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
+    }
+
+    public List<WithdrawRequest> getWithdrawRequests() {
+        return withdrawRequests;
+    }
+
+    public void setWithdrawRequests(List<WithdrawRequest> withdrawRequests) {
+        this.withdrawRequests = withdrawRequests;
+    }
+
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+    private List<Payment> payments;
+
+    // 1 ví có thể có nhiều yêu cầu rút tiền
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+    private List<WithdrawRequest> withdrawRequests;
 }

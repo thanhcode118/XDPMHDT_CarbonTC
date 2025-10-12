@@ -3,6 +3,7 @@ package com.carbontc.walletservice.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "payments")
@@ -79,5 +80,28 @@ public class Payment {
     private LocalDateTime paidAt;
 
     private String paymentGatewayRef;
+
+    public EWallet getWallet() {
+        return wallet;
+    }
+
+    public void setWallet(EWallet wallet) {
+        this.wallet = wallet;
+    }
+
+    public TransactionFee getTransactionFee() {
+        return transactionFee;
+    }
+
+    public void setTransactionFee(TransactionFee transactionFee) {
+        this.transactionFee = transactionFee;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "wallet_id")
+    private EWallet wallet;
+
+    @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL)
+    private TransactionFee transactionFee;
 
 }

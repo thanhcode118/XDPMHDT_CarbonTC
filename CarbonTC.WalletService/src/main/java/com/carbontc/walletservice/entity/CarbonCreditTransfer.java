@@ -13,32 +13,36 @@ public class CarbonCreditTransfer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transferId;
 
-    private Long fromWalletId;
+    @ManyToOne
+    @JoinColumn(name = "from_wallet_id")
+    private CarbonWallets fromWallet;
 
-    private Long toWalletId;
+    @ManyToOne
+    @JoinColumn(name = " to_wallet_id")
+    private CarbonWallets toWalletId;
 
     public Long getTransferId() {
         return transferId;
     }
 
-    public void setTransferId(Long transferId) {
-        this.transferId = transferId;
+    public CarbonWallets getFromWallet() {
+        return fromWallet;
     }
 
-    public Long getFromWalletId() {
-        return fromWalletId;
+    public void setFromWallet(CarbonWallets fromWallet) {
+        this.fromWallet = fromWallet;
     }
 
-    public void setFromWalletId(Long fromWalletId) {
-        this.fromWalletId = fromWalletId;
-    }
-
-    public Long getToWalletId() {
+    public CarbonWallets getToWalletId() {
         return toWalletId;
     }
 
-    public void setToWalletId(Long toWalletId) {
+    public void setToWalletId(CarbonWallets toWalletId) {
         this.toWalletId = toWalletId;
+    }
+
+    public void setTransferId(Long transferId) {
+        this.transferId = transferId;
     }
 
     public Double getAmount() {
@@ -80,5 +84,7 @@ public class CarbonCreditTransfer {
     private Long referenceId; // TransactionId or ListingId
 
     private LocalDateTime createdAt;
+
+
 
 }

@@ -3,6 +3,7 @@ package com.carbontc.walletservice.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "carbon_wallets")
@@ -60,4 +61,25 @@ public class CarbonWallets {
 
     private LocalDateTime lastUpdated;
 
+    @OneToMany(mappedBy = "fromWallet", cascade = CascadeType.ALL)
+    private List<CarbonCreditTransfer>  outgoingTransfers;
+
+    @OneToMany(mappedBy = "toWallet",cascade = CascadeType.ALL)
+    private List<CarbonCreditTransfer>  incomingTransfers;
+
+    public List<CarbonCreditTransfer> getOutgoingTransfers() {
+        return outgoingTransfers;
+    }
+
+    public void setOutgoingTransfers(List<CarbonCreditTransfer> outgoingTransfers) {
+        this.outgoingTransfers = outgoingTransfers;
+    }
+
+    public List<CarbonCreditTransfer> getIncomingTransfers() {
+        return incomingTransfers;
+    }
+
+    public void setIncomingTransfers(List<CarbonCreditTransfer> incomingTransfers) {
+        this.incomingTransfers = incomingTransfers;
+    }
 }

@@ -13,7 +13,7 @@ public class ApiResponse<T> {
     private Boolean success;
     private String message;
     private T data;
-    private List<String>  errors;
+    private List<String> errors;
     private Instant timestamp =  Instant.now();
 
 }
