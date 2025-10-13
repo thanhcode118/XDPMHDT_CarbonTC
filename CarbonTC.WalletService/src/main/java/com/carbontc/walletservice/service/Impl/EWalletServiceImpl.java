@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class EWalletServiceImpl implements EWalletService {
     private final ModelMapper modelMapper;
 
 
+    // TẠO VÍ
     @Override
     public EWalletResponse createWallet(EWalletRequest request) throws BusinessException {
 
@@ -42,26 +44,54 @@ public class EWalletServiceImpl implements EWalletService {
         return mapToResponse(saved);
     }
 
+    // NỘP TIỀN
     @Override
-    public EWalletResponse deposit(Long walletId, EWalletRequest request) {
-        return null;
+    public EWalletResponse deposit(Long walletId, BigDecimal amount) throws BusinessException {
+        EWallet eWallet = eWalletRepository.findById(walletId)
+                .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
+
+        if (amount.compareTo(BigDecimal.valueOf(5000)) < 0) {
+            throw new BusinessException("Số tiền nạp phải lớn hơn 5.000 VND");
+        }
+
+        eWallet.setBalance(eWallet.getBalance().add(amount));
+        eWallet.setUpdatedAt(LocalDateTime.now());
+
+        EWallet eWalletSaved = eWalletRepository.save(eWallet);
+        return mapToResponse(eWalletSaved);
+    }
+
+
+    @Override
+    public EWalletResponse withdraw(Long walletId, BigDecimal amount ) throws BusinessException {
+
+        EWallet eWallet = eWalletRepository.findById(walletId)
+                .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
+
+        if (amount.compareTo(BigDecimal.valueOf(10000)) < 0) {
+            throw new BusinessException("Số tiền rút phải lớn hơn 10.000 VND");
+        }
+
+
+        if (eWallet.getBalance().compareTo(amount) < 0) {
+            throw new BusinessException("Số dư không đủ để thực hiện giao dịch. Vui lòng nạp thêm tiền.");
+        }
+
+
+        eWallet.setBalance(eWallet.getBalance().subtract(amount));
+        eWallet.setUpdatedAt(LocalDateTime.now());
+
+        EWallet eWalletSaved = eWalletRepository.save(eWallet);
+        return mapToResponse(eWalletSaved);
     }
 
     @Override
-    public EWalletResponse withdraw(Long walletId, EWalletRequest request) {
-        return null;
-    }
+    public EWalletResponse getMyWalletById(Long userId) throws BusinessException {
+        EWallet eWallet = eWalletRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy ví người dùng"));
 
-    @Override
-    public EWalletResponse getWalletById(Long walletId) {
-        return null;
+        return mapToResponse(eWallet);
     }
-
-    @Override
-    public List<EWalletResponse> getAllWallets() {
-        return List.of();
-    }
-
     // HEPPLER METHOD MAPPER
     public EWalletResponse mapToResponse(EWallet eWallet) {
         return modelMapper.map(eWallet, EWalletResponse.class);
