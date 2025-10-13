@@ -121,6 +121,16 @@ namespace Domain.Entities
             AddDomainEvent(new InventoryIncreasedDomainEvent(CreditId, amount));
         }
 
+        public void CommitDirectSale(decimal amount)
+        {
+            TotalAmount -= amount;
+            AvailableAmount -= amount;
+        }
+
+        public bool HasSufficientAvailable(decimal amount)
+        {
+            return AvailableAmount >= amount;
+        }
 
     }
 }

@@ -4,6 +4,8 @@ using CarbonTC.API.Common.ExceptionHandling;
 using CarbonTC.API.ExceptionHandling;
 using Infrastructure;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Configuration;
+using SharedLibrary.Extensions;
 using System.Diagnostics;
 
 namespace CarbonTC.API
@@ -29,6 +31,8 @@ namespace CarbonTC.API
                     context.ProblemDetails.Extensions.TryAdd("traceId", activity?.Id);
                 };
             });
+
+            builder.Services.AddSharedRabbitMQ(builder.Configuration);
 
 
             builder.Services.AddControllers();

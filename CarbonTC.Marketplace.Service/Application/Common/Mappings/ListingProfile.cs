@@ -10,7 +10,6 @@ namespace Application.Common.Mappings
         {
             CreateMap<Listing, ListingDetailDto>()
                 .ForMember(dest => dest.AuctionBids, opt => opt.MapFrom(src => src.Bids))
-                .ForMember(dest => dest.Transactions, opt => opt.MapFrom(src => src.Transactions))
                 .ForMember(dest => dest.SuggestedPrice, opt => opt.MapFrom(src => src.PriceSuggestion != null ? 
                                                         src.PriceSuggestion.SuggestedPrice : (decimal?)null));
         }

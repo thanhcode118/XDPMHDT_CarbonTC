@@ -34,7 +34,6 @@ namespace Infrastructure.Data.Repositories
         {
             var listing = await _dbContext.Listings
                 .Include(l => l.Bids)
-                .Include(l => l.Transactions)
                 .Include(l => l.PriceSuggestion)
                 .FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
             return listing;
@@ -45,7 +44,6 @@ namespace Infrastructure.Data.Repositories
             var listing = await _dbContext.Listings
                 .Include(l => l.PriceSuggestion)
                 .Include(l => l.Bids)
-                .Include(l => l.Transactions)
                 .FirstOrDefaultAsync(l => l.CreditId == id);
             return listing;
         }
@@ -55,7 +53,6 @@ namespace Infrastructure.Data.Repositories
             var listings = await _dbContext.Listings
                 .Include(l => l.PriceSuggestion)
                 .Include(l => l.Bids)
-                .Include(l => l.Transactions)
                 .Where(l => l.OwnerId == userId).ToListAsync();
             return listings;
         }

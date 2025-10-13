@@ -21,6 +21,13 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
         public async Task<Result<Guid>> Handle(CreateListingCommand command, CancellationToken cancellationToken)
         {
             Listing listing;
+
+            var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(command.CreditId, cancellationToken);
+            if (creditInventory == null)
+            {
+                return Result.Failure<Guid>(new Error("CreditInventory", "Credit inventory not found."));
+            }
+
             switch (command.Type)
             {
                 case ListingType.FixedPrice:

@@ -35,14 +35,6 @@ namespace Infrastructure.Data.Configurations
 
             builder.Navigation(nameof(Listing.PriceSuggestion)).UsePropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.HasMany(l => l.Transactions)
-                  .WithOne() 
-                  .HasForeignKey("ListingId")
-                  .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Navigation(nameof(Listing.Transactions))
-                   .UsePropertyAccessMode(PropertyAccessMode.Field);
-
             builder.HasIndex("CreditId");
             builder.HasIndex("OwnerId");
         }

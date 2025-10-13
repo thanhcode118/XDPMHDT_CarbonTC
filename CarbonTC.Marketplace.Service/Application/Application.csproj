@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Features\Listings\EventHandlers\" />
+    <Folder Include="Common\Features\CreditInventories\DTOs\" />
+    <Folder Include="Common\Features\CreditInventories\EventHandlers\" />
   </ItemGroup>
 
 </Project>

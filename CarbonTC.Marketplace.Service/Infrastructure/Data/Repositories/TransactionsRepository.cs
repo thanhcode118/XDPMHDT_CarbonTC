@@ -18,9 +18,15 @@ namespace Infrastructure.Data.Repositories
             return transaction;
         }
 
-        public async Task<Transactions> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Transactions?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(x => x.Id == id);
+            return transaction;
+        }
+
+        public async Task<IEnumerable<Transactions?>> GetAllByListingIdAsync(Guid listingId, CancellationToken cancellationToken = default)
+        {
+            var transaction = await _dbContext.Transactions.Where(x => x.ListingId == listingId).ToListAsync();
             return transaction;
         }
 

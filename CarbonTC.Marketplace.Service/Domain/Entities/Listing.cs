@@ -22,9 +22,6 @@ namespace Domain.Entities
         private readonly List<AuctionBid> _bids = new();
         public IReadOnlyCollection<AuctionBid> Bids => _bids.AsReadOnly();
 
-        private readonly List<Transactions> _transactions = new();
-        public IReadOnlyCollection<Transactions> Transactions => _transactions.AsReadOnly();
-
         private PriceSuggestion? _priceSuggestion;
         public PriceSuggestion? PriceSuggestion => _priceSuggestion;
 
@@ -171,6 +168,23 @@ namespace Domain.Entities
             return newBid;
         }
 
+        public void BuyNow(Guid buyerId, Guid ownerId, decimal amount, decimal totalPrice, bool isSoldOut)
+        {
+            if (Type != ListingType.FixedPrice)
+                throw new DomainException("Can only buy fixed price listings");
+            if (Status != ListingStatus.Open)
+                throw new DomainException("Listing is not open for purchase");
+            if (totalPrice < PricePerUnit)
+                throw new DomainException($"Total price must be at least {PricePerUnit}");
+            if (isSoldOut)
+            {
+                Status = ListingStatus.Sold;
+                ClosedAt = DateTime.UtcNow;
+            }
+            AddDomainEvent(new ListingPurchasedDomainEvent(Id, buyerId, ownerId, amount, totalPrice));
+        }
+
+
         public AuctionBid? GetWinningBid()
         {
             return _bids
@@ -256,11 +270,6 @@ namespace Domain.Entities
         public bool HasBids()
         {
             return _bids.Any();
-        }
-
-        public bool HasTransactions()
-        {
-            return _transactions.Any();
         }
 
         private void ValidateListing()

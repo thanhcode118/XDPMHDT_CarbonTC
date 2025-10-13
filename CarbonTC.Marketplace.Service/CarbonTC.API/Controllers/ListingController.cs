@@ -1,4 +1,5 @@
-﻿using Application.Common.Features.Listings.Commands.CreateListing;
+﻿using Application.Common.Features.Listings.Commands.BuyNow;
+using Application.Common.Features.Listings.Commands.CreateListing;
 using Application.Common.Features.Listings.Commands.DeleteListing;
 using Application.Common.Features.Listings.Commands.UpdateListing;
 using Application.Common.Features.Listings.DTOs;
@@ -99,15 +100,31 @@ namespace CarbonTC.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateListing([FromBody] UpdateListingCommand command)
+        public async Task<IActionResult> UpdateListing([FromBody] UpdateListingCommand command, CancellationToken cancellationToken = default)
         {
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(command, cancellationToken);
             if (!result.IsSuccess)
             {
                 var errors = new List<string> { $"{result.Error.Code}: {result.Error.Message}" };
                 return BadRequest(ApiResponse<object>.ErrorResponse("Listing.UpdateFailed", errors));
             }
             return Ok(ApiResponse<Guid>.SuccessResponse(command.ListingId, "Listing updated successfully."));
+        }
+
+        [HttpPost("buyfixedprice")]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> BuyBixedPrice([FromRoute] Guid id, [FromBody] BuyNowCommand command, CancellationToken cancellationToken = default)
+        {
+            var listing = await _mediator.Send(command, cancellationToken);
+            if (listing.IsSuccess)
+            {
+                return Ok(ApiResponse<Guid>.SuccessResponse(id, "Purchase successful."));
+            }
+            else
+            {
+                var errors = new List<string> { $"{listing.Error.Code}: {listing.Error.Message}" };
+                return BadRequest(ApiResponse<object>.ErrorResponse("Purchase.Failed", errors));
+            }
         }
     }
 }
