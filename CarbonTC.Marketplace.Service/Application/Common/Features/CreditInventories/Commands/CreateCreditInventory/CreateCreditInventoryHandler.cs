@@ -18,7 +18,7 @@ namespace Application.Common.Features.CreditInventories.Commands.CreateCreditInv
         {
             CreditInventory inventory;
 
-            var isExisting =_unitOfWork.CreditInventories.GetByCreditIdAsync(request.CreditId, cancellationToken);
+            var isExisting = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.CreditId, cancellationToken);
 
             if (isExisting != null)
             {

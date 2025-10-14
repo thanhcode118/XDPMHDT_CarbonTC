@@ -20,14 +20,11 @@ namespace Infrastructure
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
-            services.AddHttpClient("wallet", client =>
+            services.AddHttpClient<IWalletServiceClient, WalletServiceClient>(client =>
             {
                 client.BaseAddress = new Uri(configuration["Services:WalletService"]);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
-
-
-            services.AddHttpClient<IWalletServiceClient, WalletServiceClient>();
 
             // Repositories
             services.AddScoped<IAuctionBidRepository, AuctionBidRepository>();

@@ -9,9 +9,9 @@ namespace Infrastructure.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<WalletServiceClient> _logger;
 
-        public WalletServiceClient(IHttpClientFactory httpClientFactory, ILogger<WalletServiceClient> logger)
+        public WalletServiceClient(HttpClient httpClient, ILogger<WalletServiceClient> logger)
         {
-            _httpClient = httpClientFactory.CreateClient("wallet");
+            _httpClient = httpClient;
             _logger = logger;
         }
 

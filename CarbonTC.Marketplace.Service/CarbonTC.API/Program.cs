@@ -1,6 +1,7 @@
 
 using Application;
 using CarbonTC.API.Common.ExceptionHandling;
+using CarbonTC.API.Consumer;
 using CarbonTC.API.ExceptionHandling;
 using Infrastructure;
 using Microsoft.AspNetCore.Http.Features;
@@ -41,7 +42,9 @@ namespace CarbonTC.API
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddInfrastructure(builder.Configuration);  
-            builder.Services.AddApplication();  
+            builder.Services.AddApplication();
+
+            builder.Services.AddHostedService<CreditInventoryConsumerHostedService>();
 
             var app = builder.Build();
 

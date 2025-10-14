@@ -111,10 +111,17 @@ namespace CarbonTC.API.Controllers
             return Ok(ApiResponse<Guid>.SuccessResponse(command.ListingId, "Listing updated successfully."));
         }
 
-        [HttpPost("buyfixedprice")]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> BuyBixedPrice([FromRoute] Guid id, [FromBody] BuyNowCommand command, CancellationToken cancellationToken = default)
+        [HttpPost("{id:guid}/buy")]
+        public async Task<IActionResult> BuyFixedPrice([FromRoute] Guid id, [FromBody] BuyNowRequestDto requestDto, CancellationToken cancellationToken = default)
         {
+            var command = new BuyNowCommand
+            {
+                ListingId = id,
+                CreditId = requestDto.CreditId,
+                BuyerId = requestDto.BuyerId,
+                Amount = requestDto.Amount
+            };
+
             var listing = await _mediator.Send(command, cancellationToken);
             if (listing.IsSuccess)
             {

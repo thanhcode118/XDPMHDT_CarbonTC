@@ -181,7 +181,7 @@ namespace Domain.Entities
                 Status = ListingStatus.Sold;
                 ClosedAt = DateTime.UtcNow;
             }
-            AddDomainEvent(new ListingPurchasedDomainEvent(Id, buyerId, ownerId, amount, totalPrice));
+            AddDomainEvent(new ListingPurchasedDomainEvent(Id, CreditId, buyerId, ownerId, amount, totalPrice));
         }
 
 

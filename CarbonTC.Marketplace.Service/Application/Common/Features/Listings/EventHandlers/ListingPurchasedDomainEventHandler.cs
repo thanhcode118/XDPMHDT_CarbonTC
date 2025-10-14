@@ -18,7 +18,7 @@ namespace Application.Common.Features.Listings.EventHandlers
         {
             // Thêm tracstions, Trừ inventory
             var creditInventory = await _unitOfWork.CreditInventories
-                .GetByCreditIdAsync(notification.ListingId, cancellationToken);
+                .GetByCreditIdAsync(notification.CreditId, cancellationToken);
 
             if (creditInventory == null)
                 return;
