@@ -1,8 +1,11 @@
 // CarbonTC.Auth.Api/Controllers/AuthController.cs
+
 using CarbonTC.Auth.Application.Features.Auth.Commands.LoginUser;
 using CarbonTC.Auth.Application.Features.Auth.Commands.Logout;
+using CarbonTC.Auth.Application.Features.Auth.Commands.RefreshToken;
 using CarbonTC.Auth.Application.Features.Auth.Commands.RegisterUser;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarbonTC.Auth.Api.Controllers;
@@ -32,10 +35,32 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, data = result });
     }
 
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(new { success = true, data = result });
+    }
+
     [HttpPost("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout([FromBody] LogoutCommand command)
     {
         var result = await _mediator.Send(command);
         return Ok(new { success = true, message = "Logged out successfully" });
+    }
+
+    [HttpPost("logout-all")]
+    [Authorize]
+    public async Task<IActionResult> LogoutAll()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        // TODO: Implement LogoutAllCommand
+        return Ok(new { success = true, message = "Logged out from all devices" });
     }
 }

@@ -1,4 +1,5 @@
 // CarbonTC.Auth.Infrastructure/Security/JwtTokenService.cs
+
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -30,7 +31,8 @@ public class JwtTokenService : ITokenService
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Name, user.FullName),
-            new("status", user.Status.ToString())
+            new("status", user.Status.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique token ID
         };
 
         if (user.Role != null)
@@ -91,5 +93,30 @@ public class JwtTokenService : ITokenService
             refreshToken.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task RevokeAllUserRefreshTokensAsync(Guid userId)
+    {
+        var tokens = await _context.RefreshTokens
+            .Where(rt => rt.UserId == userId && !rt.IsRevoked)
+            .ToListAsync();
+
+        foreach (var token in tokens)
+        {
+            token.IsRevoked = true;
+            token.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task CleanupExpiredTokensAsync()
+    {
+        var expiredTokens = await _context.RefreshTokens
+            .Where(rt => rt.ExpiresAt < DateTime.UtcNow || rt.IsRevoked)
+            .ToListAsync();
+
+        _context.RefreshTokens.RemoveRange(expiredTokens);
+        await _context.SaveChangesAsync();
     }
 }

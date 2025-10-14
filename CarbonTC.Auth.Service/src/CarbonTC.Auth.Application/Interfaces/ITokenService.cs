@@ -1,4 +1,5 @@
 // CarbonTC.Auth.Application/Interfaces/ITokenService.cs
+
 using CarbonTC.Auth.Domain.Entities;
 
 namespace CarbonTC.Auth.Application.Interfaces;
@@ -10,4 +11,6 @@ public interface ITokenService
     Task<RefreshToken> SaveRefreshTokenAsync(Guid userId, string token);
     Task<RefreshToken?> GetRefreshTokenAsync(string token);
     Task RevokeRefreshTokenAsync(string token);
+    Task RevokeAllUserRefreshTokensAsync(Guid userId); // NEW
+    Task CleanupExpiredTokensAsync(); // NEW
 }
