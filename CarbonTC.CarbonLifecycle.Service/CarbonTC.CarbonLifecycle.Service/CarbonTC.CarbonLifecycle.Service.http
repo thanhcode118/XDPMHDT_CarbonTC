@@ -1,4 +1,4 @@
-@CarbonTC.CarbonLifecycle.Service_HostAddress = http://localhost:5010
+@CarbonTC.CarbonLifecycle.Service_HostAddress = http://localhost:5096
 
 GET {{CarbonTC.CarbonLifecycle.Service_HostAddress}}/weatherforecast/
 Accept: application/json

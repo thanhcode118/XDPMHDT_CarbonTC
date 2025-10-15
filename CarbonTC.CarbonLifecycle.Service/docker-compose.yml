@@ -1,0 +1,45 @@
+services:
+  carbon_lifecycle_service:
+    build:
+      context: . # Thư mục gốc chứa Dockerfile
+      dockerfile: Dockerfile # Dockerfile nằm tại CarbonTC.CarbonLifecycle.Service/Dockerfile
+    ports:
+      - "5000:80" # Ánh xạ cổng của API (mặc định ASP.NET Core là 80 trong container)
+    environment:
+      ASPNETCORE_URLS: http://+:80
+      ConnectionStrings__DefaultConnection: "Server=mysql_db;Port=3306;Database=carbon_lifecycle_db;Uid=root;Pwd=${MYSQL_ROOT_PASSWORD};"
+      # Thêm các biến môi trường khác nếu cần cho ứng dụng .NET của bạn
+    depends_on:
+      - mysql_db
+      - rabbitmq_broker
+    volumes:
+      - ~/.nuget/packages:/root/.nuget/packages # Cache NuGet packages để tăng tốc độ build
+    networks:
+      - carbon_network
+
+  mysql_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${thienhao2206}
+      MYSQL_DATABASE: carbon_lifecycle_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - carbon_network
+
+  rabbitmq_broker:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672" # RabbitMQ management UI
+    networks:
+      - carbon_network
+
+volumes:
+  mysql_data:
+
+networks:
+  carbon_network:
+    driver: bridge

@@ -7,18 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="12.0.0" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
-    <!-- Thay đổi các gói này sang phiên bản 8.0.x -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" /> <!-- Cần thêm gói này nếu chưa có -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" /> <!-- Cần thêm gói này nếu chưa có -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.8" /> <!-- Phiên bản 8.0.x tương thích với MySql.EntityFrameworkCore -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>
