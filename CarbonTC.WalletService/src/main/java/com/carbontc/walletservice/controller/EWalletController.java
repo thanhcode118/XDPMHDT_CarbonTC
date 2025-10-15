@@ -2,6 +2,7 @@ package com.carbontc.walletservice.controller;
 
 import com.carbontc.walletservice.dto.request.EWalletRequest;
 import com.carbontc.walletservice.dto.response.EWalletResponse;
+import com.carbontc.walletservice.dto.response.TransactionLogResponse;
 import com.carbontc.walletservice.entity.EWallet;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.payload.ApiResponse;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/wallet")
@@ -50,5 +52,12 @@ public class EWalletController {
         EWalletResponse eWalletResponse = eWalletService.getMyWalletById(id);
 
         return ResponseEntity.ok(ApiResponse.success("Lấy ví người dùng thành công", eWalletResponse));
+    }
+
+    @Operation(summary = "Lịch sử giao dịch của ví")
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<ApiResponse<List<TransactionLogResponse>>> getTransactionHistory(@PathVariable Long id) {
+        List<TransactionLogResponse> logs = eWalletService.getTransactionHistory(id);
+        return ResponseEntity.ok(ApiResponse.success("Lấy lịch sử giao dịch thành công", logs));
     }
 }

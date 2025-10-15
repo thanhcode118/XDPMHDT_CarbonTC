@@ -2,15 +2,17 @@ package com.carbontc.walletservice.service.Impl;
 
 import com.carbontc.walletservice.dto.request.EWalletRequest;
 import com.carbontc.walletservice.dto.response.EWalletResponse;
+import com.carbontc.walletservice.dto.response.TransactionLogResponse;
 import com.carbontc.walletservice.entity.EWallet;
+import com.carbontc.walletservice.entity.TransactionLog;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.EWalletRepository;
+import com.carbontc.walletservice.repository.TransactionLogRepository;
 import com.carbontc.walletservice.service.EWalletService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +25,8 @@ public class EWalletServiceImpl implements EWalletService {
     private final EWalletRepository eWalletRepository;
 
     private final ModelMapper modelMapper;
+
+    private final TransactionLogRepository transactionLogRepository;
 
 
     // TẠO VÍ
@@ -58,6 +62,13 @@ public class EWalletServiceImpl implements EWalletService {
         eWallet.setUpdatedAt(LocalDateTime.now());
 
         EWallet eWalletSaved = eWalletRepository.save(eWallet);
+        TransactionLog log = new TransactionLog();
+        log.setWalletId(walletId);
+        log.setAmount(amount);
+        log.setType("DEPOSIT");
+        log.setStatus("SUCCESS");
+        log.setDescription("Nạp tiền thành công vào ví ID: " + walletId);
+        transactionLogRepository.save(log);
         return mapToResponse(eWalletSaved);
     }
 
@@ -82,6 +93,15 @@ public class EWalletServiceImpl implements EWalletService {
         eWallet.setUpdatedAt(LocalDateTime.now());
 
         EWallet eWalletSaved = eWalletRepository.save(eWallet);
+
+        TransactionLog log = new TransactionLog();
+        log.setWalletId(walletId);
+        log.setAmount(amount);
+        log.setType("WITHDRAW");
+        log.setStatus("SUCCESS");
+        log.setDescription("Rút tiền thành công khỏi ví ID: " + walletId);
+        transactionLogRepository.save(log);
+
         return mapToResponse(eWalletSaved);
     }
 
@@ -92,6 +112,15 @@ public class EWalletServiceImpl implements EWalletService {
 
         return mapToResponse(eWallet);
     }
+
+    @Override
+    public List<TransactionLogResponse> getTransactionHistory(Long walletId) {
+        List<TransactionLog> logs = transactionLogRepository.findByWalletIdOrderByCreatedAtDesc(walletId);
+        return logs.stream()
+                .map(log -> modelMapper.map(log, TransactionLogResponse.class))
+                .toList();
+    }
+
     // HEPPLER METHOD MAPPER
     public EWalletResponse mapToResponse(EWallet eWallet) {
         return modelMapper.map(eWallet, EWalletResponse.class);
