@@ -25,7 +25,7 @@ namespace Application.Common.Features.Listings.EventHandlers
 
             creditInventory.CommitDirectSale(notification.Amount);
 
-            var transaction = Transactions.Create(
+            var transaction = Domain.Entities.Transactions.Create(
                 notification.BuyerId,
                 notification.OwerId,
                 notification.ListingId,

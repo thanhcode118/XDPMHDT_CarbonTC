@@ -21,6 +21,8 @@
   <ItemGroup>
     <Folder Include="Common\Features\CreditInventories\DTOs\" />
     <Folder Include="Common\Features\CreditInventories\EventHandlers\" />
+    <Folder Include="Common\Features\Transactions\Commands\" />
+    <Folder Include="Common\Features\Transactions\DTOs\" />
   </ItemGroup>
 
 </Project>

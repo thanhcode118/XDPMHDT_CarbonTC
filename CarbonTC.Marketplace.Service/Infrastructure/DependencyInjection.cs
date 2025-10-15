@@ -26,6 +26,7 @@ namespace Infrastructure
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
 
+
             // Repositories
             services.AddScoped<IAuctionBidRepository, AuctionBidRepository>();
             services.AddScoped<IListingRepository, ListingRepository>();
@@ -39,6 +40,7 @@ namespace Infrastructure
             // Other services
             services.AddScoped<IDomainEventService, DomainEventService>();
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             return services;
         }
     }

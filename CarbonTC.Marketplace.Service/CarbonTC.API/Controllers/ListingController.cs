@@ -34,17 +34,12 @@ namespace CarbonTC.API.Controllers
             {
                 var apiResponse = ApiResponse<Guid>.SuccessResponse(result.Value, "Listing created successfully.");
 
-                //return CreatedAtAction(nameof(GetListingById), new { id = result.Value }, apiResponse);
-                // Hoặc đơn giản hơn là trả về 200 OK nếu bạn không có endpoint GetById
-                return Ok(apiResponse);
+                return CreatedAtAction(nameof(GetDetailById), new { listingId = result.Value }, apiResponse);
             }
             else
             {
-                // Tạo response thất bại
                 var errors = new List<string> { $"{result.Error.Code}: {result.Error.Message}" };
                 var apiResponse = ApiResponse<Guid>.ErrorResponse("Failed to create listing.", errors);
-
-                // Trả về 400 Bad Request với thông tin lỗi
                 return BadRequest(apiResponse);
             }
         }
@@ -67,25 +62,17 @@ namespace CarbonTC.API.Controllers
             }
         }
 
-        [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllListings(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] ListingStatus? status = null,
-            [FromQuery] ListingType? type = null,
-            [FromQuery] Guid? ownerId = null,
-            [FromQuery] decimal? minPrice = null,
-            [FromQuery] decimal? maxPrice = null,
+            [FromQuery] GetAllListingsQuery getAllListingsQuery,
             CancellationToken cancellationToken = default)
         {
-            var query = new GetAllListingsQuery(pageNumber, pageSize, type, status, minPrice, maxPrice, ownerId);
-            var result = await _mediator.Send(query, cancellationToken);
+            var result = await _mediator.Send(getAllListingsQuery, cancellationToken);
 
             return Ok(ApiResponse<object>.SuccessResponse(result, "Listings retrieved successfully."));
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetDetailById([FromQuery] Guid listingId)
+        [HttpGet("{listingId:guid}")]
+        public async Task<IActionResult> GetDetailById([FromRoute] Guid listingId)
         {
             var query = new GetByIdListingQuery(listingId);
             var result = await _mediator.Send(query);
@@ -99,9 +86,19 @@ namespace CarbonTC.API.Controllers
             return Ok(ApiResponse<ListingDetailDto>.SuccessResponse(result.Value));
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateListing([FromBody] UpdateListingCommand command, CancellationToken cancellationToken = default)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateListing(Guid id, [FromBody] UpdateListingRequest request, CancellationToken cancellationToken = default)
         {
+            var command = new UpdateListingCommand(
+                id, 
+                request.Type,
+                request.PricePerUnit,
+                request.Status,
+                request.ClosedAt,
+                request.MinimumBid,
+                request.AuctionEndTime
+            );
+
             var result = await _mediator.Send(command, cancellationToken);
             if (!result.IsSuccess)
             {

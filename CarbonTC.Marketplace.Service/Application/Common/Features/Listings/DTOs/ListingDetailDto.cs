@@ -18,7 +18,6 @@ namespace Application.Common.Features.Listings.DTOs
 
 
         public IEnumerable<AuctionBid> AuctionBids { get; init; }
-        public IEnumerable<Transactions> Transactions { get; init; }
         public decimal? SuggestedPrice { get; init; }
     }
 }

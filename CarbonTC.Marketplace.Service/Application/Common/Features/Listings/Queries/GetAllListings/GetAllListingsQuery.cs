@@ -9,7 +9,7 @@ namespace Application.Common.Features.Listings.Queries.GetAllListings
         int PageNumber = 1,
         int PageSize = 20,
         ListingType? Type = ListingType.FixedPrice,
-        ListingStatus? Status = null,
+        ListingStatus? Status = ListingStatus.Open,
         decimal? MinPrice = null,
         decimal? MaxPrice = null,
         Guid? OwnerId = null

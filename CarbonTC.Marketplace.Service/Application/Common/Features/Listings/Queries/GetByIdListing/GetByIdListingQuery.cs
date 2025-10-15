@@ -4,5 +4,5 @@ using MediatR;
 
 namespace Application.Common.Features.Listings.Queries.GetByIdListing
 {
-    public record GetByIdListingQuery(Guid ListingId):  IRequest<Result<ListingDetailDto>>;
+    public record GetByIdListingQuery(Guid ListingId): IRequest<Result<ListingDetailDto>>;
 }
