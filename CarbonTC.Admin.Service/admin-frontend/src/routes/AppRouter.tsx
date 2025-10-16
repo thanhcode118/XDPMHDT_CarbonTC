@@ -23,10 +23,8 @@ function AppRouter() {
     <BrowserRouter>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          {/* Root redirect to dashboard */}
           <Route path="/" element={<Navigate to={ROUTES.ADMIN.DASHBOARD} />} />
 
-          {/* Admin Routes - Tất cả đều cần authentication */}
           <Route
             path={ROUTES.ADMIN.DASHBOARD}
             element={
@@ -108,7 +106,6 @@ function AppRouter() {
             }
           />
 
-          {/* 404 Not Found */}
           <Route path={ROUTES.OTHER.NOT_FOUND} element={<NotFound />} />
         </Routes>
       </Suspense>

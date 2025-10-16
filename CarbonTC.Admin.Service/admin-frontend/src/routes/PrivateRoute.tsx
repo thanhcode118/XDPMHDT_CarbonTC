@@ -1,26 +1,29 @@
 import { Navigate } from 'react-router-dom';
 
+// import { useAuthStore } from '../store';
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
 function PrivateRoute({ children }: PrivateRouteProps) {
-  // TODO: Lấy JWT token từ localStorage hoặc Zustand store
-  const token = localStorage.getItem('accessToken');
+  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // const user = useAuthStore((state) => state.user);
+  const isAuthenticated = true;
+  const user = {
+    id: '1',
+    email: 'admin@test.com',
+    fullName: 'Admin',
+    role: 'ADMIN' as const,
+    status: 'ACTIVE' as const,
+  };
 
-  // TODO: Verify JWT token bằng cách:
-  // 1. Check xem token có tồn tại không
-  // 2. Check xem token có expired chưa (decode JWT và check exp)
-  // 3. Check role từ JWT payload (phải là admin)
-
-  // Tạm thời để test - sau này sẽ implement logic thực tế
-  // const isAuthenticated = !!token;
-  const isAuthenticated = true; // Giả sử đã login thành công
-  const isAdmin = true;
-
-  if (!isAuthenticated || !isAdmin) {
+  if (!isAuthenticated || !user) {
     // Redirect về Auth Service login page
     // window.location.href = 'http://localhost:3000/login'; // Auth Service URL
+    return <Navigate to="/" replace />;
+  }
+
+  if (user.role !== 'ADMIN') {
     return <Navigate to="/" replace />;
   }
 
