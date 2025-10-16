@@ -1,14 +1,42 @@
+// src/pages/Dashboard.jsx
+
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, logoutAll } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [showLogoutMenu, setShowLogoutMenu] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    setLoading(true);
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogoutAll = async () => {
+    if (!window.confirm('Are you sure you want to logout from all devices? This will end all active sessions.')) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await logoutAll();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout all error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,18 +52,77 @@ export default function Dashboard() {
               </span>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <div className="hidden sm:block text-right">
                 <p className="text-sm font-medium text-gray-900">{user?.fullName}</p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
-              <Button 
-                variant="danger" 
-                onClick={handleLogout}
-                className="text-sm"
-              >
-                Logout
-              </Button>
+
+              {/* Logout Dropdown */}
+              <div className="relative">
+                <Button 
+                  variant="danger" 
+                  onClick={() => setShowLogoutMenu(!showLogoutMenu)}
+                  className="text-sm"
+                  disabled={loading}
+                >
+                  <svg className="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                  <svg className="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </Button>
+
+                {/* Dropdown Menu */}
+                {showLogoutMenu && (
+                  <>
+                    {/* Backdrop */}
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowLogoutMenu(false)}
+                    ></div>
+
+                    {/* Menu */}
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                      <button
+                        onClick={() => {
+                          setShowLogoutMenu(false);
+                          handleLogout();
+                        }}
+                        disabled={loading}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Logout this device
+                      </button>
+
+                      <hr className="my-1 border-gray-200" />
+
+                      <button
+                        onClick={() => {
+                          setShowLogoutMenu(false);
+                          handleLogoutAll();
+                        }}
+                        disabled={loading}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Logout all devices
+                      </button>
+
+                      <div className="px-4 py-2 text-xs text-gray-500 border-t border-gray-200 mt-1">
+                        This will end all active sessions
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -116,6 +203,34 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Security Settings Card */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border-l-4 border-yellow-500">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Session Management</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                You can logout from all devices if you suspect unauthorized access to your account.
+              </p>
+              <Button
+                variant="secondary"
+                onClick={handleLogoutAll}
+                loading={loading}
+                className="text-sm"
+              >
+                <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Logout All Devices
+              </Button>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -171,7 +286,7 @@ export default function Dashboard() {
         </div>
 
         {/* Account Information */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
             <svg className="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -227,7 +342,7 @@ export default function Dashboard() {
         </div>
 
         {/* Activity Summary */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div>

@@ -10,4 +10,6 @@ public interface IUserRepository
     Task<User> CreateAsync(User user);
     Task UpdateAsync(User user);
     Task<bool> EmailExistsAsync(string email);
+    Task<(List<User> Users, int TotalCount)> GetAllAsync(int pageNumber, int pageSize, string? searchTerm); // NEW
+
 }

@@ -1,5 +1,8 @@
+// src/context/AuthContext.jsx
+
 import { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
+import { useTokenRefresh } from '../hooks/useTokenRefresh';
 
 export const AuthContext = createContext(null);
 
@@ -7,8 +10,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Auto refresh token
+  useTokenRefresh();
+
   useEffect(() => {
-    // Load user từ localStorage khi app khởi động
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
     setLoading(false);
@@ -52,12 +57,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const logoutAll = async () => {
+    try {
+      await authService.logoutAll();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout all error:', error);
+      setUser(null);
+    }
+  };
+
   const value = {
     user,
     loading,
     register,
     login,
     logout,
+    logoutAll,
     isAuthenticated: !!user,
   };
 

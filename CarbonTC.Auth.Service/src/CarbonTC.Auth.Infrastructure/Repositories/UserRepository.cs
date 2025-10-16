@@ -1,4 +1,5 @@
 // CarbonTC.Auth.Infrastructure/Repositories/UserRepository.cs
+
 using CarbonTC.Auth.Application.Interfaces;
 using CarbonTC.Auth.Domain.Entities;
 using CarbonTC.Auth.Infrastructure.Persistence;
@@ -46,5 +47,36 @@ public class UserRepository : IUserRepository
     public async Task<bool> EmailExistsAsync(string email)
     {
         return await _context.Users.AnyAsync(u => u.Email == email && !u.IsDeleted);
+    }
+
+    public async Task<(List<User> Users, int TotalCount)> GetAllAsync(
+        int pageNumber,
+        int pageSize,
+        string? searchTerm)
+    {
+        var query = _context.Users
+            .Include(u => u.Role)
+            .Where(u => !u.IsDeleted)
+            .AsQueryable();
+
+        // Search filter
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(u =>
+                u.Email.Contains(searchTerm) ||
+                u.FullName.Contains(searchTerm) ||
+                (u.PhoneNumber != null && u.PhoneNumber.Contains(searchTerm))
+            );
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var users = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (users, totalCount);
     }
 }
