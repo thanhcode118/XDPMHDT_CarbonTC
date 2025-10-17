@@ -2,6 +2,7 @@ package com.carbontc.walletservice.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,11 +40,11 @@ public class Payment {
         this.method = method;
     }
 
-    public Double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
@@ -73,7 +74,7 @@ public class Payment {
 
     private String method; // E-Wallet, Banking, CreditCard
 
-    private Double amount;
+    private BigDecimal amount;
 
     private String paymentStatus; // Pending, Success, Failed
 
