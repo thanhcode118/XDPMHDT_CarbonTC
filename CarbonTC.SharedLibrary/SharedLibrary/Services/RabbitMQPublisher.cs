@@ -42,7 +42,7 @@ namespace SharedLibrary.Services
             return publisher;
         }
 
-        public async Task PublishAsync<T>(string exchange, string routingKey, T message)
+        public async Task PublishAsync<T>(string exchange, string exchangeType, string routingKey, T message)
         {
             if (_channel == null) throw new InvalidOperationException("Channel not initialized.");
 

@@ -6,7 +6,6 @@ using Application.Common.Features.Listings.DTOs;
 using Application.Common.Features.Listings.Queries.GetAllListings;
 using Application.Common.Features.Listings.Queries.GetByIdListing;
 using CarbonTC.API.Common;
-using Domain.Enum;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,6 +61,7 @@ namespace CarbonTC.API.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> GetAllListings(
             [FromQuery] GetAllListingsQuery getAllListingsQuery,
             CancellationToken cancellationToken = default)
