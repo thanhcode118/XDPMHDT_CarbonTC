@@ -41,75 +41,75 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response Interceptor với Auto Refresh
+// Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Nếu không phải lỗi 401 hoặc đã retry
-    if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
-    }
-
-    // Nếu request đến endpoint refresh-token bị lỗi
-    if (originalRequest.url === '/auth/refresh-token') {
-      localStorage.clear();
-      window.location.href = '/login';
-      return Promise.reject(error);
-    }
-
-    // Nếu đang refresh token, đưa request vào queue
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
-      })
-        .then(token => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return axiosInstance(originalRequest);
-        })
-        .catch(err => {
-          return Promise.reject(err);
-        });
-    }
-
-    originalRequest._retry = true;
-    isRefreshing = true;
-
-    const refreshToken = localStorage.getItem('refreshToken');
-
-    if (!refreshToken) {
-      localStorage.clear();
-      window.location.href = '/login';
-      return Promise.reject(error);
-    }
-
-    try {
-      const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-        refreshToken
-      });
-
-      if (response.data.success) {
-        const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-        
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', newRefreshToken);
-
-        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-        processQueue(null, accessToken);
-        
-        return axiosInstance(originalRequest);
+    // ✅ Chỉ redirect login khi refresh-token endpoint fail
+    if (error.response?.status === 401) {
+      if (originalRequest.url === '/auth/refresh-token') {
+        // Refresh token failed → Logout
+        console.log('❌ Refresh token failed, redirecting to login');
+        localStorage.clear();
+        window.location.href = '/login';
+        return Promise.reject(error);
       }
-    } catch (err) {
-      processQueue(err, null);
-      localStorage.clear();
-      window.location.href = '/login';
-      return Promise.reject(err);
-    } finally {
-      isRefreshing = false;
+
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(token => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return axiosInstance(originalRequest);
+            })
+            .catch(err => Promise.reject(err));
+        }
+
+        isRefreshing = true;
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        if (!refreshToken) {
+          localStorage.clear();
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
+        try {
+          const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+            refreshToken
+          });
+
+          if (response.data.success) {
+            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+            
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', newRefreshToken);
+
+            axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+            processQueue(null, accessToken);
+            
+            return axiosInstance(originalRequest);
+          }
+        } catch (err) {
+          processQueue(err, null);
+          localStorage.clear();
+          window.location.href = '/login';
+          return Promise.reject(err);
+        } finally {
+          isRefreshing = false;
+        }
+      }
     }
+
+    return Promise.reject(error);
   }
 );
 

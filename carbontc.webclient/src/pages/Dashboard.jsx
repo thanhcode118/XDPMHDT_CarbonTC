@@ -240,7 +240,11 @@ export default function Dashboard() {
             Quick Actions
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group">
+            {/* Edit Profile */}
+            <button 
+              onClick={() => navigate('/profile')}
+              className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group"
+            >
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-primary-100 rounded-lg group-hover:bg-primary-200 transition-colors">
                   <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,34 +258,57 @@ export default function Dashboard() {
               </div>
             </button>
 
-            <button className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group">
+            {/* Change Password */}
+            <button 
+              onClick={() => navigate('/change-password')}
+              className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group"
+            >
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-primary-100 rounded-lg group-hover:bg-primary-200 transition-colors">
                   <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-gray-900">Settings</p>
-                  <p className="text-sm text-gray-500">Manage preferences</p>
+                  <p className="font-medium text-gray-900">Change Password</p>
+                  <p className="text-sm text-gray-500">Update your password</p>
                 </div>
               </div>
             </button>
 
-            <button className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-primary-100 rounded-lg group-hover:bg-primary-200 transition-colors">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+            {/* Admin Panel or View Reports */}
+            {user?.roleName === 'Admin' ? (
+              <button 
+                onClick={() => navigate('/admin/users')}
+                className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-primary-100 rounded-lg group-hover:bg-primary-200 transition-colors">
+                    <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-gray-900">User Management</p>
+                    <p className="text-sm text-gray-500">Manage all users</p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="font-medium text-gray-900">View Reports</p>
-                  <p className="text-sm text-gray-500">Access analytics</p>
+              </button>
+            ) : (
+              <button className="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-primary-100 rounded-lg group-hover:bg-primary-200 transition-colors">
+                    <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-gray-900">View Reports</p>
+                    <p className="text-sm text-gray-500">Access analytics</p>
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+            )}
           </div>
         </div>
 
