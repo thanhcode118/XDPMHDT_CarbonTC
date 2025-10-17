@@ -18,6 +18,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
+                                "/api/wallet/**",
+                                "/api/payments/**",  // Cho phép test VNPay API
                                 "/api/wallet/**"
                         ).permitAll()
                         // Các API khác vẫn cần xác thực
