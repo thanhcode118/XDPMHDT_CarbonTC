@@ -11,6 +11,7 @@ export interface User {
 }
 
 export interface AuthState {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   themeMode: any;
   token: string | null;
   refreshToken: string | null;
