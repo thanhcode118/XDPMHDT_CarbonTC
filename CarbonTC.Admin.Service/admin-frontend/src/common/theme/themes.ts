@@ -5,7 +5,7 @@ import {
   gray,
   errorColor,
   infoTextColor,
-  primaryBackground,
+  primaryBackgroundSidebar,
   primaryTextColor,
   secondaryTextColor,
   successColor,
@@ -165,7 +165,7 @@ const getCommonComponents = (mode: 'light' | 'dark') => ({
         borderRight: `1px solid ${mode === 'light' ? gray[300] : 'rgba(255, 255, 255, 0.12)'}`,
         backgroundColor:
           mode === 'light'
-            ? primaryBackground
+            ? primaryBackgroundSidebar
             : darkModeColors.background.secondary,
       },
     },
@@ -221,8 +221,8 @@ const lightThemeOptions: ThemeOptions = {
     info: { main: infoTextColor },
     success: { main: successColor },
     background: {
-      default: primaryBackground,
-      paper: primaryBackground,
+      default: primaryBackgroundSidebar,
+      paper: primaryBackgroundSidebar,
     },
     text: {
       primary: primaryTextColor,

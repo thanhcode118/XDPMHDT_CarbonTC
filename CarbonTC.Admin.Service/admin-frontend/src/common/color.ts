@@ -38,8 +38,10 @@ export const primaryTextColor = '#212121';
 export const secondaryTextColor = '#757575';
 export const labelColor = '#424242';
 
+export const borderLine = gray[400];
+
 // Background Colors
-export const primaryBackground = '#ffffff';
+export const primaryBackgroundSidebar = gray[50];
 export const secondaryBackground = '#f5f5f5';
 
 // Additional Colors for Dark Mode

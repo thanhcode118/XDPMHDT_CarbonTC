@@ -1,16 +1,11 @@
-// src/routes/routes.config.ts
-
-/**
- * Base path để dễ deploy dưới subpath (vd: /admin).
- * Để trống "" nếu app chạy ở root domain.
- * Configure qua VITE_ADMIN_BASE_PATH trong file .env
- */
 export const BASE_PATH = import.meta.env.VITE_ADMIN_BASE_PATH ?? '';
 
-/**
- * Tiện ích nối path chuẩn hóa dấu gạch chéo
- * @internal
- */
+export const DRAWER_WIDTH = 240;
+export const HEIGHT_HEADER_SIDE_BAR = 70;
+
+export const DEFAULT_PAGE_SIZE = 10;
+export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
 const join = (...parts: string[]) =>
   parts
     .join('/')
@@ -18,9 +13,6 @@ const join = (...parts: string[]) =>
     .replace(/\/+$/g, '')
     .replace(/^\/?/, '/');
 
-/**
- * Route paths cho Admin Service
- */
 export const ROUTES = {
   ADMIN: {
     BASE: join(BASE_PATH, ''),
@@ -28,15 +20,15 @@ export const ROUTES = {
     LISTING_AND_ORDERS: join(BASE_PATH, 'listing-and-orders'),
 
     USERS: join(BASE_PATH, 'users'),
-    // USER_DETAIL: join(BASE_PATH, 'users/:id'),
+    USER_DETAIL: join(BASE_PATH, 'users/:id'),
 
     DISPUTES: join(BASE_PATH, 'disputes'),
-    // DISPUTE_DETAIL: join(BASE_PATH, 'disputes/:id'),
+    DISPUTE_DETAIL: join(BASE_PATH, 'disputes/:id'),
 
     REPORTS: join(BASE_PATH, 'reports'),
 
     CERTIFICATES: join(BASE_PATH, 'certificates'),
-    // CERTIFICATE_DETAIL: join(BASE_PATH, 'certificates/:id'),
+    CERTIFICATE_DETAIL: join(BASE_PATH, 'certificates/:id'),
 
     WALLET: join(BASE_PATH, 'wallet'),
     SETTINGS: join(BASE_PATH, 'settings'),
@@ -53,15 +45,6 @@ export type AdminRoutePath = (typeof ROUTES.ADMIN)[AdminRouteKey];
 
 export const toRelative = (absPath: string) => absPath.replace(/^\//, '');
 
-/**
- * Build dynamic route path by replacing parameters
- * @example
- * buildPath("/users/:id", { id: "abc123" }) // "/users/abc123"
- * buildPath("/disputes/:disputeId/messages/:msgId", {
- *   disputeId: "d1",
- *   msgId: "m1"
- * }) // "/disputes/d1/messages/m1"
- */
 export function buildPath<T extends Record<string, string | number>>(
   template: string,
   params: T,
@@ -84,12 +67,6 @@ export function buildPath<T extends Record<string, string | number>>(
   return result;
 }
 
-/**
- * Type-safe route path getter with optional params
- * @example
- * getRoutePath('DASHBOARD') // "/admin/dashboard"
- * getRoutePath('USER_DETAIL', { id: '123' }) // "/admin/users/123"
- */
 export function getRoutePath(
   routeKey: AdminRouteKey,
   params?: Record<string, string | number>,

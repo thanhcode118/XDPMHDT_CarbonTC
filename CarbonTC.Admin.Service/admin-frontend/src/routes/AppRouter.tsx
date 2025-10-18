@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
+import { ROUTES } from '../common/constants';
+import LayoutDashboard from '../components/layouts/layoutDashboard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PrivateRoute from '../routes/PrivateRoute';
-
-import { ROUTES } from './../common/constants';
 
 // Lazy load pages
 const Dashboard = lazy(() => import('../pages/cms/Dashboard'));
@@ -23,89 +23,38 @@ function AppRouter() {
     <BrowserRouter>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          <Route path="/" element={<Navigate to={ROUTES.ADMIN.DASHBOARD} />} />
-
+          {/* Redirect root to dashboard */}
           <Route
-            path={ROUTES.ADMIN.DASHBOARD}
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
+            path={ROUTES.ADMIN.BASE}
+            element={<Navigate to={ROUTES.ADMIN.DASHBOARD} replace />}
           />
 
+          {/* Protected routes with Layout */}
           <Route
-            path={ROUTES.ADMIN.LISTING_AND_ORDERS}
             element={
               <PrivateRoute>
-                <ListingsAndOrders />
+                <LayoutDashboard />
               </PrivateRoute>
             }
-          />
+          >
+            <Route path={ROUTES.ADMIN.DASHBOARD} element={<Dashboard />} />
+            <Route path={ROUTES.ADMIN.USERS} element={<Users />} />
+            <Route
+              path={ROUTES.ADMIN.LISTING_AND_ORDERS}
+              element={<ListingsAndOrders />}
+            />
+            <Route path={ROUTES.ADMIN.DISPUTES} element={<Disputes />} />
+            <Route path={ROUTES.ADMIN.REPORTS} element={<Report />} />
+            <Route
+              path={ROUTES.ADMIN.CERTIFICATES}
+              element={<Certificates />}
+            />
+            <Route path={ROUTES.ADMIN.WALLET} element={<Wallet />} />
+            <Route path={ROUTES.ADMIN.SETTINGS} element={<Settings />} />
+            <Route path={ROUTES.ADMIN.PROFILE} element={<Profile />} />
+          </Route>
 
-          <Route
-            path={ROUTES.ADMIN.USERS}
-            element={
-              <PrivateRoute>
-                <Users />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path={ROUTES.ADMIN.DISPUTES}
-            element={
-              <PrivateRoute>
-                <Disputes />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path={ROUTES.ADMIN.REPORTS}
-            element={
-              <PrivateRoute>
-                <Report />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path={ROUTES.ADMIN.CERTIFICATES}
-            element={
-              <PrivateRoute>
-                <Certificates />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path={ROUTES.ADMIN.WALLET}
-            element={
-              <PrivateRoute>
-                <Wallet />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path={ROUTES.ADMIN.SETTINGS}
-            element={
-              <PrivateRoute>
-                <Settings />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path={ROUTES.ADMIN.PROFILE}
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-
+          {/* 404 - Not Found */}
           <Route path={ROUTES.OTHER.NOT_FOUND} element={<NotFound />} />
         </Routes>
       </Suspense>
