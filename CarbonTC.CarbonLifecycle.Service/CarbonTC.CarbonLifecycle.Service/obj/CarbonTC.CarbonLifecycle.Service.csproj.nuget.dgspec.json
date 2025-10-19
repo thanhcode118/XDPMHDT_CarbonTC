@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\SLN2\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj": {}
+    "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\s3\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj": {}
   },
   "projects": {
-    "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\SLN2\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj": {
+    "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\s3\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\SLN2\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj",
+        "projectUniqueName": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\s3\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj",
         "projectName": "CarbonTC.CarbonLifecycle.Service",
-        "projectPath": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\SLN2\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj",
+        "projectPath": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\s3\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj",
         "packagesPath": "C:\\Users\\hongu\\.nuget\\packages\\",
-        "outputPath": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\SLN2\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\obj\\",
+        "outputPath": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\s3\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\VisualStudio\\Tools\\NuGetPackages"
@@ -50,6 +50,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
+              "target": "Package",
+              "version": "[12.0.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"

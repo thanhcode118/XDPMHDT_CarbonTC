@@ -6,11 +6,16 @@ using Microsoft.OpenApi.Models;
 using CarbonTC.CarbonLifecycle.Application.Abstractions;
 using CarbonTC.CarbonLifecycle.Domain.Services;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
-using System; 
+using System;
+using CarbonTC.CarbonLifecycle.Application;
+using AutoMapper;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// Lấy Assembly của project Application
+var appAssembly = typeof(AssemblyReference).Assembly;
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -76,6 +81,14 @@ builder.Services.AddScoped<IVerificationProcessDomainService, VerificationProces
 // builder.Services.AddScoped<IDomainEventHandler<JourneyBatchSubmittedForVerificationEvent>, JourneyBatchNotificationHandler>();
 // ...
 // <--- Kết thúc phần đăng ký dịch vụ
+
+// 1. Đăng ký MediatR và tự động tìm tất cả Handlers
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(appAssembly));
+
+// 2. Đăng ký AutoMapper và tự động tìm tất cả Mapping Profiles
+builder.Services.AddAutoMapper(appAssembly);
+
+
 
 // Configure AppDbContext with MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
