@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
-using CarbonTC.CarbonLifecycle.Domain.Events; // Cần include namespace này
+using CarbonTC.CarbonLifecycle.Domain.Events; 
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Domain.ValueObjects;
-using CarbonTC.CarbonLifecycle.Application.Abstractions; // Để sử dụng IDomainEventDispatcher
+using CarbonTC.CarbonLifecycle.Domain.Abstractions; 
 
 
 namespace CarbonTC.CarbonLifecycle.Domain.Services
@@ -31,7 +31,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             IDomainEventDispatcher eventDispatcher) // Nhận IDomainEventDispatcher qua constructor
         {
             _journeyBatchRepository = journeyBatchRepository ?? throw new ArgumentNullException(nameof(journeyBatchRepository));
-            _verificationRequestRepository = verificationRequestRepository ?? throw new ArgumentNullException(nameof(verificationRequestRepository));
+            _verificationRequestRepository = verificationRequestRepository ?? throw new ArgumentNullException(nameof(journeyBatchRepository));
             _carbonCreditRepository = carbonCreditRepository ?? throw new ArgumentNullException(nameof(carbonCreditRepository));
             _cvaStandardRepository = cvaStandardRepository ?? throw new ArgumentNullException(nameof(cvaStandardRepository));
             _emissionCalculationService = emissionCalculationService ?? throw new ArgumentNullException(nameof(emissionCalculationService));
@@ -66,19 +66,13 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 Status = VerificationRequestStatus.Pending,
                 Notes = notes,
                 CreatedAt = DateTime.UtcNow,
-                // AuditFindings hiện là một string (hoặc có thể là JSON string) trong Entity gốc
-                // Nếu bạn muốn lưu AuditFindings Value Object, bạn sẽ cần serialize nó thành string
-                // hoặc sửa đổi Entity để nó chấp nhận Value Object (nhưng chúng ta đang tránh điều đó)
-                // Vì vậy, tạm thời chúng ta không gán AuditFindings Value Object vào đây.
-                // Nếu AuditFindings là một string trong Entity:
-                // AuditFindings = new AuditFindings("Initial request", new List<string>(), true).ToString();
             };
 
             await _verificationRequestRepository.AddAsync(newRequest);
 
             // Cập nhật trạng thái của JourneyBatch Entity
             batch.Status = JourneyBatchStatus.SubmittedForVerification;
-            batch.LastModifiedAt = DateTime.UtcNow; // Cập nhật thủ công LastModifiedAt
+            batch.LastModifiedAt = DateTime.UtcNow;
             await _journeyBatchRepository.UpdateAsync(batch);
 
             // Phát Domain Event
@@ -91,7 +85,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
         public async Task ApproveVerificationRequestAsync(
             Guid verificationRequestId,
             string verifierId,
-            AuditFindings findings, // Input là Value Object
+            AuditFindings findings,
             string approvalNotes,
             CVAStandard cvaStandard)
         {
@@ -121,10 +115,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             verificationRequest.VerifierId = verifierId;
             verificationRequest.VerificationDate = DateTime.UtcNow;
             verificationRequest.Status = VerificationRequestStatus.Approved;
-            // Nếu AuditFindings trong Entity là string, bạn sẽ cần chuyển đổi Value Object sang string (ví dụ: JSON)
-            // verificationRequest.AuditFindings = JsonConvert.SerializeObject(findings);
-            // Hiện tại, AuditFindings trong Entity là string, tôi sẽ gán trực tiếp summary hoặc serialize nó nếu muốn đầy đủ
-            verificationRequest.Notes = approvalNotes ?? verificationRequest.Notes; // Cập nhật Notes
+            verificationRequest.Notes = approvalNotes ?? verificationRequest.Notes;
             verificationRequest.LastModifiedAt = DateTime.UtcNow;
             await _verificationRequestRepository.UpdateAsync(verificationRequest);
 
@@ -144,18 +135,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                     Id = Guid.NewGuid(),
                     JourneyBatchId = batch.Id,
                     UserId = batch.UserId,
-                    // Gán lại giá trị primitive từ Value Object vào Entity
                     AmountKgCO2e = (decimal)totalCO2.ToKg().Value,
-                    // Giả định Entity CarbonCredit có một trường cho CreditAmount (decimal hoặc int)
-                    // Hoặc bạn sẽ cần chuyển CreditAmount Value Object sang một giá trị primitive
-                    // Ví dụ: Amount = totalCredits.Value; (Nếu có trường 'Amount' dạng int/decimal)
-                    // Dựa trên CarbonCredit.cs ban đầu, bạn có AmountKgCO2e, không có Amount cho Credits
-                    // Nếu muốn lưu CreditAmount vào Entity, bạn cần thêm một trường decimal/int vào Entity CarbonCredit
-                    // Ví dụ: public int CreditCount { get; set; }
-                    // Sau đó gán: CreditCount = totalCredits.Value;
-                    // Tạm thời, tôi sẽ không gán CreditAmount vào Entity CarbonCredit để không sửa Entity.
-                    // Nếu bạn thêm CreditAmount vào Entity, hãy bảo tôi nhé.
-
                     IssueDate = DateTime.UtcNow,
                     ExpiryDate = null,
                     Status = CarbonCreditStatus.Issued,
@@ -177,7 +157,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 await _eventDispatcher.Dispatch(new CarbonCreditsRejectedEvent(batch.Id, verifierId, "No eligible carbon credits could be generated from batch."));
             }
 
-            await _journeyBatchRepository.UpdateAsync(batch); // Lưu các thay đổi của batch
+            await _journeyBatchRepository.UpdateAsync(batch);
 
             // Phát Domain Event VerificationRequestApproved
             await _eventDispatcher.Dispatch(new VerificationRequestApprovedEvent(verificationRequestId, batch.Id, verifierId));
@@ -186,7 +166,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
         public async Task RejectVerificationRequestAsync(
             Guid verificationRequestId,
             string verifierId,
-            AuditFindings findings, // Input là Value Object
+            AuditFindings findings,
             string reason)
         {
             var verificationRequest = await _verificationRequestRepository.GetByIdAsync(verificationRequestId);
@@ -210,9 +190,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             verificationRequest.VerifierId = verifierId;
             verificationRequest.VerificationDate = DateTime.UtcNow;
             verificationRequest.Status = VerificationRequestStatus.Rejected;
-            // Chuyển đổi AuditFindings Value Object sang string nếu Entity cần string
-            // verificationRequest.AuditFindings = JsonConvert.SerializeObject(findings);
-            verificationRequest.Notes = reason ?? verificationRequest.Notes; // Ghi lý do từ chối
+            verificationRequest.Notes = reason ?? verificationRequest.Notes;
             verificationRequest.LastModifiedAt = DateTime.UtcNow;
             await _verificationRequestRepository.UpdateAsync(verificationRequest);
 

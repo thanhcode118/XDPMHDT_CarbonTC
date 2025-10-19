@@ -1,26 +1,36 @@
 services:
   carbon_lifecycle_service:
     build:
-      context: . # Thư mục gốc chứa Dockerfile
-      dockerfile: Dockerfile # Dockerfile nằm tại CarbonTC.CarbonLifecycle.Service/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "5000:80" # Ánh xạ cổng của API (mặc định ASP.NET Core là 80 trong container)
+      - "5000:80"
     environment:
       ASPNETCORE_URLS: http://+:80
-      ConnectionStrings__DefaultConnection: "Server=mysql_db;Port=3306;Database=carbon_lifecycle_db;Uid=root;Pwd=${MYSQL_ROOT_PASSWORD};"
-      # Thêm các biến môi trường khác nếu cần cho ứng dụng .NET của bạn
+      ConnectionStrings__DefaultConnection: "Server=mysql_db;Port=3306;Database=carbon_lifecycle_db;Uid=root;Pwd=thienhao2206;"
+      RabbitMQ__HostName: "rabbitmq_broker"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__UserName: "admin"
+      RabbitMQ__Password: "admin123"
+      RabbitMQ__VirtualHost: "/carbonlifecycle"
+      FileStorage__RootPath: "/app/uploaded_files"
     depends_on:
-      - mysql_db
-      - rabbitmq_broker
+      mysql_db:
+        condition: service_healthy
+      rabbitmq_broker:
+        condition: service_healthy
     volumes:
-      - ~/.nuget/packages:/root/.nuget/packages # Cache NuGet packages để tăng tốc độ build
+      - uploaded_files:/app/uploaded_files
+      - ~/.nuget/packages:/root/.nuget/packages
     networks:
       - carbon_network
+    restart: unless-stopped
 
   mysql_db:
     image: mysql:8.0
+    container_name: carbonlifecycle-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${thienhao2206}
+      MYSQL_ROOT_PASSWORD: thienhao2206
       MYSQL_DATABASE: carbon_lifecycle_db
     ports:
       - "3307:3306"
@@ -28,17 +38,45 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - carbon_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pthienhao2206"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq_broker:
     image: rabbitmq:3-management
+    container_name: carbonlifecycle-rabbitmq
+    hostname: rabbitmq_broker
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /carbonlifecycle
     ports:
       - "5672:5672"
-      - "15672:15672" # RabbitMQ management UI
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
     networks:
       - carbon_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   mysql_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  rabbitmq_logs:
+    driver: local
+  uploaded_files:
+    driver: local
 
 networks:
   carbon_network:
