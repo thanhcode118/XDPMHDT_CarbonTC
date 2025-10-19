@@ -1,10 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using CarbonTC.CarbonLifecycle.Infrastructure.Persistence;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using System.Reflection; // Thêm dòng này
-using Microsoft.OpenApi.Models; // Thêm dòng này
+using System.Reflection; 
+using Microsoft.OpenApi.Models;
+using CarbonTC.CarbonLifecycle.Application.Abstractions;
+using CarbonTC.CarbonLifecycle.Domain.Services;
+using CarbonTC.CarbonLifecycle.Domain.Repositories;
+using System; 
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -39,6 +45,37 @@ builder.Services.AddSwaggerGen(c =>
         c.IncludeXmlComments(xmlPath);
     }
 });
+
+// <--- Bắt đầu phần đăng ký dịch vụ đã được di chuyển vào đây
+// Đăng ký IDomainEventDispatcher
+builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
+// Đăng ký Domain Services
+builder.Services.AddScoped<IEmissionCalculationDomainService, EmissionCalculationDomainService>();
+builder.Services.AddScoped<IVerificationProcessDomainService, VerificationProcessDomainService>();
+
+// Đăng ký Repository Interfaces và Implementations (ví dụ, giả sử bạn đã có Implementations)
+// builder.Services.AddScoped<IEVJourneyRepository, EVJourneyRepository>();
+// builder.Services.AddScoped<IJourneyBatchRepository, JourneyBatchRepository>();
+// ... và các repository khác
+
+// Đăng ký tất cả các Domain Event Handlers của bạn
+// Ví dụ: builder.Services.AddScoped<IDomainEventHandler<JourneyBatchSubmittedForVerificationEvent>, MyJourneyBatchSubmittedHandler>();
+// Bạn sẽ cần tạo các lớp handler này trong Application Layer hoặc Infrastructure Layer.
+// Có thể dùng một cách tự động để đăng ký tất cả các handler trong một assembly.
+// Ví dụ (yêu cầu cài đặt package Scrutor):
+// builder.Services.Scan(scan => scan
+//     .FromAssemblyOf<JourneyBatchSubmittedForVerificationEvent>() // Scan assembly chứa Domain Events
+//     .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
+//     .AsImplementedInterfaces()
+//     .WithScopedLifetime());
+
+// Hoặc cách thủ công nếu số lượng ít:
+// builder.Services.AddScoped<IDomainEventHandler<CarbonCreditsApprovedEvent>, CarbonCreditsApprovalAuditHandler>();
+// builder.Services.AddScoped<IDomainEventHandler<CarbonCreditsRejectedEvent>, CarbonCreditsRejectionLogger>();
+// builder.Services.AddScoped<IDomainEventHandler<JourneyBatchSubmittedForVerificationEvent>, JourneyBatchNotificationHandler>();
+// ...
+// <--- Kết thúc phần đăng ký dịch vụ
 
 // Configure AppDbContext with MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
