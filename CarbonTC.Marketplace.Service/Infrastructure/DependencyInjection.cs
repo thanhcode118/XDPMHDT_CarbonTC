@@ -1,10 +1,13 @@
 ﻿using Application.Common.Interfaces;
 using Domain.Repositories;
 using Infrastructure.Data.Repositories;
+using Infrastructure.Redis;
 using Infrastructure.Services;
+using Infrastructure.SignalR.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace Infrastructure
 {
@@ -17,6 +20,19 @@ namespace Infrastructure
                    configuration.GetConnectionString("DefaultConnection"),
                    new MySqlServerVersion(new Version(8, 0, 21)),
                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var config = ConfigurationOptions.Parse(configuration.GetConnectionString("Redis"), true);
+                return ConnectionMultiplexer.Connect(config);
+            });
+
+            services.AddTransient<IDatabase>(sp =>
+            {
+                var multiplexer = sp.GetRequiredService<IConnectionMultiplexer>();
+                return multiplexer.GetDatabase();
+            });
+
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
@@ -41,6 +57,9 @@ namespace Infrastructure
             services.AddScoped<IDomainEventService, DomainEventService>();
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<INotificationService, SignalRNotificationService>();
+            services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddScoped<IBalanceService, RedisBalanceService>();
             return services;
         }
     }

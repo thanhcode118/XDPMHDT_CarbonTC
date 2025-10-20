@@ -3,6 +3,7 @@
 namespace Domain.Events.AuctionBid
 {
     public record AuctionCompletedWithoutBidsDomainEvent(
-        Guid ListingId
+        Guid ListingId,
+        Guid OwnerId
     ) : DomainEvent;
 }

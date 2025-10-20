@@ -10,6 +10,7 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
         public Guid OwnerId { get; init; }
         public ListingType Type { get; init; }
         public decimal PricePerUnit { get; init; }
+        public decimal Quantity { get; init; }
         public decimal? MinimumBid { get; init; }
         public DateTime? AuctionEndTime { get; init; }
     }

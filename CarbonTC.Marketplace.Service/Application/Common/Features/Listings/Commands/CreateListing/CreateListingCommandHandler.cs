@@ -28,13 +28,17 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
                 return Result.Failure<Guid>(new Error("CreditInventory", "Credit inventory not found."));
             }
 
+            if (command.Quantity > creditInventory.AvailableAmount)
+                return Result.Failure<Guid>(new Error("CreditInventory", $"Credit inventory only {creditInventory.AvailableAmount} left"));
+
             switch (command.Type)
             {
                 case ListingType.FixedPrice:
                     listing = Listing.CreateFixedPriceListing(
                         command.CreditId,
                         command.OwnerId,
-                        command.PricePerUnit);
+                        command.PricePerUnit,
+                        command.Quantity);
                     break;
 
                 case ListingType.Auction:
@@ -43,15 +47,16 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
                         command.OwnerId,
                         command.PricePerUnit,
                         command.MinimumBid.Value,
+                        command.Quantity,
                         command.AuctionEndTime.Value);
                     break;
-
                 default:
                     return Result.Failure<Guid>(new Error("Listing.Type", "Unsupported listing type provided."));
             }
 
+            creditInventory.ReserveForListing(command.Quantity);
             await _unitOfWork.Listings.AddAsync(listing);
-
+            await _unitOfWork.CreditInventories.UpdateAsync(creditInventory);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success(listing.Id);

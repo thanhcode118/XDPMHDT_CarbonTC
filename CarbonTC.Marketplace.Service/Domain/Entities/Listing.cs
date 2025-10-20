@@ -12,9 +12,9 @@ namespace Domain.Entities
         public Guid OwnerId { get; private set; }
         public ListingType Type { get; private set; }
         public decimal PricePerUnit { get; private set; }
+        public decimal Quantity { get; private set; }
         public ListingStatus Status { get; private set; }
         public DateTime? ClosedAt { get; private set; }
-
         public decimal? MinimumBid { get; private set; }
         public DateTime? AuctionEndTime { get; private set; }
 
@@ -32,6 +32,7 @@ namespace Domain.Entities
             Guid ownerId,
             ListingType type,
             decimal pricePerUnit,
+            decimal quantity,
             decimal? minimumBid = null,
             DateTime? auctionEndTime = null)
         {
@@ -40,6 +41,7 @@ namespace Domain.Entities
             OwnerId = ownerId;
             Type = type;
             PricePerUnit = pricePerUnit;
+            Quantity = quantity;
             Status = ListingStatus.Open;
             CreatedAt = DateTime.UtcNow;
             MinimumBid = minimumBid;
@@ -51,12 +53,13 @@ namespace Domain.Entities
         public static Listing CreateFixedPriceListing(
             Guid creditId,
             Guid ownerId,
-            decimal pricePerUnit)
+            decimal pricePerUnit,
+            decimal quantity)
         {
             if (pricePerUnit <= 0)
                 throw new DomainException("Price per unit must be greater than zero");
 
-            return new Listing(creditId, ownerId, ListingType.FixedPrice, pricePerUnit);
+            return new Listing(creditId, ownerId, ListingType.FixedPrice, pricePerUnit, quantity);
         }
 
         public static Listing CreateAuctionListing(
@@ -64,6 +67,7 @@ namespace Domain.Entities
             Guid ownerId,
             decimal startingPrice,
             decimal minimumBid,
+            decimal quantity,
             DateTime auctionEndTime)
         {
             if (auctionEndTime <= DateTime.UtcNow)
@@ -77,6 +81,7 @@ namespace Domain.Entities
                 ownerId,
                 ListingType.Auction,
                 startingPrice,
+                quantity,
                 minimumBid,
                 auctionEndTime);
         }
@@ -154,6 +159,9 @@ namespace Domain.Entities
             if (currentHighestBid != null && bidAmount <= currentHighestBid.BidAmount)
                 throw new DomainException("Bid must be higher than current highest bid");
 
+            if (currentHighestBid?.BidderId == bidderId)
+                throw new DomainException("You are already the highest bidder");
+
             // Outbid previous winner
             if (currentHighestBid != null)
             {
@@ -163,25 +171,36 @@ namespace Domain.Entities
             var newBid = AuctionBid.Create(Id, bidderId, bidAmount);
             _bids.Add(newBid);
 
-            AddDomainEvent(new BidPlacedDomainEvent(Id, bidderId, bidAmount));
+            AddDomainEvent(new BidPlacedDomainEvent(Id, bidderId, bidAmount, newBid.BidTime, currentHighestBid.BidderId));
 
             return newBid;
         }
 
-        public void BuyNow(Guid buyerId, Guid ownerId, decimal amount, decimal totalPrice, bool isSoldOut)
+        public void BuyNow(Guid buyerId, decimal amountToBuy)
         {
             if (Type != ListingType.FixedPrice)
-                throw new DomainException("Can only buy fixed price listings");
+                throw new DomainException("Can only buy fixed price listings.");
+
             if (Status != ListingStatus.Open)
                 throw new DomainException("Listing is not open for purchase");
-            if (totalPrice < PricePerUnit)
-                throw new DomainException($"Total price must be at least {PricePerUnit}");
-            if (isSoldOut)
+
+            if (amountToBuy <= 0)
+                throw new DomainException("Amount to buy must be greater than zero.");
+
+            if (amountToBuy > Quantity) 
+                throw new DomainException($"Insufficient quantity. This listing only has {Quantity} available.");
+
+            var totalPrice = PricePerUnit * amountToBuy;
+
+            Quantity -= amountToBuy; 
+
+            if (Quantity == 0)
             {
                 Status = ListingStatus.Sold;
                 ClosedAt = DateTime.UtcNow;
             }
-            AddDomainEvent(new ListingPurchasedDomainEvent(Id, CreditId, buyerId, ownerId, amount, totalPrice));
+
+            AddDomainEvent(new ListingPurchasedDomainEvent(Id, CreditId, buyerId, OwnerId, amountToBuy, totalPrice));
         }
 
 
@@ -198,23 +217,24 @@ namespace Domain.Entities
             if (Type != ListingType.Auction)
                 throw new DomainException("Only auction listings can be completed");
 
-            if (DateTime.UtcNow < AuctionEndTime)
-                throw new DomainException("Auction has not ended yet");
+            if(Status != ListingStatus.Open)
+                throw new DomainException("Only open auctions can be completed");
+
+            Status = ListingStatus.Closed;
 
             var winningBid = GetWinningBid();
+            ClosedAt = DateTime.UtcNow;
 
             if (winningBid == null)
             {
                 Status = ListingStatus.Closed;
-                AddDomainEvent(new AuctionCompletedWithoutBidsDomainEvent(Id));
+                AddDomainEvent(new AuctionCompletedWithoutBidsDomainEvent(Id, OwnerId));
             }
             else
             {
                 Status = ListingStatus.Sold;
-                AddDomainEvent(new AuctionCompletedDomainEvent(Id, winningBid.BidderId, winningBid.BidAmount));
+                AddDomainEvent(new AuctionCompletedDomainEvent(Id, CreditId, winningBid.BidderId, OwnerId, Quantity , winningBid.BidAmount));
             }
-
-            ClosedAt = DateTime.UtcNow;
         }
 
         public void UpdateStatus(ListingStatus newStatus)
@@ -278,6 +298,10 @@ namespace Domain.Entities
             {
                 if (!AuctionEndTime.HasValue || !MinimumBid.HasValue)
                     throw new DomainException("Auction listings must have end time and minimum bid");
+            }
+            if(Quantity <= 0)
+            {
+                throw new DomainException("Quantity must be greater than zero");
             }
         }
     }

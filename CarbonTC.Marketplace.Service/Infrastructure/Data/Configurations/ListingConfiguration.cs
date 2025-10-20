@@ -21,6 +21,10 @@ namespace Infrastructure.Data.Configurations
             builder.Property(l => l.Status)
                    .HasConversion<int>();
 
+            builder.Property(x => x.Quantity)
+                   .HasPrecision(18, 2)
+                   .IsRequired();
+
             builder.HasMany(l => l.Bids)
                 .WithOne()
                 .HasForeignKey("ListingId")

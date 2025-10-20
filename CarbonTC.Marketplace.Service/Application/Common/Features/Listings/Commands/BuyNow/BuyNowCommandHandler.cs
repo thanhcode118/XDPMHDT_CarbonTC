@@ -1,5 +1,7 @@
 ﻿using Application.Common.Interfaces;
 using Domain.Common.Response;
+using Domain.Enum;
+using Domain.Exceptions;
 using MediatR;
 
 namespace Application.Common.Features.Listings.Commands.BuyNow
@@ -8,62 +10,64 @@ namespace Application.Common.Features.Listings.Commands.BuyNow
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWalletServiceClient _walletClient;
+        private readonly ICurrentUserService _currentUser;
 
-        public BuyNowCommandHandler(IUnitOfWork unitOfWork, IWalletServiceClient walletClient)
+        public BuyNowCommandHandler(IUnitOfWork unitOfWork, IWalletServiceClient walletClient, ICurrentUserService currentUser)
         {
             _unitOfWork = unitOfWork;
             _walletClient = walletClient;
+            _currentUser = currentUser;
         }
 
         public async Task<Result> Handle(BuyNowCommand request, CancellationToken cancellationToken)
         {
-            // Lấy thông tin credit inventory
-            var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.CreditId, cancellationToken);
-            if (creditInventory == null)
-                return Result.Failure(new Error("CreditInventory", "Credit inventory not found."));
-
-            // Kiểm tra lượng credit còn lại
-            if (!creditInventory.HasSufficientAvailable(request.Amount))
-                return Result.Failure(new Error("CreditInventory", "Insufficient available credits."));
-
-            // Lấy thông tin listing
-            var listing = await _unitOfWork.Listings.GetByIdAsync(request.ListingId, cancellationToken);
+            var listing = await _unitOfWork.Listings.GetByIdAsync(request.ListingId);
             if (listing == null)
             {
-                await _walletClient.RollbackReservationAsync(request.BuyerId, request.Amount, cancellationToken);
                 return Result.Failure(new Error("Listing", "Listing not found."));
             }
+            if (listing.Type != ListingType.FixedPrice)
+                return Result.Failure(new Error("Listing", "This is not a fixed price listing."));
+            if (listing.Status != ListingStatus.Open)
+                return Result.Failure(new Error("Listing", "This listing is not open for sale."));
+            if (listing.Quantity < request.Amount)
+                return Result.Failure(new Error("Listing", $"Insufficient quantity. Only {listing.Quantity} is available."));
 
+            var buyerId = _currentUser.UserId;
+            if (buyerId is null)
+                return Result.Failure(new Error("Authentication", "User is not authenticated."));
+            var totalPrice = listing.PricePerUnit * request.Amount;
 
-            // Kiểm tra ví người dùng có đủ tiền không
-            var toTalPrice = listing.PricePerUnit * request.Amount;
-            var hasEnough = await _walletClient.HasSufficientBalanceAsync(request.BuyerId, toTalPrice, cancellationToken);
+            var hasEnough = await _walletClient.HasSufficientBalanceAsync(buyerId.Value, totalPrice, cancellationToken);
             if (!hasEnough)
                 return Result.Failure(new Error("Wallet", "Insufficient funds."));
 
-            // Khóa tiền tạm thời
-            var reserved = await _walletClient.ReserveFundsAsync(request.BuyerId, toTalPrice, cancellationToken);
+            var reserved = await _walletClient.ReserveFundsAsync(buyerId.Value, totalPrice, cancellationToken);
             if (!reserved)
                 return Result.Failure(new Error("Wallet", "Unable to reserve funds."));
 
+            var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(listing.CreditId, cancellationToken);
+            if (creditInventory == null)
+            {
+                await _walletClient.RollbackReservationAsync(buyerId.Value, totalPrice, cancellationToken);
+                return Result.Failure(new Error("CreditInventory", "Credit inventory not found."));
+            }
+
             try
             {
-                // Cập nhật inventory, tạo transaction (domain logic)
-                bool isSoldOut  = creditInventory.TotalAmount - request.Amount == 0 ? true : false;
-                listing.BuyNow(request.BuyerId, listing.OwnerId, request.Amount, toTalPrice , isSoldOut);
+                listing.BuyNow(buyerId.Value, request.Amount);
 
+                await _unitOfWork.Listings.UpdateAsync(listing, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
-                // Commit thanh toán
-                await _walletClient.CommitPaymentAsync(request.BuyerId, toTalPrice, cancellationToken);
 
                 return Result.Success();
             }
             catch (Exception ex)
             {
-                // Rollback khi có lỗi
-                await _walletClient.RollbackReservationAsync(request.BuyerId, toTalPrice, cancellationToken);
-                return Result.Failure(new Error("BuyNow", $"Transaction failed: {ex.Message}"));
+                await _walletClient.RollbackReservationAsync(buyerId.Value, totalPrice, cancellationToken);
+                return Result.Failure(new Error("Transaction", $"An unexpected error occurred: {ex.Message}"));
             }
+
         }
     }
 }

@@ -20,6 +20,9 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
                 .GreaterThan(0).WithMessage("PricePerUnit must be greater than zero.")
                 .When(x => x.Type == ListingType.FixedPrice);
 
+            RuleFor(x => x.Quantity)
+                .GreaterThan(0).WithMessage("Quantity must be greater than zero.");
+
             When(x => x.Type == ListingType.Auction, () =>
             {
                 RuleFor(x => x.MinimumBid)

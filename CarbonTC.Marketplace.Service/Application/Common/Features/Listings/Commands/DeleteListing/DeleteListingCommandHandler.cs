@@ -20,10 +20,19 @@ namespace Application.Common.Features.Listings.Commands.DeleteListing
             if (listing == null)
                 return Result.Failure(new Error("Listing.NotFound", $"Listing with ID {request.ListingId} not found."));
 
+            if (listing.Bids.Any())
+                return Result.Failure(new Error("Listing.HasBids", "Cannot delete listing that has associated bids."));
+
             var haverAnyTransactions = await _unitOfWork.Transactions.GetAllByListingIdAsync(request.ListingId, cancellationToken);
 
             if (haverAnyTransactions.Any())
                 return Result.Failure(new Error("Listing.HasTransactions", "Cannot delete listing that has associated transactions."));
+
+            var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.ListingId, cancellationToken);
+            if(creditInventory != null)
+            {
+                creditInventory.ReleaseFromListing(listing.Quantity);
+            }
 
             await _unitOfWork.Listings.DeleteAsync(listing, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

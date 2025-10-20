@@ -7,15 +7,16 @@ namespace Application.Common.Features.Listings.EventHandlers
     public class ListingPurchasedDomainEventHandler : INotificationHandler<ListingPurchasedDomainEvent>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWalletServiceClient _walletService;
 
-        public ListingPurchasedDomainEventHandler(IUnitOfWork unitOfWork)
+        public ListingPurchasedDomainEventHandler(IUnitOfWork unitOfWork, IWalletServiceClient walletService)
         {
             _unitOfWork = unitOfWork;
+            _walletService = walletService;
         }
 
         public async Task Handle(ListingPurchasedDomainEvent notification, CancellationToken cancellationToken)
         {
-            // Thêm tracstions, Trừ inventory
             var creditInventory = await _unitOfWork.CreditInventories
                 .GetByCreditIdAsync(notification.CreditId, cancellationToken);
 
@@ -35,6 +36,8 @@ namespace Application.Common.Features.Listings.EventHandlers
             await _unitOfWork.CreditInventories.UpdateAsync(creditInventory, cancellationToken);
             await _unitOfWork.Transactions.AddAsync(transaction, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _walletService.CommitPaymentAsync(notification.BuyerId, notification.TotalPrice, cancellationToken);
         }
     }
 }

@@ -5,11 +5,11 @@ using CarbonTC.API.Consumer;
 using CarbonTC.API.ExceptionHandling;
 using CarbonTC.API.Extensions;
 using Infrastructure;
+using Infrastructure.SignalR.Hubs;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.OpenApi.Models;
 using SharedLibrary.Extensions;
 using System.Diagnostics;
-using System.Text;
 
 namespace CarbonTC.API
 {
@@ -40,6 +40,27 @@ namespace CarbonTC.API
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+            builder.Services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.MaximumReceiveMessageSize = 102400; 
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+            });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("SignalRPolicy", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000") 
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials(); 
+                });
+            });
+
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -85,6 +106,9 @@ namespace CarbonTC.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseCors("SignalRPolicy");
+            app.MapHub<AuctionHub>("/hubs/auction");
 
             app.UseHttpsRedirection();
 

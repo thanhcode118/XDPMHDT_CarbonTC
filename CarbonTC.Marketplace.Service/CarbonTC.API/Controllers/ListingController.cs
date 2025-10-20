@@ -1,4 +1,5 @@
-﻿using Application.Common.Features.Listings.Commands.BuyNow;
+﻿using Application.Common.Features.Listings.Commands.Auctions;
+using Application.Common.Features.Listings.Commands.BuyNow;
 using Application.Common.Features.Listings.Commands.CreateListing;
 using Application.Common.Features.Listings.Commands.DeleteListing;
 using Application.Common.Features.Listings.Commands.UpdateListing;
@@ -90,7 +91,7 @@ namespace CarbonTC.API.Controllers
         public async Task<IActionResult> UpdateListing(Guid id, [FromBody] UpdateListingRequest request, CancellationToken cancellationToken = default)
         {
             var command = new UpdateListingCommand(
-                id, 
+                id,
                 request.Type,
                 request.PricePerUnit,
                 request.Status,
@@ -129,6 +130,22 @@ namespace CarbonTC.API.Controllers
                 var errors = new List<string> { $"{listing.Error.Code}: {listing.Error.Message}" };
                 return BadRequest(ApiResponse<object>.ErrorResponse("Purchase.Failed", errors));
             }
+        }
+
+        [HttpPost("auctions/{listingId:guid}/bids")]
+        public async Task<IActionResult> PlaceBid(Guid listingId, [FromBody] AuctionCommand command, CancellationToken cancellationToken = default)
+        {
+            var result = await _mediator.Send(command, cancellationToken);
+            if (result.IsSuccess)
+            {
+                return Ok(ApiResponse<object>.SuccessResponse(result, "Bid placed successfully."));
+            }
+            else
+            {
+                var errors = new List<string> { $"{result.Error.Code}: {result.Error.Message}" };
+                return BadRequest(ApiResponse<object>.ErrorResponse("Bid.Failed", errors));
+            }
+
         }
     }
 }
