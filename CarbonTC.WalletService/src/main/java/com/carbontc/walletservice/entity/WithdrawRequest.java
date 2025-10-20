@@ -2,6 +2,7 @@ package com.carbontc.walletservice.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,7 +15,7 @@ public class WithdrawRequest {
 
     private Long userId;
 
-    private Double amount;
+    private BigDecimal amount;
 
     private String status; // Pending, Approved, Rejected, Paid
 
@@ -38,11 +39,11 @@ public class WithdrawRequest {
         this.userId = userId;
     }
 
-    public Double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
