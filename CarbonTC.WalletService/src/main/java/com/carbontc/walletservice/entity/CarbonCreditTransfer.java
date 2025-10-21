@@ -1,8 +1,10 @@
 package com.carbontc.walletservice.entity;
 
 
+import com.carbontc.walletservice.entity.status.TransferType;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,7 +20,7 @@ public class CarbonCreditTransfer {
     private CarbonWallets fromWallet;
 
     @ManyToOne
-    @JoinColumn(name = " to_wallet_id")
+    @JoinColumn(name = "to_wallet_id")
     private CarbonWallets toWallet;
 
     public Long getTransferId() {
@@ -45,20 +47,16 @@ public class CarbonCreditTransfer {
         this.transferId = transferId;
     }
 
-    public Double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
-    public String getTransferType() {
-        return transferType;
-    }
-
-    public void setTransferType(String transferType) {
-        this.transferType = transferType;
+    public void setToWallet(CarbonWallets toWallet) {
+        this.toWallet = toWallet;
     }
 
     public Long getReferenceId() {
@@ -77,14 +75,20 @@ public class CarbonCreditTransfer {
         this.createdAt = createdAt;
     }
 
-    private Double amount;
+    private BigDecimal amount;
 
-    private String transferType; // Sale, Gift, Adjustment, Refund
+    @Column(name = "transfer_type", nullable = false, length = 20)
+    private TransferType transferType;
 
     private Long referenceId; // TransactionId or ListingId
 
     private LocalDateTime createdAt;
 
+    public TransferType getTransferType() {
+        return transferType;
+    }
 
-
+    public void setTransferType(TransferType transferType) {
+        this.transferType = transferType;
+    }
 }

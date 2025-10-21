@@ -2,6 +2,7 @@ package com.carbontc.walletservice.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class CarbonWallets {
 
     private Long ownerId;
 
-    private Double balance;
+    private BigDecimal balance;
 
     public Long getWalletId() {
         return walletId;
@@ -33,19 +34,19 @@ public class CarbonWallets {
         this.ownerId = ownerId;
     }
 
-    public Double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(Double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 
-    public Double getTotalEarned() {
+    public BigDecimal getTotalEarned() {
         return totalEarned;
     }
 
-    public void setTotalEarned(Double totalEarned) {
+    public void setTotalEarned(BigDecimal totalEarned) {
         this.totalEarned = totalEarned;
     }
 
@@ -57,7 +58,7 @@ public class CarbonWallets {
         this.lastUpdated = lastUpdated;
     }
 
-    private Double totalEarned;
+    private BigDecimal totalEarned;
 
     private LocalDateTime lastUpdated;
 
