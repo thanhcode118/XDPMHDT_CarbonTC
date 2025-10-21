@@ -14,6 +14,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Serilog;
+using CarbonTC.CarbonLifecycle.Api.Extensions; 
+using CarbonTC.CarbonLifecycle.Api.Middlewares; 
+
 
 public class Program
 {
@@ -72,6 +75,9 @@ public class Program
             // Đăng ký Infrastructure Layer
             builder.Services.AddInfrastructure(builder.Configuration);
 
+            // Đăng ký API Layer 
+            builder.Services.AddApiLayer();
+
             // Cấu hình CORS
             builder.Services.AddCors(options =>
             {
@@ -84,7 +90,6 @@ public class Program
             });
 
             // Đăng ký các dịch vụ domain
-            builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             builder.Services.AddScoped<IEmissionCalculationDomainService, EmissionCalculationDomainService>();
             builder.Services.AddScoped<IVerificationProcessDomainService, VerificationProcessDomainService>();
 
@@ -101,6 +106,9 @@ public class Program
 
             var app = builder.Build();
 
+
+            // Sử dụng Global Error Handling Middleware
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             // Apply migrations nếu đang ở môi trường Development
             if (app.Environment.IsDevelopment())
             {

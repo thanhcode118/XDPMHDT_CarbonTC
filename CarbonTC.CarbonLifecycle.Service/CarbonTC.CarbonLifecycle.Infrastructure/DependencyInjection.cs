@@ -10,6 +10,8 @@ using CarbonTC.CarbonLifecycle.Infrastructure.Persistence;
 using CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories;
 using CarbonTC.CarbonLifecycle.Infrastructure.Services.FileStorage;
 using Microsoft.Extensions.Options;
+using CarbonTC.CarbonLifecycle.Domain.Abstractions;
+using CarbonTC.CarbonLifecycle.Domain.Repositories;
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure
 {
@@ -42,6 +44,10 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
             // Repositories
             services.AddScoped<IEVJourneyRepository, EVJourneyRepository>();
             services.AddScoped<IJourneyBatchRepository, JourneyBatchRepository>();
+            services.AddScoped<ICVAStandardRepository, CVAStandardRepository>();
+            services.AddScoped<IVerificationRequestRepository, VerificationRequestRepository>();
+            services.AddScoped<ICarbonCreditRepository, CarbonCreditRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>(); // Đăng ký UnitOfWork
 
             // Message Broker
             var rabbitMQSettings = configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>();
@@ -58,7 +64,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
             // Domain Event Dispatcher
-            services.AddScoped<CarbonTC.CarbonLifecycle.Infrastructure.Services.Events.IDomainEventDispatcher,
+            services.AddScoped<IDomainEventDispatcher, // <-- Interface từ Domain.Abstractions
                               CarbonTC.CarbonLifecycle.Infrastructure.Services.Events.DomainEventDispatcher>();
 
             return services;
