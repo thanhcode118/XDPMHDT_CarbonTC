@@ -1,0 +1,53 @@
+.tripStatCard {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.tripStatCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tripStatIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  font-size: 1.5rem;
+}
+
+.statIcon1 {
+  background: var(--primary-gradient);
+}
+
+.statIcon2 {
+  background: var(--secondary-gradient);
+}
+
+.statIcon3 {
+  background: var(--accent-gradient);
+}
+
+.statIcon4 {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.tripStatValue {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.tripStatLabel {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}

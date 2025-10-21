@@ -9,6 +9,7 @@ import Dashboard from './pages/dashboard/Dashboard.jsx';
 import Marketplace from './pages/Marketplace/Marketplace.jsx';
 import Vehicles from './pages/Vehicles/Vehicles.jsx';
 import { useNotification } from './hooks/useNotification'; // Hook của bạn
+import Trips from './pages/Trips/Trips.jsx';
 
 function App() {
   // 1. Lấy cả 2 thứ từ hook
@@ -40,6 +41,10 @@ function App() {
         <Route 
           path='/marketplace' 
           element={<Marketplace showNotification={showNotification} />} 
+        /> 
+        <Route 
+          path='/dashboard/trips' 
+          element={<Trips showNotification={showNotification} />} 
         /> 
         <Route 
           path='/dashboard/vehicles' 
