@@ -1,5 +1,6 @@
 package com.carbontc.walletservice.entity;
 
+import com.carbontc.walletservice.entity.status.WithdrawStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -17,7 +18,17 @@ public class WithdrawRequest {
 
     private BigDecimal amount;
 
-    private String status; // Pending, Approved, Rejected, Paid
+    @Enumerated(EnumType.STRING) // Quan trọng!
+    @Column(name = "status", nullable = false, length = 20)
+    private WithdrawStatus status;
+
+    public WithdrawStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WithdrawStatus status) {
+        this.status = status;
+    }
 
     private String bankAccountNumber;
 
@@ -45,14 +56,6 @@ public class WithdrawRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getBankAccountNumber() {
