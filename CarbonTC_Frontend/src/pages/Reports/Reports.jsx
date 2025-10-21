@@ -180,7 +180,7 @@ const Reports = () => {
       <Sidebar 
         activePage="reports" 
         onPageChange={() => {}} 
-        className={sidebarActive ? styles.active : ''}
+        className={sidebarActive ? 'activemenu' : ''}
       />
       
       <div className={styles.mainContent}>

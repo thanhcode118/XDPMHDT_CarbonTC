@@ -187,7 +187,7 @@ const Trips = () => {
       <Sidebar 
         activePage="trips" 
         onPageChange={() => {}} 
-        className={sidebarActive ? styles.active : ''}
+        className={sidebarActive ? 'activemenu' : ''}
       />
       
       <div className={styles.mainContent}>

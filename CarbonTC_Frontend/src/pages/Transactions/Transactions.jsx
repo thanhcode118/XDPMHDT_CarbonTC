@@ -223,7 +223,7 @@ const Transactions = () => {
       <Sidebar 
         activePage="transactions" 
         onPageChange={() => {}} 
-        className={sidebarActive ? styles.active : ''}
+        className={sidebarActive ? 'activemenu' : ''}
       />
       
       <div className={styles.mainContent}>

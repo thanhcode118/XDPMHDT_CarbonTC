@@ -155,7 +155,7 @@ const Wallet = () => {
       <Sidebar 
         activePage="wallet" 
         onPageChange={() => {}} 
-        className={sidebarActive ? styles.active : ''}
+        className={sidebarActive ? 'activemenu' : ''}
       />
       
       <div className={styles.mainContent}>

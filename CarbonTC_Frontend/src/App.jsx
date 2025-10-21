@@ -13,6 +13,7 @@ import Trips from './pages/Trips/Trips.jsx';
 import Wallet from './pages/Wallet/Wallet.jsx';
 import Transactions from './pages/Transactions/Transactions.jsx';
 import Reports from './pages/Reports/Reports.jsx';
+import SettingsTabs from './pages/Settings/Settings.jsx';
 
 function App() {
   // 1. Lấy cả 2 thứ từ hook
@@ -64,6 +65,10 @@ function App() {
         <Route 
           path='/dashboard/reports' 
           element={<Reports showNotification={showNotification} />} 
+        /> 
+        <Route 
+          path='/dashboard/settings' 
+          element={<SettingsTabs showNotification={showNotification} />} 
         /> 
 
       </Routes>

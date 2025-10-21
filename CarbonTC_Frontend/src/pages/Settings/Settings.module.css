@@ -1,0 +1,61 @@
+.app {
+  position: relative;
+}
+
+.mainContent {
+  margin-left: var(--sidebar-width);
+  padding: 30px;
+  min-height: 100vh;
+}
+
+.mobileToggle {
+  display: none;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  cursor: pointer;
+}
+
+.loadingState {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.loadingState i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .mainContent {
+    margin-left: 0;
+  }
+  
+  .mobileToggle {
+    display: block;
+  }
+}
+
+@media (max-width: 576px) {
+  .mainContent {
+    padding: 15px;
+  }
+  
+  .loadingState {
+    padding: 40px 15px;
+  }
+}
