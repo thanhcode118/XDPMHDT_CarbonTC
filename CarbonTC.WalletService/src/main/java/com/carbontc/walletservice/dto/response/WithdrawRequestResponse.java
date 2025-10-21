@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class WithdrawRequestResponse {
 
-
         private Long requestId;
 
         private Long userId;
