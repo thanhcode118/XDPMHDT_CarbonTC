@@ -12,6 +12,7 @@ import { useNotification } from './hooks/useNotification'; // Hook của bạn
 import Trips from './pages/Trips/Trips.jsx';
 import Wallet from './pages/Wallet/Wallet.jsx';
 import Transactions from './pages/Transactions/Transactions.jsx';
+import Reports from './pages/Reports/Reports.jsx';
 
 function App() {
   // 1. Lấy cả 2 thứ từ hook
@@ -59,6 +60,10 @@ function App() {
         <Route 
           path='/dashboard/transactions' 
           element={<Transactions showNotification={showNotification} />} 
+        /> 
+        <Route 
+          path='/dashboard/reports' 
+          element={<Reports showNotification={showNotification} />} 
         /> 
 
       </Routes>
