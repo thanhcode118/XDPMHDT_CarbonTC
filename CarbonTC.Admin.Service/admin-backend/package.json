@@ -4,10 +4,16 @@
   "description": "Admin microservice for CarbonTC application",
   "main": "dist/app.js",
   "scripts": {
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts",
-    "build": "tsc"
+    "start:dev": "npm run dev",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [
     "admin",
@@ -16,7 +22,6 @@
   ],
   "author": "ThanhDat",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "amqplib": "^0.10.9",
     "cors": "^2.8.5",
