@@ -3,6 +3,7 @@
 using System.Net;
 using System.Text.Json;
 using CarbonTC.Auth.Application.Exceptions;
+using CarbonTC.Auth.Domain.Common;
 
 namespace CarbonTC.Auth.Api.Middleware;
 
@@ -35,61 +36,64 @@ public class ExceptionHandlingMiddleware
     {
         context.Response.ContentType = "application/json";
 
-        // ✅ FIX: Định nghĩa kiểu rõ ràng
-        object response;
+        ApiResponse response;
         int statusCode;
 
         switch (exception)
         {
             case ValidationException validationException:
                 statusCode = (int)HttpStatusCode.BadRequest;
-                response = new
-                {
-                    success = false,
-                    message = "Validation failed",
-                    errors = validationException.Errors
-                };
+                var validationErrors = validationException.Errors
+                    .SelectMany(kvp => kvp.Value.Select(error => $"{kvp.Key}: {error}"))
+                    .ToList();
+
+                response = ApiResponse.ErrorResult(
+                    "Dữ liệu không hợp lệ",
+                    validationErrors
+                );
                 break;
 
             case UnauthorizedAccessException:
                 statusCode = (int)HttpStatusCode.Unauthorized;
-                response = new
-                {
-                    success = false,
-                    message = exception.Message,
-                    errors = (object?)null
-                };
+                response = ApiResponse.ErrorResult(
+                    exception.Message,
+                    "Không có quyền truy cập"
+                );
                 break;
 
             case KeyNotFoundException:
                 statusCode = (int)HttpStatusCode.NotFound;
-                response = new
-                {
-                    success = false,
-                    message = exception.Message,
-                    errors = (object?)null
-                };
+                response = ApiResponse.ErrorResult(
+                    exception.Message,
+                    "Không tìm thấy tài nguyên"
+                );
+                break;
+
+            case InvalidOperationException:
+                statusCode = (int)HttpStatusCode.BadRequest;
+                response = ApiResponse.ErrorResult(
+                    exception.Message,
+                    "Thao tác không hợp lệ"
+                );
                 break;
 
             default:
                 statusCode = (int)HttpStatusCode.InternalServerError;
-                response = new
-                {
-                    success = false,
-                    message = "An error occurred while processing your request",
-                    errors = (object?)null
-                };
+                response = ApiResponse.ErrorResult(
+                    "Đã xảy ra lỗi không mong muốn",
+                    exception.Message
+                );
                 break;
         }
 
         context.Response.StatusCode = statusCode;
 
-        _logger.LogError(exception, "Exception: {Message}", exception.Message);
+        _logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
 
         var jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
+            WriteIndented = false
         };
 
         await context.Response.WriteAsync(
