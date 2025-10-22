@@ -132,9 +132,6 @@ class AdminActionService {
     }
   }
 
-  /**
-   * Get actions by type
-   */
   async getActionsByType(
     actionType: AdminActionType
   ): Promise<IAdminActionDocument[]> {

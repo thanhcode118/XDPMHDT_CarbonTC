@@ -1,6 +1,5 @@
 import { Request } from 'express';
 
-// ============= ENUMS =============
 
 export enum UserRole {
   EV_OWNER = 'EV_OWNER',
@@ -45,9 +44,6 @@ export enum AdminActionType {
   REVOKE_CERTIFICATE = 'RevokeCertificate'
 }
 
-// ============= INTERFACES =============
-
-// Extended Request with authenticated user
 export interface AuthRequest extends Request {
   user?: {
     userId: string;
@@ -58,7 +54,6 @@ export interface AuthRequest extends Request {
   };
 }
 
-// Dispute related
 export interface IDispute {
   disputeId: string;
   transactionId: string;

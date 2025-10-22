@@ -373,9 +373,6 @@ class ConfigService {
     }
   }
 
-  /**
-   * Bulk update configurations
-   */
   async bulkUpdateConfigs(
     updates: Array<{ configKey: string; configValue: string }>,
     updatedBy: string
@@ -412,9 +409,6 @@ class ConfigService {
     return results;
   }
 
-  /**
-   * Initialize default configurations
-   */
   async initializeDefaultConfigs(updatedBy: string): Promise<number> {
     const defaultConfigs = [
       {
