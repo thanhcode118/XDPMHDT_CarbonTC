@@ -2,29 +2,24 @@
 using Domain.Common.Response;
 using Domain.Enum;
 using MediatR;
-using Microsoft.Extensions.Logging; 
-namespace Application.Common.Features.Listings.Commands.CloseAuction
+using Microsoft.Extensions.Logging;
+
+namespace Application.Common.Features.Listings.Commands.FinalizeExpiredAuction
 {
-    public class CloseAuctionCommandHandler : IRequestHandler<CloseAuctionCommand, Result>
+    public class FinalizeExpiredAuctionCommandHandler : IRequestHandler<FinalizeExpiredAuctionCommand, Result>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBalanceService _balanceService;
-        private readonly ICurrentUserService _currentUser;
-        private readonly ILogger<CloseAuctionCommandHandler> _logger; 
+        private readonly ILogger<FinalizeExpiredAuctionCommandHandler> _logger;
 
-        public CloseAuctionCommandHandler(
-            IUnitOfWork unitOfWork,
-            IBalanceService balanceService,
-            ICurrentUserService currentUser,
-            ILogger<CloseAuctionCommandHandler> logger) 
+        public FinalizeExpiredAuctionCommandHandler(IUnitOfWork unitOfWork, IBalanceService balanceService, ILogger<FinalizeExpiredAuctionCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _balanceService = balanceService;
-            _currentUser = currentUser;
             _logger = logger;
         }
 
-        public async Task<Result> Handle(CloseAuctionCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(FinalizeExpiredAuctionCommand request, CancellationToken cancellationToken)
         {
             var listing = await _unitOfWork.Listings.GetByIdAsync(request.ListingId, cancellationToken);
 
@@ -34,14 +29,11 @@ namespace Application.Common.Features.Listings.Commands.CloseAuction
             if (listing.Status != ListingStatus.Open)
                 return Result.Failure(new Error("Listing.NotOpen", "This listing is not currently open."));
 
-            var isOwner = _currentUser.UserId == listing.OwnerId;
-            if (!isOwner)
-            {
-                return Result.Failure(new Error("Listing.Unauthorized", "You are not the owner of this listing."));
-            }
+            if (listing.AuctionEndTime > DateTime.UtcNow)
+                return Result.Failure(new Error("Listing.NotExpired", "This listing has not expired yet."));
 
             var winnerBid = listing.Bids
-                                 .Where(b => b.Status == BidStatus.Winning) 
+                                 .Where(b => b.Status == BidStatus.Winning)
                                  .OrderByDescending(b => b.BidAmount)
                                  .FirstOrDefault();
 
@@ -55,8 +47,7 @@ namespace Application.Common.Features.Listings.Commands.CloseAuction
                 _logger.LogInformation("Closing auction {ListingId} with no winner.", listing.Id);
             }
 
-            listing.CompleteAuction();
-
+            listing.CompleteAuction(); 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();

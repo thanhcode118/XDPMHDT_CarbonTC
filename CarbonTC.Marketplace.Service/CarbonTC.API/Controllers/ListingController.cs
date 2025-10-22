@@ -1,5 +1,6 @@
 ﻿using Application.Common.Features.Listings.Commands.Auctions;
 using Application.Common.Features.Listings.Commands.BuyNow;
+using Application.Common.Features.Listings.Commands.CloseAuction;
 using Application.Common.Features.Listings.Commands.CreateListing;
 using Application.Common.Features.Listings.Commands.DeleteListing;
 using Application.Common.Features.Listings.Commands.UpdateListing;
@@ -146,6 +147,33 @@ namespace CarbonTC.API.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse("Bid.Failed", errors));
             }
 
+        }
+
+        [HttpPost("auction/{listingId:guid}/close")]
+        public async Task<IActionResult> CloseAuction([FromRoute] Guid listingId, CancellationToken cancellationToken = default)
+        {
+            var command = new CloseAuctionCommand
+            {
+                ListingId = listingId
+            };
+
+            var result = await _mediator.Send(command, cancellationToken);
+
+            if (result.IsSuccess)
+            {
+                var apiResponse = ApiResponse<object>.SuccessResponse(
+                    data: null,
+                    message: "Auction closed successfully."
+                );
+                return Ok(apiResponse);
+            }
+
+            var errorResponse = ApiResponse<object>.ErrorResponse(
+                message: result.Error.Message, 
+                errors: new List<string> { result.Error.Code } 
+            );
+
+            return BadRequest(errorResponse);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Data.Repositories
 {
@@ -28,6 +29,14 @@ namespace Infrastructure.Data.Repositories
         {
             var exists = _dbContext.Listings.AnyAsync(l => l.Id == id);
             return exists;
+        }
+
+        public async Task<IEnumerable<Listing?>> FindAsync(Expression<Func<Listing, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            var listings = await _dbContext.Listings
+                .Where(predicate)
+                .ToListAsync(cancellationToken);
+            return listings;
         }
 
         public async Task<Listing?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

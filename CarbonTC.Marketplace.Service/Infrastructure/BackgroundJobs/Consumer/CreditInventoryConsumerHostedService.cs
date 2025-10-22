@@ -1,8 +1,11 @@
 ﻿using Application.Common.Features.CreditInventories.Commands.CreateCreditInventory;
-using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SharedLibrary.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Hosting;
 
-namespace CarbonTC.API.Consumer
+namespace Infrastructure.BackgroundJobs.Consumer
 {
     public class CreditInventoryConsumerHostedService : BackgroundService
     {

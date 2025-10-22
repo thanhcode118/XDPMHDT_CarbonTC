@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Domain.Repositories
 {
@@ -12,5 +13,7 @@ namespace Domain.Repositories
         Task UpdateAsync(Listing listing, CancellationToken cancellationToken = default);
         Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
         Task DeleteAsync(Listing listing, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Listing?>> FindAsync(Expression<Func<Listing, bool>> predicate,
+            CancellationToken cancellationToken = default);
     }
 }

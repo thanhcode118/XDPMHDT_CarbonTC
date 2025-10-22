@@ -1,10 +1,11 @@
 ﻿
 using Application;
 using CarbonTC.API.Common.ExceptionHandling;
-using CarbonTC.API.Consumer;
 using CarbonTC.API.ExceptionHandling;
 using CarbonTC.API.Extensions;
 using Infrastructure;
+using Infrastructure.BackgroundJobs;
+using Infrastructure.BackgroundJobs.Consumer;
 using Infrastructure.SignalR.Hubs;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.OpenApi.Models;
@@ -95,6 +96,7 @@ namespace CarbonTC.API
             builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 
             builder.Services.AddHostedService<CreditInventoryConsumerHostedService>();
+            builder.Services.AddHostedService<AuctionStatusUpdaterService>();
 
             var app = builder.Build();
 
