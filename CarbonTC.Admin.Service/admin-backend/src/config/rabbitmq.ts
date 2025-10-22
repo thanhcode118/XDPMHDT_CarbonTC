@@ -4,7 +4,6 @@ import logger from '../utils/logger';
 let connection: any = null;
 let channel: any = null;
 
-// Exchange và Queue names
 export const EXCHANGES = {
   ADMIN_EVENTS: 'admin.events',
   USER_EVENTS: 'user.events',
@@ -54,7 +53,6 @@ export const connectRabbitMQ = async (): Promise<void> => {
   await ch.assertQueue(QUEUES.PAYMENT_APPROVE, { durable: true });
   await ch.assertQueue(QUEUES.LISTING_MODERATE, { durable: true });
 
-    // Bind queues to exchanges
     await ch.bindQueue(
       QUEUES.USER_STATUS_UPDATE,
       EXCHANGES.ADMIN_EVENTS,

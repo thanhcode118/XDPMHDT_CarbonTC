@@ -54,7 +54,6 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument, ISystemConfigModel>
       default: () => uuidv4(),
       unique: true,
       required: true,
-      index: true
     },
     configKey: {
       type: String,
@@ -62,7 +61,6 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument, ISystemConfigModel>
       unique: true,
       trim: true,
       uppercase: true,
-      index: true,
       match: [/^[A-Z_]+$/, 'Config key must be uppercase with underscores only']
     },
     configValue: {
@@ -83,7 +81,6 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument, ISystemConfigModel>
     isActive: {
       type: Boolean,
       default: true,
-      index: true
     },
     category: {
       type: String,
@@ -118,8 +115,8 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument, ISystemConfigModel>
   }
 );
 
-SystemConfigSchema.index({ configId: 1 });
-SystemConfigSchema.index({ configKey: 1 }, { unique: true });
+// SystemConfigSchema.index({ configId: 1 });
+// SystemConfigSchema.index({ configKey: 1 }, { unique: true });
 SystemConfigSchema.index({ category: 1, isActive: 1 });
 SystemConfigSchema.index({ isActive: 1 });
 

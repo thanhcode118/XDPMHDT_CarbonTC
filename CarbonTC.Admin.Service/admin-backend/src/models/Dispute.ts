@@ -34,17 +34,14 @@ const DisputeSchema: Schema = new Schema(
       default: () => uuidv4(),
       unique: true,
       required: true,
-      index: true
     },
     transactionId: {
       type: String,
       required: [true, 'Transaction ID is required'],
-      index: true
     },
     raisedBy: {
       type: String,
       required: [true, 'User ID is required'],
-      index: true
     },
     reason: {
       type: String,
@@ -63,7 +60,6 @@ const DisputeSchema: Schema = new Schema(
       enum: Object.values(DisputeStatus),
       default: DisputeStatus.PENDING,
       required: true,
-      index: true
     },
     resolvedAt: {
       type: Date,
@@ -95,7 +91,7 @@ const DisputeSchema: Schema = new Schema(
   }
 );
 
-DisputeSchema.index({ disputeId: 1 });
+// DisputeSchema.index({ disputeId: 1 });
 DisputeSchema.index({ transactionId: 1 });
 DisputeSchema.index({ raisedBy: 1 });
 DisputeSchema.index({ status: 1 });

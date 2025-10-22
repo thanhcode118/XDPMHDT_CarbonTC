@@ -32,7 +32,6 @@ const PlatformReportSchema: Schema = new Schema(
       default: () => uuidv4(),
       unique: true,
       required: true,
-      index: true
     },
     type: {
       type: String,
@@ -91,7 +90,7 @@ const PlatformReportSchema: Schema = new Schema(
   }
 );
 
-PlatformReportSchema.index({ reportId: 1 });
+// PlatformReportSchema.index({ reportId: 1 });
 PlatformReportSchema.index({ type: 1, period: 1 });
 PlatformReportSchema.index({ generatedAt: -1 });
 PlatformReportSchema.index({ type: 1, generatedAt: -1 });

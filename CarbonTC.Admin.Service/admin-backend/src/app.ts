@@ -55,7 +55,7 @@ const startServer = async () => {
     await connectDatabase();
     logger.info('MongoDB connected successfully');
 
-    await connectRabbitMQ();
+    // await connectRabbitMQ();
     logger.info('RabbitMQ connected successfully');
 
     app.listen(PORT, () => {

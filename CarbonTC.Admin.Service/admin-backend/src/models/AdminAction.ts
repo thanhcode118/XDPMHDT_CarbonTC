@@ -36,7 +36,7 @@ const AdminActionSchema: Schema = new Schema(
       default: () => uuidv4(),
       unique: true,
       required: true,
-      index: true
+      // index: true
     },
     adminId: {
       type: String,
@@ -99,7 +99,7 @@ const AdminActionSchema: Schema = new Schema(
   }
 );
 
-AdminActionSchema.index({ actionId: 1 });
+// AdminActionSchema.index({ actionId: 1 });
 AdminActionSchema.index({ adminId: 1, createdAt: -1 });
 AdminActionSchema.index({ actionType: 1, createdAt: -1 });
 AdminActionSchema.index({ targetId: 1, createdAt: -1 });
