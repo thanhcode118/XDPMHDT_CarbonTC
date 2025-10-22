@@ -8,14 +8,14 @@ namespace Application.Common.Features.Listings.EventHandlers
 {
     public class AuctionCompletedDomainEventHandler : INotificationHandler<AuctionCompletedDomainEvent>
     {
-        private readonly IMessagePublisher _publisher;
+        private readonly IIntegrationEventService _integrationEventService;
         private readonly INotificationService _notification;
         private readonly IMediator _mediator;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AuctionCompletedDomainEventHandler(IMessagePublisher publisher, INotificationService notification, IMediator mediator, IUnitOfWork unitOfWork)
+        public AuctionCompletedDomainEventHandler(IIntegrationEventService integrationEventService, INotificationService notification, IMediator mediator, IUnitOfWork unitOfWork)
         {
-            _publisher = publisher;
+            _integrationEventService = integrationEventService;
             _notification = notification;
             _mediator = mediator;
             _unitOfWork = unitOfWork;
@@ -27,7 +27,7 @@ namespace Application.Common.Features.Listings.EventHandlers
             await _notification.NotifyAuctionEnded(notification);
 
             // Send Mail 
-            await _publisher.PublishAsync("auction_completed", new
+            await _integrationEventService.PublishToQueueAsync("auction_completed", new
             {
                 ListingId = notification.ListingId,
                 WinningBidderId = notification.WinningBidderId,
@@ -35,19 +35,18 @@ namespace Application.Common.Features.Listings.EventHandlers
                 WinningBidAmount = notification.WinningBidAmount
             });
 
-            if (notification.WinningBidderId != null)
-            {
-                var creditInventories = await _unitOfWork.CreditInventories.GetByCreditIdAsync(notification.CreditId);
-                var listingPurchasedEvent = new ListingPurchasedDomainEvent(
-                    ListingId: notification.ListingId,
-                    CreditId: notification.CreditId,
-                    BuyerId: notification.WinningBidderId,
-                    OwerId: notification.OwnerId,
-                    Amount: notification.Quantity, 
-                    TotalPrice: notification.WinningBidAmount
-                );
-                await _mediator.Publish(listingPurchasedEvent, cancellationToken);
-            }
+            
+            var creditInventories = await _unitOfWork.CreditInventories.GetByCreditIdAsync(notification.CreditId);
+            var listingPurchasedEvent = new ListingPurchasedDomainEvent(
+                ListingId: notification.ListingId,
+                CreditId: notification.CreditId,
+                BuyerId: notification.WinningBidderId,
+                OwerId: notification.OwnerId,
+                Amount: notification.Quantity, 
+                TotalPrice: notification.WinningBidAmount
+            );
+            await _mediator.Publish(listingPurchasedEvent, cancellationToken);
+            
         }
     }
 }

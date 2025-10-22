@@ -1,5 +1,4 @@
-﻿using Application.Common.Features.Listings.Commands.CloseAuction;
-using Application.Common.Features.Listings.Commands.FinalizeExpiredAuction;
+﻿using Application.Common.Features.Listings.Commands.FinalizeExpiredAuction;
 using Application.Common.Features.Listings.Queries.GetExpiredAuctions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,5 @@
-﻿using Domain.Events.AuctionBid;
+﻿using Application.Common.Interfaces;
+using Domain.Events.AuctionBid;
 using MediatR;
 using SharedLibrary.Interfaces;
 
@@ -6,17 +7,17 @@ namespace Application.Common.Features.Listings.EventHandlers
 {
     public class AuctionCompletedWithoutBidsDomainEventHandler : INotificationHandler<AuctionCompletedWithoutBidsDomainEvent>
     {
-        private readonly IMessagePublisher _publisher;
+        private readonly IIntegrationEventService _integrationEventService;
 
-        public AuctionCompletedWithoutBidsDomainEventHandler(IMessagePublisher publisher)
+        public AuctionCompletedWithoutBidsDomainEventHandler(IIntegrationEventService integrationEventService)
         {
-            _publisher = publisher;
+            _integrationEventService = integrationEventService;
         }
 
         public async Task Handle(AuctionCompletedWithoutBidsDomainEvent notification, CancellationToken cancellationToken)
         {
             // Send Mail
-            await _publisher.PublishAsync("auction_completed_without_bids", new
+            await _integrationEventService.PublishToQueueAsync("auction_completed_without_bids", new
             {
                 ListingId = notification.ListingId,
                 OwnerId = notification.OwnerId

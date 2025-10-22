@@ -1,22 +1,22 @@
-﻿using Domain.Events.Transactions;
+﻿using Application.Common.Interfaces;
+using Domain.Events.Transactions;
 using MediatR;
 using RabbitMQ.Client;
-using SharedLibrary.Interfaces;
 
 namespace Application.Common.Features.Transactions.EventHandlers
 {
     public class TransactionCreatedDomainEventHandler : INotificationHandler<TransactionCreatedDomainEvent>
     {
-        private readonly IMessagePublisher _publisher;
+        private readonly IIntegrationEventService _integrationEventService;
 
-        public TransactionCreatedDomainEventHandler(IMessagePublisher publisher)
+        public TransactionCreatedDomainEventHandler(IIntegrationEventService integrationEventService)
         {
-            _publisher = publisher;
+            _integrationEventService = integrationEventService;
         }
 
         public async Task Handle(TransactionCreatedDomainEvent notification, CancellationToken cancellationToken)
         {
-            await _publisher.PublishAsync("TransactionCreate", ExchangeType.Fanout, "", notification);
+            await _integrationEventService.PublishAsync(notification, "TransactionCreate", ExchangeType.Fanout, "");
         }
     }
 }

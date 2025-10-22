@@ -1,33 +1,44 @@
 ﻿using Application.Common.Interfaces;
 using Microsoft.Extensions.Logging;
+using SharedLibrary.Interfaces;
 
 namespace Infrastructure.Services
 {
     public class IntegrationEventService : IIntegrationEventService
     {
+        private readonly IMessagePublisher _publisher;
         private readonly ILogger<IntegrationEventService> _logger;
 
-        public IntegrationEventService(ILogger<IntegrationEventService> logger)
+        public IntegrationEventService(IMessagePublisher publisher ,ILogger<IntegrationEventService> logger)
         {
+            _publisher = publisher;
             _logger = logger;
         }
-        public async Task PublishAsync<T>(T integrationEvent, CancellationToken cancellationToken = default) where T : class
+
+        public async Task PublishAsync<T>(
+            T integrationEvent, 
+            string exchange, 
+            string exchangeType, 
+            string routingKey, 
+            CancellationToken cancellationToken = default) where T : class
         {
-            // Trong thực tế, bạn có thể sử dụng:
-            // - Service Bus (Azure Service Bus, RabbitMQ, etc.)
-            // - Event Grid
-            // - Kafka
-            // - SignalR cho real-time notifications
+            _logger.LogInformation(
+                "Publishing integration event {EventType} to exchange {Exchange} with routing key {RoutingKey}",
+                typeof(T).Name, exchange, routingKey);
 
-            _logger.LogInformation("Publishing integration event: {EventType} - {Event}",
-                typeof(T).Name,
-                System.Text.Json.JsonSerializer.Serialize(integrationEvent));
+            await _publisher.PublishAsync(exchange, exchangeType, routingKey, integrationEvent);
+        }
 
-            // Simulate external service call
-            await Task.Delay(100, cancellationToken);
+        public async Task PublishToQueueAsync<T>(
+            string queueName, 
+            T integrationEvent, 
+            CancellationToken cancellationToken = default) where T : class
+        {
+            _logger.LogInformation(
+                "Publishing integration event {EventType} directly to queue {Queue}",
+                typeof(T).Name, queueName);
 
-            // Example: Send to message queue, webhook, etc.
-            // await _serviceBusClient.SendAsync(integrationEvent);
+            await _publisher.PublishAsync(queueName, integrationEvent);
         }
     }
 }
