@@ -104,9 +104,48 @@ public class Program
                     ServerVersion.AutoDetect(connectionString),
                     mySqlOptions => mySqlOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
 
+            // Thêm dịch vụ CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", // Đặt tên cho policy, ví dụ: "AllowFrontend"
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:5173") // Cho phép origin của frontend
+                               .AllowAnyHeader() // Cho phép tất cả các header (bao gồm Authorization)
+                               .AllowAnyMethod(); // Cho phép các phương thức GET, POST, PUT, DELETE, OPTIONS,...
+                                                  // .AllowCredentials(); // Bỏ comment dòng này nếu bạn cần gửi cookie hoặc thông tin xác thực phức tạp hơn
+                    });
+            });
+
+            Log.Information("Application building started...");
             var app = builder.Build();
+            Log.Information("Application built successfully.");
 
 
+
+            // ===== KIỂM TRA KẾT NỐI DATABASE =====
+            try
+            {
+                Log.Information("Attempting database connection test...");
+                using var scope = app.Services.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                // Thực hiện một kết nối thử
+                await dbContext.Database.CanConnectAsync();
+
+                Log.Information("===== DATABASE CONNECTION TEST: SUCCESSFUL =====");
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi nghiêm trọng nếu không kết nối được
+                Log.Fatal(ex, "===== DATABASE CONNECTION TEST: FAILED. Check connection string or firewall. =====");
+
+                // Dừng ứng dụng
+                return 1;
+            }
+            // ===========================================
+            // Sử dụng CORS policy đã định nghĩa
+            app.UseCors("AllowFrontend"); // Sử dụng đúng tên policy đã đặt ở trên
             // Sử dụng Global Error Handling Middleware
             app.UseMiddleware<ErrorHandlingMiddleware>();
             // Apply migrations nếu đang ở môi trường Development

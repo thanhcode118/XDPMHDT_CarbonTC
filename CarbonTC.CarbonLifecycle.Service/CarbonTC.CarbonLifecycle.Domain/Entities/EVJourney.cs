@@ -10,9 +10,9 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
         public string UserId { get; set; } // Người dùng sở hữu hành trình
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public decimal DistanceKm { get; set; } // Thay đổi từ double sang decimal
-        public decimal CO2EstimateKg { get; set; } // Thay đổi từ double sang decimal
-        public string VehicleType { get; set; } // E.g., Tesla Model 3, Nissan Leaf
+        public decimal DistanceKm { get; set; } 
+        public decimal CO2EstimateKg { get; set; } 
+        public string VehicleType { get; set; } 
         public string Origin { get; set; }
         public string Destination { get; set; }
         public JourneyStatus Status { get; set; }

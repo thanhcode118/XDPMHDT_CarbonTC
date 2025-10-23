@@ -31,7 +31,23 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            InitializeRabbitMQ();
+        }
+        private void EnsureInitialized()
+        {
+            lock (_lock)
+            {
+                if (_connection == null || !_connection.IsOpen || _channel == null || !_channel.IsOpen)
+                {
+                    try
+                    {
+                        InitializeRabbitMQ();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "RabbitMQ initialization failed. Will retry on publish.");
+                    }
+                }
+            }
         }
 
         private void InitializeRabbitMQ()
@@ -80,6 +96,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             if (@event == null)
                 throw new ArgumentNullException(nameof(@event));
 
+            EnsureInitialized();
+
             await Task.Run(() => PublishWithRetry(@event, routingKey));
         }
 
@@ -88,6 +106,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
         {
             if (events == null)
                 throw new ArgumentNullException(nameof(events));
+
+            EnsureInitialized();
 
             foreach (var @event in events)
             {
