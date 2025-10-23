@@ -1,10 +1,13 @@
 // CarbonTC.Auth.Application/Features/Auth/Commands/RegisterUser/RegisterUserValidator.cs
+
 using FluentValidation;
 
 namespace CarbonTC.Auth.Application.Features.Auth.Commands.RegisterUser;
 
 public class RegisterUserValidator : AbstractValidator<RegisterUserCommand>
 {
+    private readonly string[] _validRoles = { "EVOwner", "CreditBuyer", "Verifier" };
+
     public RegisterUserValidator()
     {
         RuleFor(x => x.Email)
@@ -22,5 +25,9 @@ public class RegisterUserValidator : AbstractValidator<RegisterUserCommand>
         RuleFor(x => x.PhoneNumber)
             .Matches(@"^\+?[0-9]{10,15}$").When(x => !string.IsNullOrEmpty(x.PhoneNumber))
             .WithMessage("Invalid phone number format");
+
+        RuleFor(x => x.RoleType)
+            .Must(role => _validRoles.Contains(role))
+            .WithMessage($"Role must be one of: {string.Join(", ", _validRoles)}");
     }
 }
