@@ -1,0 +1,122 @@
+.footer {
+  background: #0f0f1e;
+  padding: 60px 0 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footerBrand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.footerBrand i {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-right: 8px;
+}
+
+.footerDescription {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.footerTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.footerLinks {
+  list-style: none;
+  padding: 0;
+}
+
+.footerLinks li {
+  margin-bottom: 10px;
+}
+
+.footerLinks a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.footerLinks a:hover {
+  color: var(--text-primary);
+}
+
+.newsletterForm {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.newsletterInput {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px 0 0 50px;
+  padding: 12px 20px;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.newsletterInput::placeholder {
+  color: var(--text-secondary);
+}
+
+.newsletterInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.newsletterButton {
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 0 50px 50px 0;
+  padding: 0 20px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.newsletterButton:hover {
+  opacity: 0.9;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.socialLink {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.socialLink:hover {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.footerBottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  margin-top: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+}
