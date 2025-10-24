@@ -1,0 +1,134 @@
+.tabContent {
+  display: block;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.cardBody {
+  padding: 25px;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.settingsSection {
+  margin-bottom: 30px;
+}
+
+.sectionTitle {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.sectionDescription {
+  color: var(--text-secondary);
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.formCheckInput {
+  width: 18px;
+  height: 18px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  margin-right: 10px;
+  cursor: pointer;
+  appearance: none;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.formCheckInput:checked {
+  background-color: var(--ev-owner-color);
+  border-color: var(--ev-owner-color);
+}
+
+.formCheckInput:checked::before {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.formCheckLabel {
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btnCustom {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cardBody {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .cardBody {
+    padding: 15px;
+  }
+  
+  .cardTitle {
+    font-size: 1.1rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1rem;
+  }
+  
+  .formCheckLabel {
+    font-size: 0.85rem;
+  }
+  
+  .btnCustom {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}

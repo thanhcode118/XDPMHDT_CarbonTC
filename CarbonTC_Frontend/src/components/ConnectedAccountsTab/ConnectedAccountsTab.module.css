@@ -1,0 +1,207 @@
+.tabContent {
+  display: block;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.cardBody {
+  padding: 25px;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.cardDescription {
+  color: var(--text-secondary);
+  margin-bottom: 25px;
+  font-size: 0.9rem;
+}
+
+.connectedAccount {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.connectedAccount:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.accountIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 1.2rem;
+  color: white;
+}
+
+.googleIcon {
+  background-color: #db4437;
+}
+
+.facebookIcon {
+  background-color: #3b5998;
+}
+
+.accountInfo {
+  flex: 1;
+}
+
+.accountName {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+.accountEmail {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.btnCustom {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btnOutlineCustom {
+  background: transparent;
+  color: var(--ev-owner-color);
+  border: 1px solid var(--ev-owner-color);
+}
+
+.btnOutlineCustom:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.btnDangerCustom {
+  background: #f87171;
+  color: white;
+}
+
+.btnDangerCustom:hover {
+  background: #ef4444;
+}
+
+.btnSm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.dangerZone {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.dangerZoneTitle {
+  color: #f87171;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.dangerZoneDescription {
+  color: var(--text-secondary);
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cardBody {
+    padding: 20px;
+  }
+  
+  .connectedAccount {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .accountIcon {
+    margin-right: 0;
+  }
+  
+  .accountInfo {
+    text-align: center;
+  }
+  
+  .btnCustom {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .cardBody {
+    padding: 15px;
+  }
+  
+  .cardTitle {
+    font-size: 1.1rem;
+  }
+  
+  .accountIcon {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+  
+  .accountName {
+    font-size: 0.9rem;
+  }
+  
+  .accountEmail {
+    font-size: 0.8rem;
+  }
+  
+  .dangerZone {
+    padding: 15px;
+  }
+  
+  .dangerZoneTitle {
+    font-size: 1rem;
+  }
+  
+  .btnCustom {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+}
