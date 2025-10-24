@@ -1,5 +1,6 @@
 ﻿using Application.Common.Features.Listings.Commands.WarmUpUserBalance;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
@@ -19,17 +20,24 @@ namespace Infrastructure.SignalR.Hubs
 
         public override async Task OnConnectedAsync()
         {
+            var claims = Context.User?.Claims?.Select(c => $"{c.Type} = {c.Value}") ?? new List<string>();
+            _logger.LogWarning("Client connected. Claims: {Claims}", string.Join(", ", claims));
+
             var userId = Context.User?.FindFirst("userId")?.Value
-                ?? Context.User?.FindFirst("sub")?.Value
-                ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                         ?? Context.User?.FindFirst("sub")?.Value
+                         ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            _logger.LogWarning("Client OnConnectedAsync. UserId found: {UserId}", userId);
 
             if (!string.IsNullOrEmpty(userId))
             {
+                _logger.LogWarning("Adding user {UserId} to group", userId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
             }
 
             await base.OnConnectedAsync();
         }
+
 
         public async Task JoinAuction(Guid listingId)
         {

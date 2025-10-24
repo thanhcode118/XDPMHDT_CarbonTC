@@ -15,5 +15,6 @@ namespace Domain.Repositories
         Task DeleteAsync(Listing listing, CancellationToken cancellationToken = default);
         Task<IEnumerable<Listing?>> FindAsync(Expression<Func<Listing, bool>> predicate,
             CancellationToken cancellationToken = default);
+        Task<decimal> GetTotalDemandByTypeAsync(CancellationToken cancellationToken = default);
     }
 }

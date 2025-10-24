@@ -35,5 +35,13 @@ namespace Infrastructure.Data.Repositories
             _dbContext.CreditInventories.Remove(inventory);
             return Task.CompletedTask;
         }
+
+        public Task<decimal> GetTotalSupplyByTypeAsync(CancellationToken cancellationToken = default)
+        {
+            var query = _dbContext.CreditInventories.Select(x => x.AvailableAmount).AsQueryable();
+            return query.Any()
+                ? query.SumAsync(cancellationToken)
+                : Task.FromResult(0m);
+        }
     }
 }

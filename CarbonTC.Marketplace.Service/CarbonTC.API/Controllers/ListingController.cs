@@ -7,8 +7,10 @@ using Application.Common.Features.Listings.Commands.UpdateListing;
 using Application.Common.Features.Listings.DTOs;
 using Application.Common.Features.Listings.Queries.GetAllListings;
 using Application.Common.Features.Listings.Queries.GetByIdListing;
+using Application.Common.Features.Listings.Queries.GetPriceSuggestion;
 using CarbonTC.API.Common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarbonTC.API.Controllers
@@ -63,6 +65,7 @@ namespace CarbonTC.API.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllListings(
             [FromQuery] GetAllListingsQuery getAllListingsQuery,
@@ -174,6 +177,26 @@ namespace CarbonTC.API.Controllers
             );
 
             return BadRequest(errorResponse);
+        }
+
+        [HttpPost("suggest-price")]
+        public async Task<IActionResult> SuggestPrice(
+            [FromQuery] Guid creditId,
+            CancellationToken cancellationToken)
+        {
+            var query = new GetPriceSuggestionQuery
+            {
+                CreditId = creditId,
+            };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            if (result.IsSuccess)
+            {
+                return Ok(ApiResponse<float>.SuccessResponse(result.Value));
+            }
+
+            return BadRequest(ApiResponse<float>.ErrorResponse(result.Error.Message));
         }
     }
 }

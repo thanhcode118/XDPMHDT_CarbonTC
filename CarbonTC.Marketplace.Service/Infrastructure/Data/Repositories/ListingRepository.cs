@@ -57,6 +57,16 @@ namespace Infrastructure.Data.Repositories
             return listing;
         }
 
+        public async Task<decimal> GetTotalDemandByTypeAsync(CancellationToken cancellationToken = default)
+        {
+            var query = _dbContext.Listings
+                .Where(l => l.Status == Domain.Enum.ListingStatus.Open)
+                .Select(x => x.Quantity);
+
+            var quantity = await query.SumAsync(cancellationToken);
+            return quantity;
+        }
+
         public async Task<List<Listing?>> GetUserListingsAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             var listings = await _dbContext.Listings

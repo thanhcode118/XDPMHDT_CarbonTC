@@ -41,6 +41,11 @@ namespace Infrastructure
                 client.BaseAddress = new Uri(configuration["Services:WalletService"]);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
+            services.AddHttpClient<ICarbonLifecycleServiceClient, CarbonLifecycleServiceClient>(client =>
+            {
+                client.BaseAddress = new Uri(configuration["Services:CarbonLifecycleService"]);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
 
 
             // Repositories
@@ -60,6 +65,7 @@ namespace Infrastructure
             services.AddScoped<INotificationService, SignalRNotificationService>();
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<IBalanceService, RedisBalanceService>();
+            services.AddScoped<ICarbonPricingService, CarbonPricingService>();
             return services;
         }
     }

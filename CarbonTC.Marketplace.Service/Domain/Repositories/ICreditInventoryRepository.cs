@@ -1,5 +1,4 @@
 ﻿using Domain.Entities;
-using System.Threading.Tasks;
 
 namespace Domain.Repositories
 {
@@ -9,5 +8,6 @@ namespace Domain.Repositories
         Task UpdateAsync(CreditInventory inventory, CancellationToken cancellationToken = default);
         Task AddAsync(CreditInventory inventory, CancellationToken cancellationToken = default);
         Task DeleteAsync(CreditInventory inventory, CancellationToken cancellationToken = default);
+        Task<decimal> GetTotalSupplyByTypeAsync(CancellationToken cancellationToken = default);
     }
 }

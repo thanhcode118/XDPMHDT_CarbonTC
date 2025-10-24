@@ -20,6 +20,7 @@ namespace CarbonTC.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
             builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -36,6 +37,7 @@ namespace CarbonTC.API
                 };
             });
 
+            builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
             builder.Services.AddSharedRabbitMQ(builder.Configuration);
 
 
@@ -93,7 +95,6 @@ namespace CarbonTC.API
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddInfrastructure(builder.Configuration);  
             builder.Services.AddApplication();
-            builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 
             builder.Services.AddHostedService<CreditInventoryConsumerHostedService>();
             builder.Services.AddHostedService<AuctionStatusUpdaterService>();
@@ -109,16 +110,17 @@ namespace CarbonTC.API
                 app.UseSwaggerUI();
             }
 
-            app.UseCors("SignalRPolicy");
-            app.MapHub<AuctionHub>("/hubs/auction");
-
             app.UseHttpsRedirection();
+            app.UseRouting();
+
+            app.UseCors("SignalRPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-
             app.MapControllers();
+
+            app.MapHub<AuctionHub>("/hubs/auction");
 
             app.Run();
         }
