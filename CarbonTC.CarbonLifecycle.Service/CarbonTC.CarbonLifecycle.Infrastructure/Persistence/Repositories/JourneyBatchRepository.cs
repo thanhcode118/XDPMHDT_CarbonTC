@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Infrastructure.Persistence;
+using CarbonTC.CarbonLifecycle.Domain.Enums; 
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
 {
@@ -50,17 +51,16 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 throw new ArgumentNullException(nameof(journeyBatch));
 
             await _context.JourneyBatches.AddAsync(journeyBatch);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(JourneyBatch journeyBatch)
+        public Task UpdateAsync(JourneyBatch journeyBatch)
         {
             if (journeyBatch == null)
                 throw new ArgumentNullException(nameof(journeyBatch));
 
             journeyBatch.LastModifiedAt = DateTime.UtcNow;
             _context.JourneyBatches.Update(journeyBatch);
-            await _context.SaveChangesAsync();
+            return Task.CompletedTask; 
         }
 
         public async Task DeleteAsync(Guid id)
@@ -69,7 +69,6 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
             if (batch != null)
             {
                 _context.JourneyBatches.Remove(batch);
-                await _context.SaveChangesAsync();
             }
         }
 
@@ -92,6 +91,19 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 .Where(jb => jb.UserId == ownerId)
                 .OrderByDescending(jb => jb.CreationTime)
                 .ToListAsync();
+        }
+
+        public async Task<JourneyBatch?> GetPendingBatchByOwnerIdAsync(string ownerId)
+        {
+            if (string.IsNullOrWhiteSpace(ownerId))
+                throw new ArgumentException("Owner ID cannot be null or empty", nameof(ownerId));
+
+            return await _context.JourneyBatches
+                // Chỉ lấy lô có trạng thái Pending
+                .Where(jb => jb.UserId == ownerId && jb.Status == JourneyBatchStatus.Pending)
+                // Sắp xếp để lấy lô mới nhất nếu có nhiều lô Pending (tùy chọn)
+                .OrderByDescending(jb => jb.CreationTime)
+                .FirstOrDefaultAsync();
         }
     }
 }

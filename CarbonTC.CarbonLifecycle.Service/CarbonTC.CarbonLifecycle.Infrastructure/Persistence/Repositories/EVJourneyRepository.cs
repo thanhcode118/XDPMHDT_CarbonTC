@@ -39,17 +39,16 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 throw new ArgumentNullException(nameof(journey));
 
             await _context.EVJourneys.AddAsync(journey);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(EVJourney journey)
+        public Task UpdateAsync(EVJourney journey)
         {
             if (journey == null)
                 throw new ArgumentNullException(nameof(journey));
 
             journey.LastModifiedAt = DateTime.UtcNow;
             _context.EVJourneys.Update(journey);
-            await _context.SaveChangesAsync();
+            return Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Guid id)
@@ -58,7 +57,6 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
             if (journey != null)
             {
                 _context.EVJourneys.Remove(journey);
-                await _context.SaveChangesAsync();
             }
         }
 

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarbonTC.CarbonLifecycle.Service")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c83829359fefd1a6468e5188efd49a88faffde7e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a82acc8e17360aee7379c057b28622f4e4b5a5e3")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarbonTC.CarbonLifecycle.Service")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarbonTC.CarbonLifecycle.Service")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
