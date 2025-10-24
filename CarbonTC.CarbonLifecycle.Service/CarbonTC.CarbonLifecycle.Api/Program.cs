@@ -97,13 +97,6 @@ public class Program
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(appAssembly));
             builder.Services.AddAutoMapper(appAssembly);
 
-            // DbContext với MySQL
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(connectionString,
-                    ServerVersion.AutoDetect(connectionString),
-                    mySqlOptions => mySqlOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
-
             // Thêm dịch vụ CORS
             builder.Services.AddCors(options =>
             {

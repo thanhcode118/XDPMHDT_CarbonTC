@@ -21,7 +21,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
         {
             _logger.LogInformation("Fetching CarbonCredit with Id: {Id}", id);
             return await _context.CarbonCredits
-                .Include(cc => cc.JourneyBatch) 
+                .Include(cc => cc.JourneyBatch)
+                .Include(cc => cc.VerificationRequest) 
                 .FirstOrDefaultAsync(cc => cc.Id == id);
         }
 

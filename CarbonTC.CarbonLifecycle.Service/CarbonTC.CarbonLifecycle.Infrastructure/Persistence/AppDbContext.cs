@@ -64,6 +64,26 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                 .HasForeignKey(vr => vr.JourneyBatchId);
 
 
+            modelBuilder.Entity<VerificationRequest>()
+                .HasOne(vr => vr.JourneyBatch)
+                .WithMany(jb => jb.VerificationRequests)
+                .HasForeignKey(vr => vr.JourneyBatchId);
+
+
+            //  Cấu hình VerificationRequest <-> CVAStandard 
+            modelBuilder.Entity<VerificationRequest>()
+                .HasOne(vr => vr.CvaStandard) // Một VerificationRequest có 1 CvaStandard
+                .WithMany(cs => cs.VerificationRequests) // Một CvaStandard được dùng cho nhiều VerificationRequest
+                .HasForeignKey(vr => vr.CvaStandardId) // Khoá ngoại là CvaStandardId
+                .OnDelete(DeleteBehavior.SetNull); // Nếu xoá Standard, chỉ set CvaStandardId = null
+
+            //  Cấu hình CarbonCredit <-> VerificationRequest 
+            modelBuilder.Entity<CarbonCredit>()
+                .HasOne(cc => cc.VerificationRequest) // Một CarbonCredit đến từ 1 VerificationRequest
+                .WithMany(vr => vr.CarbonCredits) // Một VerificationRequest có thể tạo ra nhiều CarbonCredit
+                .HasForeignKey(cc => cc.VerificationRequestId) // Khoá ngoại là VerificationRequestId
+                .OnDelete(DeleteBehavior.SetNull); // Nếu xoá Request, chỉ set VerificationRequestId = null
+
             // ==========================================
             // ===== BẮT ĐẦU DỮ LIỆU SEED (IMPORT) =====
             // ==========================================
@@ -93,8 +113,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                     ConversionRate = 0.12m,
                     MinDistanceRequirement = 1.0m,
                     IsActive = true,
-                    EffectiveDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), // Sửa lỗi
-                    EndDate = new DateTime(2025, 12, 31, 0, 0, 0, DateTimeKind.Utc), // Sửa lỗi
+                    EffectiveDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), 
+                    EndDate = new DateTime(2025, 12, 31, 0, 0, 0, DateTimeKind.Utc), 
                     CreatedAt = seedTime,
                     LastModifiedAt = seedTime
                 },
@@ -106,8 +126,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                     ConversionRate = 0.09m,
                     MinDistanceRequirement = 1.0m,
                     IsActive = true,
-                    EffectiveDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), // Sửa lỗi
-                    EndDate = new DateTime(2025, 12, 31, 0, 0, 0, DateTimeKind.Utc), // Sửa lỗi
+                    EffectiveDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), 
+                    EndDate = new DateTime(2025, 12, 31, 0, 0, 0, DateTimeKind.Utc), 
                     CreatedAt = seedTime,
                     LastModifiedAt = seedTime
                 }
@@ -144,7 +164,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                     DistanceKm = 85.5m,
                     VehicleType = "Vinfast-VFe34",
                     CO2EstimateKg = 85.5m * 0.12m,
-                    Status = JourneyStatus.Verified, // Sửa lỗi: Enum 'Batched' không tồn tại
+                    Status = JourneyStatus.Verified, 
                     Origin = "N/A",
                     Destination = "N/A",
                     CreatedAt = seedTime,
@@ -160,7 +180,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                     DistanceKm = 42.0m,
                     VehicleType = "Tesla-ModelY",
                     CO2EstimateKg = 42.0m * 0.09m,
-                    Status = JourneyStatus.Verified, // Sửa lỗi: Enum 'Batched' không tồn tại
+                    Status = JourneyStatus.Verified, 
                     Origin = "N/A",
                     Destination = "N/A",
                     CreatedAt = seedTime,
@@ -175,14 +195,15 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                 {
                     Id = verificationId,
                     JourneyBatchId = batchId,
-                    RequestorId = demoUserId, // Sửa lỗi
-                    VerifierId = "system-seed", // Sửa lỗi
-                    RequestDate = seedTime, // Sửa lỗi
-                    VerificationDate = seedTime, // Sửa lỗi
+                    RequestorId = demoUserId, 
+                    VerifierId = "system-seed", 
+                    RequestDate = seedTime, 
+                    VerificationDate = seedTime, 
                     Status = VerificationRequestStatus.Approved,
                     Notes = "Seed data - automatically approved.",
                     CreatedAt = seedTime,
-                    LastModifiedAt = seedTime
+                    LastModifiedAt = seedTime,
+                    CvaStandardId = standardVFe34Id 
                 }
             );
 
@@ -200,7 +221,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                     ExpiryDate = null,
                     TransactionHash = "0xabc123def4567890",
                     CreatedAt = seedTime,
-                    LastModifiedAt = seedTime
+                    LastModifiedAt = seedTime,
+                    VerificationRequestId = verificationId 
                 }
             );
 

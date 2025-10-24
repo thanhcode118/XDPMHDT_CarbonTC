@@ -1,6 +1,17 @@
 {
   "Routes": [
-
+    {
+      "DownstreamPathTemplate": "/api/CarbonCredits/{creditId}/standard", // Đường dẫn trên service CarbonLifecycle
+      "DownstreamScheme": "http", // Giao thức của service CarbonLifecycle (nội bộ)
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "carbon_lifecycle_service", // Tên service trong docker-compose.yml
+          "Port": 80 // Cổng nội bộ của service trong docker-compose.yml
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/credits/{creditId}/standard", // Đường dẫn MỚI mà nhóm khác sẽ gọi
+      "UpstreamHttpMethod": [ "GET" ] // Phương thức HTTP cho phép
+    }
 
 
   ],

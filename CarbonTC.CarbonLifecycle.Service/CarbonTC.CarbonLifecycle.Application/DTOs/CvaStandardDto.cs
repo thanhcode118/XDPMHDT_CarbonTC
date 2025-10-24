@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic; 
 
-namespace CarbonTC.CarbonLifecycle.Domain.Entities
+namespace CarbonTC.CarbonLifecycle.Application.DTOs
 {
-    public class CVAStandard : BaseEntity
+    // DTO trả về thông tin của một Tiêu chuẩn CVA
+    public class CvaStandardDto
     {
         public Guid Id { get; set; }
         public string StandardName { get; set; }
@@ -13,7 +13,5 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
         public DateTime EffectiveDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool IsActive { get; set; }
-
-        public ICollection<VerificationRequest> VerificationRequests { get; set; }
     }
 }

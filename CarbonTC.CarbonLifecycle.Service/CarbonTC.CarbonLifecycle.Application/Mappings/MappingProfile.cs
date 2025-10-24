@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
-// Giả định các Enums này nằm ở namespace Domain.Enums
 using CarbonTC.CarbonLifecycle.Domain.Enums;
 
 namespace CarbonTC.CarbonLifecycle.Application.Mappings
@@ -35,6 +34,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Mappings
                 .ForMember(dest => dest.TotalCarbonCredits,
                            opt => opt.MapFrom(src => src.TotalCO2SavedKg))
 
+
+
                 // Chuyển Enum (Entity) sang string (DTO)
                 .ForMember(dest => dest.Status,
                            opt => opt.MapFrom(src => src.Status.ToString()))
@@ -47,6 +48,22 @@ namespace CarbonTC.CarbonLifecycle.Application.Mappings
 
             // (Bạn có thể thêm các ánh xạ cho DTOs -> Commands ở đây nếu cần,
             // nhưng thường việc này sẽ được xử lý trong Handlers)
+                // --- Ánh xạ EVJourney ---
+                CreateMap<EVJourney, EvJourneyResponseDto>()
+                    // ... (các map cũ của bạn) ...
+                    .ForMember(dest => dest.Status,
+                               opt => opt.MapFrom(src => src.Status.ToString()));
+
+
+                // --- Ánh xạ JourneyBatch ---
+                CreateMap<JourneyBatch, JourneyBatchDto>()
+                    // ... (các map cũ của bạn) ...
+                    .ForMember(dest => dest.Journeys,
+                               opt => opt.MapFrom(src => src.EVJourneys));
+
+
+                // --- BỔ SUNG ÁNH XẠ MỚI CHO CVASTANDARD ---
+                CreateMap<CVAStandard, CvaStandardDto>();
         }
     }
 }

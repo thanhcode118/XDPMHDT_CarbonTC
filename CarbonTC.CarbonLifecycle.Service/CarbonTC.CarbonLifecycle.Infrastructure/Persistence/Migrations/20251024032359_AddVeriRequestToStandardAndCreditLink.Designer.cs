@@ -4,6 +4,7 @@ using CarbonTC.CarbonLifecycle.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251024032359_AddVeriRequestToStandardAndCreditLink")]
+    partial class AddVeriRequestToStandardAndCreditLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,8 +208,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
                             LastModifiedAt = new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionHash = "0xabc123def4567890",
-                            UserId = "auth0|demo-user-12345",
-                            VerificationRequestId = new Guid("12345678-90ab-4cde-8fab-1234567890ab")
+                            UserId = "auth0|demo-user-12345"
                         });
                 });
 
@@ -403,7 +405,6 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("12345678-90ab-4cde-8fab-1234567890ab"),
                             CreatedAt = new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CvaStandardId = new Guid("d2a0a0f0-a3b0-4b10-8b7a-0a0a0a0a0a01"),
                             JourneyBatchId = new Guid("b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b"),
                             LastModifiedAt = new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             Notes = "Seed data - automatically approved.",

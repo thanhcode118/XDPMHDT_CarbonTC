@@ -23,6 +23,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
             // Include JourneyBatch nếu cần truy cập thông tin batch liên quan
             return await _context.VerificationRequests
                 .Include(vr => vr.JourneyBatch)
+                .Include(vr => vr.CvaStandard) 
                 .FirstOrDefaultAsync(vr => vr.Id == id);
         }
 

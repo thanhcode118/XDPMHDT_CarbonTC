@@ -6,15 +6,18 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
     public class CarbonCredit : BaseEntity
     {
         public Guid Id { get; set; }
-        public Guid JourneyBatchId { get; set; }
+        public Guid JourneyBatchId { get; set; } 
         public string UserId { get; set; }
-        public decimal AmountKgCO2e { get; set; } // Carbon credits in kg CO2 equivalent
+        public decimal AmountKgCO2e { get; set; }
         public DateTime IssueDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
-        public CarbonCreditStatus Status { get; set; } // E.g., Pending, Issued, Retired, Transferred
-        public string TransactionHash { get; set; } // If tokenized on a blockchain
+        public CarbonCreditStatus Status { get; set; }
+        public string TransactionHash { get; set; }
 
-        // Navigation Property
+        public Guid? VerificationRequestId { get; set; } 
+
         public JourneyBatch JourneyBatch { get; set; }
+
+        public VerificationRequest VerificationRequest { get; set; } 
     }
 }
