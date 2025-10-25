@@ -43,5 +43,9 @@
         /// <param name="auctionId"></param>
         /// <returns></returns>
         Task<decimal> GetAuctionLockedAmountAsync(Guid userId, Guid auctionId);
+
+        Task<bool> ReserveBalanceForPurchaseAsync(Guid userId, decimal amountToReserve);
+        Task ReleaseBalanceForPurchaseAsync(Guid userId, decimal amountToRelease);
+        Task CommitPurchaseAsync(Guid userId, decimal amountToCommit);
     }
 }

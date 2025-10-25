@@ -8,11 +8,13 @@ namespace Application.Common.Features.Listings.EventHandlers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWalletServiceClient _walletService;
+        private readonly IBalanceService _balanceService;
 
-        public ListingPurchasedDomainEventHandler(IUnitOfWork unitOfWork, IWalletServiceClient walletService)
+        public ListingPurchasedDomainEventHandler(IUnitOfWork unitOfWork, IWalletServiceClient walletService, IBalanceService balanceService)
         {
             _unitOfWork = unitOfWork;
             _walletService = walletService;
+            _balanceService = balanceService;
         }
 
         public async Task Handle(ListingPurchasedDomainEvent notification, CancellationToken cancellationToken)
@@ -37,7 +39,14 @@ namespace Application.Common.Features.Listings.EventHandlers
             await _unitOfWork.Transactions.AddAsync(transaction, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _walletService.CommitPaymentAsync(notification.BuyerId, notification.TotalPrice, cancellationToken);
+            await _walletService.CommitPaymentAsync(
+                notification.BuyerId,
+                notification.TotalPrice,
+                cancellationToken);
+
+            await _balanceService.CommitPurchaseAsync(
+                notification.BuyerId,
+                notification.TotalPrice);
         }
     }
 }

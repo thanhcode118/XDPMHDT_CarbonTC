@@ -216,5 +216,85 @@ namespace Infrastructure.Redis
             var timeUntilEnd = auctionEndTime.Value - DateTime.UtcNow;
             return timeUntilEnd + TimeSpan.FromMinutes(5);
         }
+
+        public async Task<bool> ReserveBalanceForPurchaseAsync(Guid userId, decimal amountToReserve)
+        {
+            var script = @"
+                local balance_key = KEYS[1]
+                local amount_to_reserve = tonumber(ARGV[1])
+
+                local available = redis.call('HGET', balance_key, 'available')
+                if not available then
+                    return {0, 'Balance not found'}
+                end
+                available = tonumber(available)
+
+                if available < amount_to_reserve then
+                    return {0, 'Insufficient balance'}
+                end
+
+                -- ATOMIC UPDATE:
+                -- 1. Decrease available
+                redis.call('HINCRBYFLOAT', balance_key, 'available', -amount_to_reserve)
+                -- 2. Increase total locked
+                redis.call('HINCRBYFLOAT', balance_key, 'locked', amount_to_reserve)
+                
+                return {1, 'Success'}
+            ";
+
+            var balanceKey = GetBalanceKey(userId);
+            var result = (RedisResult[])await _db.ScriptEvaluateAsync(
+                script,
+                keys: new RedisKey[] { balanceKey },
+                values: new RedisValue[] { amountToReserve.ToString(CultureInfo.InvariantCulture) }
+            );
+
+            return (int)result[0] == 1;
+        }
+
+        public Task ReleaseBalanceForPurchaseAsync(Guid userId, decimal amountToRelease)
+        {
+            var script = @"
+                local balance_key = KEYS[1]
+                local amount_to_release = tonumber(ARGV[1])
+
+                -- ATOMIC UPDATE:
+                -- 1. Increase available
+                redis.call('HINCRBYFLOAT', balance_key, 'available', amount_to_release)
+                -- 2. Decrease total locked
+                redis.call('HINCRBYFLOAT', balance_key, 'locked', -amount_to_release)
+                
+                return 1
+            ";
+
+            var balanceKey = GetBalanceKey(userId);
+            return _db.ScriptEvaluateAsync(
+                script,
+                keys: new RedisKey[] { balanceKey },
+                values: new RedisValue[] { amountToRelease.ToString(CultureInfo.InvariantCulture) }
+            );
+        }
+
+        public Task CommitPurchaseAsync(Guid userId, decimal amountToCommit)
+        {
+            var script = @"
+                local balance_key = KEYS[1]
+                local amount_to_commit = tonumber(ARGV[1])
+
+                -- ATOMIC UPDATE:
+                -- 1. Decrease total locked (money is now gone)
+                -- (Available was already decreased by ReserveBalanceForPurchaseAsync)
+                redis.call('HINCRBYFLOAT', balance_key, 'locked', -amount_to_commit)
+                
+                return 1
+            ";
+
+            var balanceKey = GetBalanceKey(userId);
+            return _db.ScriptEvaluateAsync(
+                script,
+                keys: new RedisKey[] { balanceKey },
+                values: new RedisValue[] { amountToCommit.ToString(CultureInfo.InvariantCulture) }
+            );
+        }
     }
 }

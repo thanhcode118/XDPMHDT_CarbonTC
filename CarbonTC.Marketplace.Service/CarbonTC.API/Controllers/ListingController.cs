@@ -125,7 +125,6 @@ namespace CarbonTC.API.Controllers
             {
                 ListingId = id,
                 CreditId = requestDto.CreditId,
-                BuyerId = requestDto.BuyerId,
                 Amount = requestDto.Amount
             };
 
