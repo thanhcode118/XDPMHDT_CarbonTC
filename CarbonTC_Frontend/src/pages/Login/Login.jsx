@@ -39,28 +39,35 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
 
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const response = await login(formData);
-      
-      if (response.success) {
-        navigate('/dashboard');
-      } else {
-        setError(response.message || 'Đăng nhập thất bại');
-      }
-    } catch (err) {
-      setError(err.message || 'Email hoặc mật khẩu không đúng');
-    } finally {
-      setLoading(false);
+  try {
+    const response = await login(formData);
+
+    if (response && response.success) {
+      // ✅ Chuyển sang dashboard nếu thành công
+      navigate('/dashboard');
+    } else {
+      // ❌ Hiển thị lỗi, sau 5 giây tự ẩn
+      setError(response?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      setTimeout(() => setError(''), 5000);
     }
-  };
+  } catch (err) {
+    // ❌ Hiển thị lỗi, sau 5 giây tự ẩn
+    setError(err.message || 'Email hoặc mật khẩu không đúng.');
+    setTimeout(() => setError(''), 5000);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <div className={styles.loginContainer}>

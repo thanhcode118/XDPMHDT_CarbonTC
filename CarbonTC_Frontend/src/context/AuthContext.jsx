@@ -1,5 +1,4 @@
 // src/context/AuthContext.jsx
-
 import { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
 
@@ -12,47 +11,37 @@ export const AuthProvider = ({ children }) => {
   // Initialize authentication on mount
   useEffect(() => {
     console.log('=== 🚀 AuthContext MOUNTED ===');
-    
+
     const initializeAuth = () => {
       console.log('🔍 [Step 1] Starting authentication initialization...');
-      
+
       try {
-        // Get data from localStorage
         const accessToken = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
         const userStr = localStorage.getItem('user');
-        
+
         console.log('🔍 [Step 2] LocalStorage Check:');
-        console.log('   - accessToken:', accessToken ? `✅ EXISTS (${accessToken.substring(0, 30)}...)` : '❌ MISSING');
-        console.log('   - refreshToken:', refreshToken ? `✅ EXISTS (${refreshToken.substring(0, 30)}...)` : '❌ MISSING');
+        console.log('   - accessToken:', accessToken ? '✅ EXISTS' : '❌ MISSING');
+        console.log('   - refreshToken:', refreshToken ? '✅ EXISTS' : '❌ MISSING');
         console.log('   - user:', userStr ? '✅ EXISTS' : '❌ MISSING');
 
         if (accessToken && userStr) {
           try {
             const storedUser = JSON.parse(userStr);
-            console.log('👤 [Step 3] User parsed successfully:');
-            console.log('   - ID:', storedUser.id);
-            console.log('   - Email:', storedUser.email);
-            console.log('   - Full Name:', storedUser.fullName);
-            console.log('   - Role:', storedUser.roleName);
-            
+            console.log('👤 [Step 3] User parsed successfully:', storedUser);
             setUser(storedUser);
             console.log('✅ [Step 4] User set in state successfully');
           } catch (parseError) {
             console.error('❌ [Step 3] Failed to parse user data:', parseError);
-            console.log('🧹 Clearing invalid localStorage data...');
             localStorage.clear();
           }
         } else {
-          console.log('❌ [Step 3] No valid authentication data found');
-          console.log('   → User needs to login');
+          console.log('❌ [Step 3] No valid authentication data found → User must log in');
         }
       } catch (error) {
         console.error('❌ [Step 3] Error during initialization:', error);
-        console.log('🧹 Clearing localStorage due to error...');
         localStorage.clear();
       } finally {
-        console.log('✅ [Step 5] Setting loading to false');
         setLoading(false);
       }
     };
@@ -60,95 +49,83 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // Log state changes for debugging
+  // Log when AuthContext changes
   useEffect(() => {
     console.log('📊 AuthContext State Updated:');
-    console.log('   - user:', user ? `${user.email} (${user.roleName})` : 'null');
+    console.log('   - user:', user ? user.email : 'null');
     console.log('   - loading:', loading);
     console.log('   - isAuthenticated:', !!user && !!localStorage.getItem('accessToken'));
   }, [user, loading]);
 
-  // Register function
+  // ✅ Hàm cập nhật user sau khi update profile
+  const updateUser = (newUserData) => {
+    console.log('🔄 [AuthContext] Updating user in context:', newUserData);
+    setUser(newUserData);
+    localStorage.setItem('user', JSON.stringify(newUserData));
+  };
+
+  // Register
   const register = async (userData) => {
     console.log('🔐 [Register] Starting registration...');
-    console.log('   - Email:', userData.email);
-    
     try {
       const response = await authService.register(userData);
-      
       if (response.success) {
-        console.log('✅ [Register] Registration successful');
-        console.log('   - User:', response.data.user.email);
+        console.log('✅ [Register] Successful');
         setUser(response.data.user);
       }
-      
       return response;
     } catch (error) {
-      console.error('❌ [Register] Registration failed:', error);
+      console.error('❌ [Register] Failed:', error);
       throw error;
     }
   };
 
-  // Login function
+  // Login
   const login = async (credentials) => {
     console.log('🔐 [Login] Starting login...');
-    console.log('   - Email:', credentials.email);
-    
     try {
       const response = await authService.login(credentials);
-      
       if (response.success) {
-        console.log('✅ [Login] Login successful');
-        console.log('   - User:', response.data.user.email);
-        console.log('   - Role:', response.data.user.roleName);
-        console.log('   - Tokens saved to localStorage');
+        console.log('✅ [Login] Successful:', response.data.user);
         setUser(response.data.user);
       }
-      
       return response;
     } catch (error) {
-      console.error('❌ [Login] Login failed:', error);
+      console.error('❌ [Login] Failed:', error);
       throw error;
     }
   };
 
-  // Logout function
+  // Logout
   const logout = async () => {
-    console.log('🚪 [Logout] Starting logout...');
-    
+    console.log('🚪 [Logout] Logging out...');
     try {
       await authService.logout();
-      console.log('✅ [Logout] API call successful');
     } catch (error) {
-      console.error('❌ [Logout] API call failed:', error);
+      console.error('❌ [Logout] API failed:', error);
     } finally {
-      console.log('🧹 [Logout] Clearing user state and localStorage');
       setUser(null);
       localStorage.clear();
-      console.log('✅ [Logout] Logout complete');
     }
   };
 
-  // Logout all devices function
+  // Logout all
   const logoutAll = async () => {
-    console.log('🚪 [Logout All] Starting logout from all devices...');
-    
+    console.log('🚪 [Logout All]');
     try {
       await authService.logoutAll();
-      console.log('✅ [Logout All] API call successful');
     } catch (error) {
-      console.error('❌ [Logout All] API call failed:', error);
+      console.error('❌ [Logout All] API failed:', error);
     } finally {
-      console.log('🧹 [Logout All] Clearing user state and localStorage');
       setUser(null);
       localStorage.clear();
-      console.log('✅ [Logout All] Logout complete');
     }
   };
 
-  // Context value
   const value = {
     user,
+    setUser,
+    updateUser, // ✅ thêm dòng này
     loading,
     register,
     login,
