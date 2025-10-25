@@ -6,6 +6,10 @@ using CarbonTC.CarbonLifecycle.Application.Queries.EVJourney;
 using CarbonTC.CarbonLifecycle.Application.Services;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http; 
+using System.IO; 
+using Microsoft.Extensions.Options; 
+using CarbonTC.CarbonLifecycle.Infrastructure.Configuration; 
 
 namespace CarbonTC.CarbonLifecycle.Api.Controllers
 {
@@ -14,11 +18,13 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
     {
         private readonly ILogger<EvJourneysController> _logger;
         private readonly IIdentityService _identityService;
+        private readonly FileStorageSettings _fileStorageSettings; 
 
-        public EvJourneysController(ILogger<EvJourneysController> logger, IIdentityService identityService)
+        public EvJourneysController(ILogger<EvJourneysController> logger, IIdentityService identityService, IOptions<FileStorageSettings> fileStorageOptions)
         {
             _logger = logger;
             _identityService = identityService;
+            _fileStorageSettings = fileStorageOptions.Value;
         }
 
         /// Tải lên một hành trình EV (EV Journey)
@@ -92,6 +98,75 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             var result = await Mediator.Send(command);
 
             return Ok(ApiResponse<JourneyBatchDto>.SuccessResponse(result, "Journey batch created successfully"));
+        }
+
+        /// <summary>
+        /// Tải lên tệp (CSV hoặc JSON) chứa nhiều hành trình EV.
+        /// </summary>
+        /// <param name="file">Tệp tin hành trình.</param>
+        /// <returns>Kết quả xử lý tệp.</returns>
+        [HttpPost("upload-file")]
+        [Consumes("multipart/form-data")] // Specify content type
+        [ProducesResponseType(typeof(ApiResponse<FileUploadResultDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UploadJourneyFile(IFormFile file)
+        {
+            _logger.LogInformation("Attempting to upload journey file: {FileName}", file?.FileName);
+
+            // --- Basic Input Validation ---
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse("No file uploaded or file is empty.", ""));
+            }
+
+            if (file.Length > _fileStorageSettings.MaxFileSizeBytes)
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse($"File size exceeds the limit of {_fileStorageSettings.MaxFileSizeBytes / 1024 / 1024} MB.", ""));
+            }
+
+            var fileExtension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+            var allowedExtensions = new[] { ".csv", ".json" }; // Define allowed extensions here
+            if (string.IsNullOrEmpty(fileExtension) || !allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse($"Invalid file type. Only {string.Join(", ", allowedExtensions)} files are allowed.", ""));
+            }
+            // You might also want to check file.ContentType if needed, e.g., "text/csv", "application/json"
+
+            // --- Get User ID ---
+            var ownerId = _identityService.GetUserId();
+            if (string.IsNullOrEmpty(ownerId))
+            {
+                return Unauthorized(ApiResponse<object>.FailureResponse("User not authenticated.", ""));
+            }
+
+            try
+            {
+                // --- Send Command ---
+                // OpenReadStream provides a readable stream for the file content
+                await using var stream = file.OpenReadStream();
+                var command = new ProcessJourneyFileCommand(stream, file.FileName, file.ContentType, ownerId);
+                var result = await Mediator.Send(command);
+
+                if (result.FailedRecords > 0)
+                {
+                    // If there were partial failures, still return 200 OK but include errors
+                    return Ok(ApiResponse<FileUploadResultDto>.SuccessResponse(result, $"File processed with {result.FailedRecords} errors."));
+                }
+
+                return Ok(ApiResponse<FileUploadResultDto>.SuccessResponse(result, "Journey file processed successfully."));
+            }
+            catch (ArgumentException argEx) // Catch specific validation/parsing exceptions if thrown by handler
+            {
+                _logger.LogWarning(argEx, "Bad request during file upload processing: {FileName}", file.FileName);
+                return BadRequest(ApiResponse<object>.FailureResponse("Failed to process file due to invalid data or format.", argEx.Message));
+            }
+            catch (Exception ex) // Catch unexpected errors
+            {
+                _logger.LogError(ex, "Error processing uploaded journey file: {FileName}", file.FileName);
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<object>.FailureResponse("An internal error occurred while processing the file.", ex.Message));
+            }
         }
     }
 }

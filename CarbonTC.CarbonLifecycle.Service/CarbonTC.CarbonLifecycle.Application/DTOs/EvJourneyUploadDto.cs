@@ -14,6 +14,8 @@ namespace CarbonTC.CarbonLifecycle.Application.DTOs
         public decimal DistanceKm { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string VehicleModel { get; set; } 
+        public string VehicleModel { get; set; }
+        public string? Origin { get; set; }
+        public string? Destination { get; set; }
     }
 }
