@@ -1,18 +1,18 @@
 /* eslint-disable no-unused-vars */
 export type UserRole = 'ADMIN' | 'BUYER' | 'EV_OWNER' | 'CVA';
+export type ThemeMode = 'light' | 'dark';
 
 export interface User {
   id: string;
   email: string;
-  fullName: string;
+  name?: string | null;
   role: UserRole;
   avatarUrl?: string;
   status: 'ACTIVE' | 'INACTIVE';
 }
 
 export interface AuthState {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  themeMode: any;
+  themeMode: ThemeMode;
   token: string | null;
   refreshToken: string | null;
   user: User | null;

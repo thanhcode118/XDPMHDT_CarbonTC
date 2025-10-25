@@ -11,6 +11,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      themeMode: 'light',
 
       setToken: (token: string, refreshToken: string) => {
         set({ token, refreshToken });
@@ -56,6 +57,7 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        themeMode: state.themeMode,
       }),
     },
   ),

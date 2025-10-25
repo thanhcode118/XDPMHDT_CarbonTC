@@ -1,0 +1,70 @@
+# version: "3.9"
+
+services:
+  # api-gateway:
+  #   build: ./api-gateway
+  #   container_name: carbon_api_gateway
+  #   ports:
+  #     - "5000:5000"
+  #   networks:
+  #     - carbon-network
+  #   depends_on:
+  #     - admin-backend
+  #     - mongo
+  #   environment:
+  #     - NODE_ENV=development
+  #     - ADMIN_SERVICE_URL=http://admin-backend:5005
+  #     - AUTH_SERVICE_URL=http://auth-service:5001
+  #     - MARKETPLACE_SERVICE_URL=http://marketplace-service:5003
+  #     - PAYMENT_SERVICE_URL=http://payment-service:5004
+
+  admin-backend:
+    build: ./admin-backend
+    container_name: carbon_admin_backend
+    ports:
+      - "5005:5005"
+    env_file:
+      - ./admin-backend/.env
+    networks:
+      - carbon-network
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/admin_service
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+
+  admin-frontend:
+    build: ./admin-frontend
+    container_name: carbon_admin_frontend
+    ports:
+      - "3000:80"
+    networks:
+      - carbon-network
+    # depends_on:
+    #   - api-gateway
+
+  mongo:
+    image: mongo:6
+    container_name: carbon_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - carbon-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: carbon_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - carbon-network
+
+networks:
+  carbon-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
