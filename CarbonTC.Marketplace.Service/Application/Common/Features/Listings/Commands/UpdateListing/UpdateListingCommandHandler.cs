@@ -9,24 +9,26 @@ namespace Application.Common.Features.Listings.Commands.UpdateListing
     public class UpdateListingCommandHandler : IRequestHandler<UpdateListingCommand, Result>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUser;
 
-        public UpdateListingCommandHandler(IUnitOfWork unitOfWork)
+        public UpdateListingCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _unitOfWork = unitOfWork;
+            _currentUser = currentUser;
         }
 
         public async Task<Result> Handle(UpdateListingCommand request, CancellationToken cancellationToken)
         {
             var listing =await _unitOfWork.Listings.GetByIdAsync(request.ListingId);
             if (listing == null)
-            {
                 return Result.Failure(new Error("LISTING_NOT_FOUND", "Listing not found"));
-            }
 
-            if(listing.Type == ListingType.Auction && listing.HasBids())
-            {
+            if (listing.OwnerId != _currentUser.UserId)
+                return Result.Failure(new Error("Listing.Unauthorized", "You are not authorized to update this listing."));
+
+            if (listing.Type == ListingType.Auction && listing.HasBids())
                 return Result.Failure(new Error("AUCTION_HAS_ACTIVE_BIDS", "Cannot update auction listing that has active bids. Please cancel the listing instead."));
-            }
+            
 
             var validationResult = ValidateBusinessRules(listing, request);
             if (validationResult.IsFailure)

@@ -26,6 +26,7 @@ namespace CarbonTC.API.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateListing(
         [FromBody] CreateListingCommand command,
@@ -47,6 +48,7 @@ namespace CarbonTC.API.Controllers
             }
         }
 
+        [Authorize]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteListing(Guid id, CancellationToken cancellationToken = default)
         {
@@ -76,6 +78,7 @@ namespace CarbonTC.API.Controllers
             return Ok(ApiResponse<object>.SuccessResponse(result, "Listings retrieved successfully."));
         }
 
+        [Authorize]
         [HttpGet("{listingId:guid}")]
         public async Task<IActionResult> GetDetailById([FromRoute] Guid listingId)
         {
@@ -91,6 +94,7 @@ namespace CarbonTC.API.Controllers
             return Ok(ApiResponse<ListingDetailDto>.SuccessResponse(result.Value));
         }
 
+        [Authorize]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateListing(Guid id, [FromBody] UpdateListingRequest request, CancellationToken cancellationToken = default)
         {
@@ -113,6 +117,7 @@ namespace CarbonTC.API.Controllers
             return Ok(ApiResponse<Guid>.SuccessResponse(command.ListingId, "Listing updated successfully."));
         }
 
+        [Authorize]
         [HttpPost("{id:guid}/buy")]
         public async Task<IActionResult> BuyFixedPrice([FromRoute] Guid id, [FromBody] BuyNowRequestDto requestDto, CancellationToken cancellationToken = default)
         {
@@ -136,6 +141,7 @@ namespace CarbonTC.API.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("auctions/{listingId:guid}/bids")]
         public async Task<IActionResult> PlaceBid(Guid listingId, [FromBody] AuctionCommand command, CancellationToken cancellationToken = default)
         {
@@ -152,6 +158,7 @@ namespace CarbonTC.API.Controllers
 
         }
 
+        [Authorize]
         [HttpPost("auction/{listingId:guid}/close")]
         public async Task<IActionResult> CloseAuction([FromRoute] Guid listingId, CancellationToken cancellationToken = default)
         {
@@ -179,6 +186,7 @@ namespace CarbonTC.API.Controllers
             return BadRequest(errorResponse);
         }
 
+        [Authorize]
         [HttpPost("suggest-price")]
         public async Task<IActionResult> SuggestPrice(
             [FromQuery] Guid creditId,

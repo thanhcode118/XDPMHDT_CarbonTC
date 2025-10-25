@@ -7,10 +7,12 @@ namespace Application.Common.Features.Listings.Commands.DeleteListing
     public class DeleteListingCommandHandler: IRequestHandler<DeleteListingCommand, Result>   
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUser;
 
-        public DeleteListingCommandHandler(IUnitOfWork unitOfWork)
+        public DeleteListingCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _unitOfWork = unitOfWork;
+            _currentUser = currentUser;
         }
         
         public async Task<Result> Handle(DeleteListingCommand request, CancellationToken cancellationToken)
@@ -19,7 +21,8 @@ namespace Application.Common.Features.Listings.Commands.DeleteListing
 
             if (listing == null)
                 return Result.Failure(new Error("Listing.NotFound", $"Listing with ID {request.ListingId} not found."));
-
+            if (listing.OwnerId != _currentUser.UserId)
+                return Result.Failure(new Error("Listing.Unauthorized", "You are not authorized to delete this listing."));
             if (listing.Bids.Any())
                 return Result.Failure(new Error("Listing.HasBids", "Cannot delete listing that has associated bids."));
 

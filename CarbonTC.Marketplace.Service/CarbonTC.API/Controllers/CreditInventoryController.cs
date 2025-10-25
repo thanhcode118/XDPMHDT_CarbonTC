@@ -2,6 +2,7 @@
 using CarbonTC.API.Common;
 using Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarbonTC.API.Controllers
@@ -17,6 +18,7 @@ namespace CarbonTC.API.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetByCreditId([FromQuery] Guid creditId)
         {

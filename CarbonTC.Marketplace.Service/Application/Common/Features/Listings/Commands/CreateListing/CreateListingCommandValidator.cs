@@ -10,9 +10,6 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
             RuleFor(x => x.CreditId)
                 .NotEmpty().WithMessage("CreditId is required.");
 
-            RuleFor(x => x.OwnerId)
-                .NotEmpty().WithMessage("OwnerId is required.");
-
             RuleFor(x => x.Type)
                 .IsInEnum().WithMessage("Invalid listing type.");
 

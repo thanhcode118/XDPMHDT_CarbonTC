@@ -11,16 +11,22 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
     {
         private readonly IListingRepository _listingRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUser;
 
-        public CreateListingCommandHandler(IListingRepository listingRepository, IUnitOfWork unitOfWork)
+        public CreateListingCommandHandler(IListingRepository listingRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _listingRepository = listingRepository;
             _unitOfWork = unitOfWork;
+            _currentUser = currentUser;
         }
 
         public async Task<Result<Guid>> Handle(CreateListingCommand command, CancellationToken cancellationToken)
         {
             Listing listing;
+            if (_currentUser.UserId is not Guid ownerId)
+            {
+                return Result.Failure<Guid>(new Error("User.Unauthorized", "Please login to create"));
+            }
 
             var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(command.CreditId, cancellationToken);
             if (creditInventory == null)
@@ -36,7 +42,7 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
                 case ListingType.FixedPrice:
                     listing = Listing.CreateFixedPriceListing(
                         command.CreditId,
-                        command.OwnerId,
+                        ownerId,
                         command.PricePerUnit,
                         command.Quantity);
                     break;
@@ -44,7 +50,7 @@ namespace Application.Common.Features.Listings.Commands.CreateListing
                 case ListingType.Auction:
                     listing = Listing.CreateAuctionListing(
                         command.CreditId,
-                        command.OwnerId,
+                        ownerId,
                         command.PricePerUnit,
                         command.MinimumBid.Value,
                         command.Quantity,
