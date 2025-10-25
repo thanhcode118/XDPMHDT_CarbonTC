@@ -12,14 +12,22 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
         private readonly ICarbonLifecycleServiceClient _carbonLifecycleService;
         private readonly ICacheService _cacheService;
         private readonly ILogger<GetPriceSuggestionQueryHandler> _logger;
+        private readonly IFXRatesServiceClient _fXRates;
 
-        public GetPriceSuggestionQueryHandler(ICarbonPricingService carbonPricing, IUnitOfWork unitOfWork, ICarbonLifecycleServiceClient carbonLifecycleService, ICacheService cacheService, ILogger<GetPriceSuggestionQueryHandler> logger)
+        public GetPriceSuggestionQueryHandler(
+            ICarbonPricingService carbonPricing, 
+            IUnitOfWork unitOfWork, 
+            ICarbonLifecycleServiceClient carbonLifecycleService, 
+            ICacheService cacheService, 
+            ILogger<GetPriceSuggestionQueryHandler> logger,
+            IFXRatesServiceClient fXRates)
         {
             _carbonPricing = carbonPricing;
             _unitOfWork = unitOfWork;
             _carbonLifecycleService = carbonLifecycleService;
             _cacheService = cacheService;
             _logger = logger;
+            _fXRates = fXRates;
         }
 
         public async Task<Result<float>> Handle(GetPriceSuggestionQuery request, CancellationToken cancellationToken)
@@ -57,8 +65,8 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
                 marketDemand = (float)demandTask.Result;
 
                 var ttl = TimeSpan.FromMinutes(10);
-                await _cacheService.SetExpiryAsync(supplyKey, ttl);
-                await _cacheService.SetExpiryAsync(demandKey, ttl);
+                await _cacheService.SetStringAsync(supplyKey, marketSupply, ttl);
+                await _cacheService.SetStringAsync(demandKey, marketDemand, ttl);
             }
 
             var predictedPrice = await _carbonPricing.PredictPrice(
@@ -70,7 +78,9 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
                 (float)marketDemand
             );
 
-            return Result<float>.Success(predictedPrice);
+            var fxResult = await _fXRates.GetRateAsync("usd", "vnd", cancellationToken);
+
+            return Result<float>.Success((float)fxResult * predictedPrice);
         }
     }
 }

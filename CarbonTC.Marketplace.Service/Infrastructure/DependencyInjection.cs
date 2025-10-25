@@ -46,6 +46,11 @@ namespace Infrastructure
                 client.BaseAddress = new Uri(configuration["Services:CarbonLifecycleService"]);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
+            services.AddHttpClient<IFXRatesServiceClient, FXRatesServiceClient>(client =>
+            {
+                client.BaseAddress = new Uri(configuration["Services:FXRatesApi"]);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
 
 
             // Repositories
