@@ -25,6 +25,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Cho phép public các endpoint này
                         .requestMatchers(
+                                "/webjars/**",
+                                "/swagger-resources/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
