@@ -6,6 +6,7 @@ import com.carbontc.walletservice.dto.response.CreditTransferResponse;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.payload.ApiResponse;
 import com.carbontc.walletservice.service.CarbonWalletsService;
+import com.carbontc.walletservice.util.AuthencationUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +24,12 @@ public class CarbonWalletController {
 
     private final CarbonWalletsService carbonWalletsService;
 
+    private final AuthencationUtil authencationUtil;
+
     @Operation(summary = "Tạo ví Carbon cho người dùng hiện tại")
     @PostMapping("/my-wallet")
     public ResponseEntity<ApiResponse<CarbonWalletResponse>> createMyCarbonWallet() throws BusinessException {
-        String userId = getAuthenticatedUserId();
+        String userId = authencationUtil.getAuthenticatedUserId();
 
         CarbonWalletResponse carbonWalletResponse = carbonWalletsService.createCarbonWallet(userId);
         return ResponseEntity
@@ -37,7 +40,7 @@ public class CarbonWalletController {
     @Operation(summary = "Xem chi tiết ví của người dùng hiện tại")
     @GetMapping("/my-wallet")
     public ResponseEntity<ApiResponse<CarbonWalletResponse>> getMyWallet() throws BusinessException {
-        String userId = getAuthenticatedUserId();
+        String userId =  authencationUtil.getAuthenticatedUserId();
 
         CarbonWalletResponse response = carbonWalletsService.getCarbonWalletByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success("Lấy thông tin ví thành công", response));
@@ -47,16 +50,10 @@ public class CarbonWalletController {
     @PostMapping("/transfer")
     public ResponseEntity<ApiResponse<CreditTransferResponse>> transferCredits(
             @Valid @RequestBody CreditTransferRequest request) throws BusinessException {
-        String fromUserId = getAuthenticatedUserId();
-
+        String fromUserId = authencationUtil.getAuthenticatedUserId();
 
         CreditTransferResponse response = carbonWalletsService.transferCredits(fromUserId, request);
         return ResponseEntity.ok(ApiResponse.success("Chuyển tín chỉ thành công", response));
     }
 
-    // HELPER METHOD
-    private String getAuthenticatedUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
-    }
 }

@@ -1,8 +1,10 @@
 package com.carbontc.walletservice.controller;
 
 import com.carbontc.walletservice.dto.request.DepositRequest;
+import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.payload.ApiResponse;
 import com.carbontc.walletservice.service.PaymentService;
+import com.carbontc.walletservice.util.AuthencationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +22,14 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    private final AuthencationUtil authencationUtil;
+
     @PostMapping("/deposit")
     public ResponseEntity<ApiResponse<String>> createDepositPayment(
             @Valid @RequestBody DepositRequest depositRequest, // DTO này giờ chỉ có 'amount'
-            HttpServletRequest request) {
+            HttpServletRequest request) throws BusinessException {
 
-        String userId = getAuthenticatedUserId();
+        String userId = authencationUtil.getAuthenticatedUserId();
         try {
             String paymentUrl = paymentService.createDepositUrl(
                     userId,
@@ -60,8 +64,4 @@ public class PaymentController {
         }
     }
 
-    private String getAuthenticatedUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
-    }
 }

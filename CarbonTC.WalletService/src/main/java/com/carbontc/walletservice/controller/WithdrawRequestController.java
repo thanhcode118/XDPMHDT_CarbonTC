@@ -5,6 +5,7 @@ import com.carbontc.walletservice.dto.response.WithdrawRequestResponse;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.payload.ApiResponse;
 import com.carbontc.walletservice.service.WithdrawRequestService;
+import com.carbontc.walletservice.util.AuthencationUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +23,14 @@ public class WithdrawRequestController {
 
     private final WithdrawRequestService withdrawRequestService;
 
+    private final AuthencationUtil authencationUtil;
+
     @Operation(summary = "Tạo đề nghị rút tiền")
     @PostMapping
     public ResponseEntity<ApiResponse<WithdrawRequestResponse>> createWithdrawRequest(
             @Valid @RequestBody CreateWithdrawRequest request) throws BusinessException {
 
-        String userId = getAuthenticatedUserId();
+        String userId = authencationUtil.getAuthenticatedUserId();
         WithdrawRequestResponse response = withdrawRequestService.createRequest(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -48,11 +51,5 @@ public class WithdrawRequestController {
     public ResponseEntity<ApiResponse<WithdrawRequestResponse>> rejectRequest(@PathVariable Long requestId) throws BusinessException {
         WithdrawRequestResponse response = withdrawRequestService.rejectRequest(requestId);
         return ResponseEntity.ok(ApiResponse.success("Đã từ chối yêu cầu rút tiền.", response));
-    }
-
-    //HELPER METHOD
-    private String getAuthenticatedUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
     }
 }

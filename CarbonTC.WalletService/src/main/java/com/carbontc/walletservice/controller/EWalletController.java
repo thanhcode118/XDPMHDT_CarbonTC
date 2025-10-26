@@ -7,6 +7,7 @@ import com.carbontc.walletservice.entity.EWallet;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.payload.ApiResponse;
 import com.carbontc.walletservice.service.EWalletService;
+import com.carbontc.walletservice.util.AuthencationUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -27,11 +28,13 @@ public class EWalletController {
 
     private final EWalletService eWalletService;
 
+    private final AuthencationUtil authencationUtil;
+
     @Operation(summary = "Tạo ví cho người dùng")
     @PostMapping("/my-wallet")
     public ResponseEntity<ApiResponse<EWalletResponse>> createWallet(
             @RequestBody @Valid EWalletRequest eWalletRequest) throws BusinessException {
-        String userId = getAuthenticatedUserId();
+        String userId = authencationUtil.getAuthenticatedUserId();
         EWalletResponse eWalletResponse = eWalletService.createWallet(userId, eWalletRequest);
         return ResponseEntity.ok(ApiResponse.success("Tạo ví thành công", eWalletResponse));
     }
@@ -46,7 +49,7 @@ public class EWalletController {
     @Operation(summary = "Chi tiết ví")
     @GetMapping("/my-wallet")
     public ResponseEntity<ApiResponse<EWalletResponse>> getMyWallet() throws BusinessException {
-        String userId = getAuthenticatedUserId();
+        String userId = authencationUtil.getAuthenticatedUserId();
 
         EWalletResponse eWalletResponse = eWalletService.getMyWalletByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success("Lấy ví người dùng thành công", eWalletResponse));
@@ -55,14 +58,10 @@ public class EWalletController {
     @Operation(summary = "Lịch sử giao dịch của ví")
     @GetMapping("/my-wallet/transactions")
     public ResponseEntity<ApiResponse<List<TransactionLogResponse>>> getMyTransactionHistory() throws BusinessException {
-        String userId = getAuthenticatedUserId();
+        String userId = authencationUtil.getAuthenticatedUserId();
 
         List<TransactionLogResponse> logs = eWalletService.getTransactionHistoryByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success("Lấy lịch sử giao dịch thành công", logs));
     }
 
-    private String getAuthenticatedUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
-    }
 }
