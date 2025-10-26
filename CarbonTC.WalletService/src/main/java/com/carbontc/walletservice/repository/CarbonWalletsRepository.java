@@ -8,7 +8,7 @@ import java.util.Optional;
 @Repository
 public interface CarbonWalletsRepository extends JpaRepository<CarbonWallets, Long>
 {
-    boolean existsByOwnerId(Long ownerId);
+    boolean existsByOwnerId(String ownerId);
 
-    Optional<CarbonWallets> findByOwnerId(Long ownerId);
+    Optional<CarbonWallets> findByOwnerId(String ownerId);
 }

@@ -5,13 +5,15 @@ import com.carbontc.walletservice.dto.response.CarbonWalletResponse;
 import com.carbontc.walletservice.dto.response.CreditTransferResponse;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.payload.ApiResponse;
-import com.carbontc.walletservice.service.CarbonCreditTransferService;
 import com.carbontc.walletservice.service.CarbonWalletsService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize; // Thêm PreAuthorize
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,30 +23,40 @@ public class CarbonWalletController {
 
     private final CarbonWalletsService carbonWalletsService;
 
-    @Operation(summary = " Tạo ví Carbon cho người dùng")
-    @PostMapping
-    public ResponseEntity<ApiResponse<CarbonWalletResponse>> createCarbonWallet(@RequestParam Long id) throws BusinessException {
-        CarbonWalletResponse carbonWalletResponse = carbonWalletsService.createCarbonWallet(id);
+    @Operation(summary = "Tạo ví Carbon cho người dùng hiện tại")
+    @PostMapping("/my-wallet")
+    public ResponseEntity<ApiResponse<CarbonWalletResponse>> createMyCarbonWallet() throws BusinessException {
+        String userId = getAuthenticatedUserId();
 
-        return  ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Tạo ví carbon thành công", carbonWalletResponse));
+        CarbonWalletResponse carbonWalletResponse = carbonWalletsService.createCarbonWallet(userId);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Tạo ví carbon thành công", carbonWalletResponse));
     }
 
-    @Operation(summary = "Xem chi tiết ví")
-    @GetMapping
-    public ResponseEntity<ApiResponse<CarbonWalletResponse>> getWalletByUserId(
-            @RequestParam Long userId) throws BusinessException {
-        // Tạm thời truyền userId, sau này sẽ là /my-wallet và lấy từ token
+    @Operation(summary = "Xem chi tiết ví của người dùng hiện tại")
+    @GetMapping("/my-wallet")
+    public ResponseEntity<ApiResponse<CarbonWalletResponse>> getMyWallet() throws BusinessException {
+        String userId = getAuthenticatedUserId();
+
         CarbonWalletResponse response = carbonWalletsService.getCarbonWalletByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success("Lấy thông tin ví thành công", response));
     }
 
-    @Operation(summary = "Chuyển tín chỉ")
+    @Operation(summary = "Chuyển tín chỉ từ ví của tôi cho người khác")
     @PostMapping("/transfer")
     public ResponseEntity<ApiResponse<CreditTransferResponse>> transferCredits(
             @Valid @RequestBody CreditTransferRequest request) throws BusinessException {
+        String fromUserId = getAuthenticatedUserId();
 
-        CreditTransferResponse response = carbonWalletsService.transferCredits(request);
+
+        CreditTransferResponse response = carbonWalletsService.transferCredits(fromUserId, request);
         return ResponseEntity.ok(ApiResponse.success("Chuyển tín chỉ thành công", response));
     }
 
+    // HELPER METHOD
+    private String getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
+    }
 }

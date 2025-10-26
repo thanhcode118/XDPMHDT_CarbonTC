@@ -28,7 +28,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
    private final CarbonCreditTransferRepository carbonCreditTransferRepository;
 
     @Override
-    public CarbonWalletResponse createCarbonWallet(Long userId) throws BusinessException {
+    public CarbonWalletResponse createCarbonWallet(String userId) throws BusinessException {
         if(carbonWalletsRepository.existsByOwnerId(userId)){
             throw new BusinessException("Ví carbon của dùng đã tồn tại");
         };
@@ -45,23 +45,24 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
     }
 
     @Override
-    public CarbonWalletResponse getCarbonWalletByUserId(Long userId) throws BusinessException {
+    @Transactional
+    public CarbonWalletResponse getCarbonWalletByUserId(String userId) throws BusinessException {
         CarbonWallets carbonWallets = carbonWalletsRepository.findByOwnerId(userId)
                 .orElseThrow(()-> new BusinessException(" Không tìm thấy ví người dùng"));
         return mapToWalletResponse(carbonWallets);
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
-    public CreditTransferResponse transferCredits(CreditTransferRequest request) throws BusinessException {
-        CarbonWallets senderWallet = carbonWalletsRepository.findByOwnerId(request.getFromUserId())
+    @Transactional
+    public CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequest request) throws BusinessException {
+
+        CarbonWallets senderWallet = carbonWalletsRepository.findByOwnerId(fromUserId)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy ví người gửi."));
 
         CarbonWallets receiverWallet = carbonWalletsRepository.findByOwnerId(request.getToUserId())
                 .orElseThrow(() -> new BusinessException("Không tìm thấy ví người nhận."));
 
-        // kiểm tra số dư
-        if (senderWallet.getBalance().compareTo(request.getAmount()) < 0) { // So sánh với request.getAmount()
+        if (senderWallet.getBalance().compareTo(request.getAmount()) < 0) {
             throw new BusinessException("Số dư tín chỉ không đủ giao dịch.");
         }
 
@@ -75,14 +76,13 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
 
         CarbonCreditTransfer carbonCreditTransfer = new CarbonCreditTransfer();
         carbonCreditTransfer.setFromWallet(senderWallet);
-        carbonCreditTransfer.setToWallet(receiverWallet); // Sửa tên phương thức
+        carbonCreditTransfer.setToWallet(receiverWallet);
         carbonCreditTransfer.setAmount(request.getAmount());
         carbonCreditTransfer.setTransferType(request.getTransferType());
-        carbonCreditTransfer.setReferenceId(request.getReferenceId()); // Thêm dòng này
+        carbonCreditTransfer.setReferenceId(request.getReferenceId());
         carbonCreditTransfer.setCreatedAt(LocalDateTime.now());
 
         CarbonCreditTransfer saved = carbonCreditTransferRepository.save(carbonCreditTransfer);
-
 
         return mapToTransferResponse(saved);
     }

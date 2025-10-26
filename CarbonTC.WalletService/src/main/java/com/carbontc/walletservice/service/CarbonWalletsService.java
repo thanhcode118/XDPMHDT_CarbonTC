@@ -6,10 +6,7 @@ import com.carbontc.walletservice.dto.response.CreditTransferResponse;
 import com.carbontc.walletservice.exception.BusinessException;
 
 public interface CarbonWalletsService {
-    CarbonWalletResponse createCarbonWallet(Long userId) throws BusinessException;
-
-    CarbonWalletResponse getCarbonWalletByUserId(Long userId) throws BusinessException;
-
-    CreditTransferResponse transferCredits(CreditTransferRequest request) throws BusinessException;
-
+    CarbonWalletResponse createCarbonWallet(String userId) throws BusinessException;
+    CarbonWalletResponse getCarbonWalletByUserId(String userId) throws BusinessException;
+    CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequest request) throws BusinessException;
 }

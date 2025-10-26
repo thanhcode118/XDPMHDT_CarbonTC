@@ -14,7 +14,7 @@ public class CarbonWallets {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long walletId;
 
-    private Long ownerId;
+    private String ownerId;
 
     private BigDecimal balance;
 
@@ -26,11 +26,11 @@ public class CarbonWallets {
         this.walletId = walletId;
     }
 
-    public Long getOwnerId() {
+    public String getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
+    public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
 
