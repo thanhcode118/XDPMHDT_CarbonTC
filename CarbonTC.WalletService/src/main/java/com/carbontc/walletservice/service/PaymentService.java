@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public interface PaymentService {
-    String createDepositUrl(Long walletId, BigDecimal amount, HttpServletRequest request) throws Exception;
+    String createDepositUrl(String userId, BigDecimal amount, HttpServletRequest request) throws Exception;
 
     /**
      * Xử lý callback (IPN) từ VNPay.

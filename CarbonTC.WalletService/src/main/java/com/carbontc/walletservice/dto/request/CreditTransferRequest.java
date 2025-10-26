@@ -10,11 +10,8 @@ import java.math.BigDecimal;
 @Data
 public class CreditTransferRequest {
 
-    @NotNull(message = "ID người gửi không được trống")
-    private Long fromUserId; // Sau này sẽ lấy từ token
-
     @NotNull(message = "ID người nhận không được trống")
-    private Long toUserId;
+    private String toUserId;
 
     @NotNull(message = "Số lượng không được trống")
     @DecimalMin(value = "0.1", message = "Số lượng chuyển tối thiểu là 0.1")
