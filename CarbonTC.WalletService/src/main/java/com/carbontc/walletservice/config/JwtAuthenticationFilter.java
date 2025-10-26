@@ -30,9 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userId;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response); // Cho request đi tiếp (ví dụ: tới Swagger)
+            return; // Dừng filter
         }
 
         jwt = authorizationHeader.substring(7);
@@ -44,9 +44,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String role  = jwtUtil.extractRole(jwt);
 
                 // Tạo đối tượng GrantedAuthority từ role'
-                List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+                List<GrantedAuthority> authorities =
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId,jwt,authorities);
 
                 // Tạo đối tượng xác thực
                 UsernamePasswordAuthenticationToken authToken =
