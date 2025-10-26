@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class EWalletResponse {
     private Long walletId;
-    private Long userId;
+    private String userId;
     private Double balance;
     private String currency;
     private LocalDateTime updatedAt;

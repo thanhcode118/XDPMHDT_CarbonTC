@@ -16,7 +16,7 @@ public class WithdrawRequestResponse {
 
         private Long requestId;
 
-        private Long userId;
+        private String userId;
 
         private BigDecimal amount;
 
