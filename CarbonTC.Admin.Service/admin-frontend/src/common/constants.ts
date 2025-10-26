@@ -77,3 +77,15 @@ export function getRoutePath(
 
   return buildPath(path, params);
 }
+
+export const DEFAULT_ROUTE_LABELS: Record<string, string> = {
+  dashboard: 'Dashboard',
+  users: 'Users',
+  'listing-and-orders': 'Listings & Orders',
+  disputes: 'Disputes',
+  certificates: 'Certificates',
+  reports: 'Reports & KPI',
+  wallet: 'Wallet',
+  settings: 'Settings',
+  profile: 'Profile',
+} as const;

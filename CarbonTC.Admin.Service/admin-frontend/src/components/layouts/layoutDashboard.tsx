@@ -3,8 +3,7 @@ import { Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
-// import { AuthGuard } from '../auth';
-// import BreadcrumbPage from '../breadcrumbPage';
+import BreadcrumbPage from '../breadcrumbPage';
 
 import Sidebar from './sidebar';
 
@@ -18,7 +17,6 @@ const LayoutDashboard = () => {
   }, [isMobile]);
 
   return (
-    // <AuthGuard>
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar
         key={isMobile ? 'mobile' : 'desktop'}
@@ -77,12 +75,15 @@ const LayoutDashboard = () => {
             }),
           }}
         >
-          {/* <BreadcrumbPage /> */}
+          <BreadcrumbPage
+            showOnlyLast={isMobile}
+            fontSize={isMobile ? '14px' : '16px'}
+          />
+
           <Outlet />
         </Box>
       </Box>
     </Box>
-    // </AuthGuard>
   );
 };
 
