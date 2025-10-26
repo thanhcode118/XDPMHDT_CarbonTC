@@ -6,7 +6,7 @@ namespace CarbonTC.Auth.Application.Features.Auth.Commands.RegisterUser;
 
 public class RegisterUserValidator : AbstractValidator<RegisterUserCommand>
 {
-    private readonly string[] _validRoles = { "EVOwner", "CreditBuyer", "Verifier" };
+    private readonly string[] _validRoles = { "EVOwner", "CreditBuyer", "Verifier", "Admin" };
 
     public RegisterUserValidator()
     {

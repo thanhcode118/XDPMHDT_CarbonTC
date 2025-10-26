@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styles from './ProfileTab.module.css';
 import authService from '../../services/authService';
 import userService from '../../services/userService';
+// !!! IMPORT ALERTBOX !!!
+import AlertBox from '../../components/AlertBox/AlertBox'; 
 
 const ProfileTab = ({ onSave }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +14,10 @@ const ProfileTab = ({ onSave }) => {
     bio: '',
     avatar: ''
   });
+  
+  // THÊM STATE CHO LOADING VÀ THÔNG BÁO
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null); // {type: 'success'/'error', text: '...'}
 
   // 🟢 Load dữ liệu từ localStorage hoặc từ authService
   useEffect(() => {
@@ -51,6 +57,9 @@ const ProfileTab = ({ onSave }) => {
   // 🟢 Submit form cập nhật thông tin
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    setLoading(true); // Bắt đầu loading
+    setMessage(null); // Xóa thông báo cũ
 
     const updatedUser = {
       ...formData,
@@ -86,18 +95,37 @@ const ProfileTab = ({ onSave }) => {
         // 🟢 Callback cho component cha (nếu có)
         if (onSave) onSave(userData);
 
-        alert('✅ Cập nhật thông tin thành công!');
+        // THAY THẾ alert() BẰNG ALERTBOX THÀNH CÔNG
+        setMessage({
+            type: 'success',
+            text: 'Cập nhật thông tin hồ sơ thành công!'
+        });
+        
       } else {
         throw new Error('Phản hồi không hợp lệ từ server');
       }
     } catch (error) {
       console.error('❌ Lỗi khi cập nhật:', error);
-      alert(error.message || 'Cập nhật thất bại!');
+      
+      // THAY THẾ alert() BẰNG ALERTBOX THẤT BẠI
+      setMessage({
+        type: 'error',
+        text: error.message || 'Cập nhật thất bại! Vui lòng thử lại.'
+      });
+    } finally {
+      setLoading(false); // Tắt loading
+      // Tự động ẩn thông báo sau 5 giây
+      setTimeout(() => {
+        setMessage(null);
+      }, 5000); 
     }
   };
 
   // 🟢 Hủy thay đổi, khôi phục dữ liệu gốc
   const handleCancel = () => {
+    // Xóa thông báo nếu có
+    setMessage(null); 
+    
     const storedUser = localStorage.getItem('user');
     const currentUser = storedUser
       ? JSON.parse(storedUser)
@@ -124,6 +152,10 @@ const ProfileTab = ({ onSave }) => {
 
   return (
     <div className={styles.tabContent} data-aos="fade-up">
+      
+      {/* HIỂN THỊ ALERTBOX */}
+      {message && <AlertBox message={message} />} 
+
       <div className={styles.card}>
         <div className={styles.cardBody}>
           <div className={styles.profilePictureContainer}>
@@ -184,6 +216,7 @@ const ProfileTab = ({ onSave }) => {
                   id="email"
                   className={styles.formControl}
                   value={formData.email}
+                  onChange={handleChange}
                   disabled
                 />
               </div>
@@ -218,13 +251,15 @@ const ProfileTab = ({ onSave }) => {
               <button
                 type="submit"
                 className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+                disabled={loading} // Vô hiệu hóa khi đang loading
               >
-                Lưu thay đổi
+                {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
               </button>
               <button
                 type="button"
                 className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}
                 onClick={handleCancel}
+                disabled={loading} // Vô hiệu hóa khi đang loading
               >
                 Hủy
               </button>
