@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class CarbonWalletResponse {
 
     private Long walletId;
-    private Long ownerId;
+    private String ownerId;
     private BigDecimal balance; // Số dư tín chỉ hiện tại
     private BigDecimal totalEarned; // Tổng tín chỉ đã kiếm được
     private LocalDateTime lastUpdated;
