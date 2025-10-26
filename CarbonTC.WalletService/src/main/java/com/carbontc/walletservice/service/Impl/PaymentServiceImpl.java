@@ -56,8 +56,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Lấy lại vnp_TxnRef từ params
         String vnp_TxnRef_FromVNPAY = params.get("vnp_TxnRef");
-        String transactionLogId = vnp_TxnRef_FromVNPAY;
-
+        String transactionLogId = vnp_TxnRef_FromVNPAY.split("_")[0];
         if (!vnPayService.validateSignature(params)) {
             // Cập nhật log thất bại nếu chữ ký sai
             updateTransactionLogStatus(transactionLogId, "FAILED", "Invalid Checksum");
