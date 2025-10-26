@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 @Data
 public class DepositRequest {
 
-    @NotNull(message = "Wallet ID không được để trống")
-    private Long walletId;
 
     @NotNull(message = "Số tiền không được để trống")
     @DecimalMin(value = "10000", message = "Số tiền nạp tối thiểu là 10,000 VND")
