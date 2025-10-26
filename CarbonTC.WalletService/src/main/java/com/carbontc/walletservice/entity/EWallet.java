@@ -17,7 +17,7 @@ public class EWallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long walletId;
 
-    private Long userId;
+    private String userId;
 
     private BigDecimal balance;
 
@@ -29,11 +29,11 @@ public class EWallet {
         this.walletId = walletId;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

@@ -31,17 +31,16 @@ public class EWalletServiceImpl implements EWalletService {
 
     // TẠO VÍ
     @Override
-    public EWalletResponse createWallet(EWalletRequest request) throws BusinessException {
-
+    public EWalletResponse createWallet(String userId, EWalletRequest request) throws BusinessException {
         EWallet eWallet = new EWallet();
 
-        if(eWalletRepository.existsById(request.getUserId())){
+        if(eWalletRepository.existsByUserId(userId)){
             throw new BusinessException("Người dùng đã tạo ví rồi");
         }
 
-        eWallet.setUserId(request.getUserId());
+        eWallet.setUserId(userId);
         eWallet.setCurrency(request.getCurrency());
-        eWallet.setBalance(request.getAmount());
+        eWallet.setBalance(BigDecimal.valueOf(0));
         eWallet.setUpdatedAt(LocalDateTime.now());
         EWallet saved = eWalletRepository.save(eWallet);
 
@@ -50,6 +49,7 @@ public class EWalletServiceImpl implements EWalletService {
 
     // NỘP TIỀN
     @Override
+    @Transactional
     public EWalletResponse deposit(Long walletId, BigDecimal amount) throws BusinessException {
         EWallet eWallet = eWalletRepository.findById(walletId)
                 .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
@@ -106,16 +106,22 @@ public class EWalletServiceImpl implements EWalletService {
     }
 
     @Override
-    public EWalletResponse getMyWalletById(Long userId) throws BusinessException {
-        EWallet eWallet = eWalletRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("Không tìm thấy ví người dùng"));
-
+    public EWalletResponse getMyWalletByUserId(String userId) throws BusinessException {
+        EWallet eWallet = eWalletRepository.findByUserId(userId) // SỬA LẠI: Tra cứu bằng 'userId' (String)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy ví của người dùng"));
         return mapToResponse(eWallet);
     }
 
     @Override
-    public List<TransactionLogResponse> getTransactionHistory(Long walletId) {
+    public List<TransactionLogResponse> getTransactionHistoryByUserId(String userId) throws BusinessException {
+        EWallet eWallet = eWalletRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy ví của người dùng"));
+
+        Long walletId = eWallet.getWalletId();
+
+        // 2. Tìm log bằng walletId (Long)
         List<TransactionLog> logs = transactionLogRepository.findByWalletIdOrderByCreatedAtDesc(walletId);
+
         return logs.stream()
                 .map(log -> modelMapper.map(log, TransactionLogResponse.class))
                 .toList();

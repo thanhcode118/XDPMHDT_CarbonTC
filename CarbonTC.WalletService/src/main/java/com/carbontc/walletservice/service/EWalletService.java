@@ -10,11 +10,8 @@ import java.util.List;
 
 public interface EWalletService {
 
-    EWalletResponse createWallet(EWalletRequest request) throws BusinessException;
-    EWalletResponse deposit(Long walletId, BigDecimal amount) throws  BusinessException;
+    EWalletResponse createWallet(String userId, EWalletRequest request) throws BusinessException;    EWalletResponse deposit(Long walletId, BigDecimal amount) throws  BusinessException;
     EWalletResponse withdraw(Long walletId, BigDecimal amount ) throws BusinessException;
-    EWalletResponse getMyWalletById(Long userId) throws BusinessException;
-
-    List<TransactionLogResponse> getTransactionHistory(Long walletId);
-
+    EWalletResponse getMyWalletByUserId(String userId) throws BusinessException;
+    List<TransactionLogResponse> getTransactionHistoryByUserId(String userId) throws BusinessException;
 }
