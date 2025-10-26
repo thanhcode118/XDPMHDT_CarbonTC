@@ -10,6 +10,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +27,7 @@ public class WithdrawRequestController {
     public ResponseEntity<ApiResponse<WithdrawRequestResponse>> createWithdrawRequest(
             @Valid @RequestBody CreateWithdrawRequest request) throws BusinessException {
 
+        String userId = getAuthenticatedUserId();
         WithdrawRequestResponse response = withdrawRequestService.createRequest(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -32,6 +36,7 @@ public class WithdrawRequestController {
 
     @Operation(summary = "Admin duyệt chấp nhận rút tiền")
     @PostMapping("/{requestId}/approve")
+    @PreAuthorize("hasAuthority('ROLE_Admin')")
     public ResponseEntity<ApiResponse<WithdrawRequestResponse>> approveRequest(@PathVariable Long requestId) throws BusinessException {
         WithdrawRequestResponse response = withdrawRequestService.rejectRequest(requestId);
         return ResponseEntity.ok(ApiResponse.success("Duyệt yêu cầu thành công, đã trừ tiền từ ví user.", response));
@@ -39,9 +44,15 @@ public class WithdrawRequestController {
 
     @Operation(summary = "Admin duyệt chấp nhận rút tiền")
     @PostMapping("/{requestId}/reject")
+    @PreAuthorize("hasAuthority('ROLE_Admin')")
     public ResponseEntity<ApiResponse<WithdrawRequestResponse>> rejectRequest(@PathVariable Long requestId) throws BusinessException {
         WithdrawRequestResponse response = withdrawRequestService.rejectRequest(requestId);
         return ResponseEntity.ok(ApiResponse.success("Đã từ chối yêu cầu rút tiền.", response));
     }
 
+    //HELPER METHOD
+    private String getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
+    }
 }

@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,11 +22,13 @@ public class PaymentController {
 
     @PostMapping("/deposit")
     public ResponseEntity<ApiResponse<String>> createDepositPayment(
-            @Valid @RequestBody DepositRequest depositRequest,
+            @Valid @RequestBody DepositRequest depositRequest, // DTO này giờ chỉ có 'amount'
             HttpServletRequest request) {
+
+        String userId = getAuthenticatedUserId();
         try {
             String paymentUrl = paymentService.createDepositUrl(
-                    depositRequest.getWalletId(),
+                    userId,
                     depositRequest.getAmount(),
                     request
             );
@@ -54,5 +58,10 @@ public class PaymentController {
                     .internalServerError()
                     .body(ApiResponse.fail("Có lỗi xảy ra trong quá trình xử lý kết quả.", e.getMessage()));
         }
+    }
+
+    private String getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
     }
 }

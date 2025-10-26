@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,9 +28,11 @@ public class EWalletController {
     private final EWalletService eWalletService;
 
     @Operation(summary = "Tạo ví cho người dùng")
-    @PostMapping
-    public ResponseEntity<ApiResponse<EWalletResponse>>  createWallet( @RequestBody @Valid EWalletRequest eWalletRequest) throws BusinessException {
-        EWalletResponse eWalletResponse = eWalletService.createWallet(eWalletRequest);
+    @PostMapping("/my-wallet")
+    public ResponseEntity<ApiResponse<EWalletResponse>> createWallet(
+            @RequestBody @Valid EWalletRequest eWalletRequest) throws BusinessException {
+        String userId = getAuthenticatedUserId();
+        EWalletResponse eWalletResponse = eWalletService.createWallet(userId, eWalletRequest);
         return ResponseEntity.ok(ApiResponse.success("Tạo ví thành công", eWalletResponse));
     }
 
@@ -39,25 +43,26 @@ public class EWalletController {
         return ResponseEntity.ok(ApiResponse.success("Nộp tiền thành công", eWalletResponse));
     }
 
-    @Operation(summary = "Rút tiền ra khỏi ví")
-    @PostMapping("/{id}/withDraw")
-    public ResponseEntity<ApiResponse<EWalletResponse>> CreatWithDraw(@PathVariable Long id , @RequestParam BigDecimal amout) throws BusinessException {
-        EWalletResponse eWalletResponse = eWalletService.withdraw(id, amout);
-        return ResponseEntity.ok(ApiResponse.success("Rút tiền thành công", eWalletResponse));
-    }
-
     @Operation(summary = "Chi tiết ví")
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EWalletResponse>> GetWallet(@PathVariable Long id) throws BusinessException {
-        EWalletResponse eWalletResponse = eWalletService.getMyWalletById(id);
+    @GetMapping("/my-wallet")
+    public ResponseEntity<ApiResponse<EWalletResponse>> getMyWallet() throws BusinessException {
+        String userId = getAuthenticatedUserId();
 
+        EWalletResponse eWalletResponse = eWalletService.getMyWalletByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success("Lấy ví người dùng thành công", eWalletResponse));
     }
 
     @Operation(summary = "Lịch sử giao dịch của ví")
-    @GetMapping("/{id}/transactions")
-    public ResponseEntity<ApiResponse<List<TransactionLogResponse>>> getTransactionHistory(@PathVariable Long id) {
-        List<TransactionLogResponse> logs = eWalletService.getTransactionHistory(id);
+    @GetMapping("/my-wallet/transactions")
+    public ResponseEntity<ApiResponse<List<TransactionLogResponse>>> getMyTransactionHistory() throws BusinessException {
+        String userId = getAuthenticatedUserId();
+
+        List<TransactionLogResponse> logs = eWalletService.getTransactionHistoryByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success("Lấy lịch sử giao dịch thành công", logs));
+    }
+
+    private String getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (String) authentication.getPrincipal(); // Đây là String UUID từ token
     }
 }
