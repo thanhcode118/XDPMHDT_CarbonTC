@@ -1,17 +1,39 @@
 import React from 'react';
 import styles from './MarketplaceCard.module.css';
+import { useCountdown } from '../../hooks/useCountdown'; 
 
 const MarketplaceCard = ({
   type,
   typeText,
   priceTrend,
-  trendText,
+  trendText, 
   title,
   quantity,
   price,
+  priceLabel = "Giá/tín chỉ", 
   total,
-  seller
+  totalLabel = "Tổng giá", 
+  seller,
+  auctionEndTime 
 }) => {
+
+  const { days, hours, minutes, seconds, isOver } = useCountdown(auctionEndTime);
+
+  const CountdownDisplay = () => {
+    if (isOver) {
+      return <span style={{ color: '#dc3545' }}>Đã kết thúc</span>;
+    }
+    
+    return (
+      <span style={{ minWidth: '80px', display: 'inline-block' }}>
+        {days > 0 && `${days}d `}
+        {hours > 0 && `${hours}h `}
+        {minutes > 0 && `${minutes}m `}
+        {seconds >= 0 && `${seconds}s`}
+      </span>
+    );
+  };
+
   const getTrendIcon = () => {
     switch (priceTrend) {
       case 'up': return <i className="bi bi-arrow-up"></i>;
@@ -27,30 +49,35 @@ const MarketplaceCard = ({
         <span className={`${styles.marketplaceType} ${styles[type]}`}>
           {typeText}
         </span>
-        <div className={`${styles.priceTrend} ${styles[priceTrend]}`}>
-          {getTrendIcon()} {trendText}
+
+        <div className={`${styles.priceTrend} ${styles[type === 'auction' ? 'time' : priceTrend]}`}>
+          {getTrendIcon()} 
+          {type === 'auction' ? <CountdownDisplay /> : (trendText || 'N/A')}
         </div>
       </div>
       <h4 className={styles.marketplaceTitle}>{title}</h4>
       <div className={styles.marketplaceDetails}>
         <div className={styles.marketplaceDetailItem}>
-          <div className={styles.marketplaceDetailValue}>{quantity}</div>
+          <div className={styles.marketplaceDetailValue}>{quantity.toLocaleString()}</div>
           <div className={styles.marketplaceDetailLabel}>Số lượng</div>
         </div>
         <div className={styles.marketplaceDetailItem}>
           <div className={styles.marketplaceDetailValue}>{price.toLocaleString()}</div>
-          <div className={styles.marketplaceDetailLabel}>Giá/tín chỉ</div>
+          <div className={styles.marketplaceDetailLabel}>{priceLabel}</div>
         </div>
         <div className={styles.marketplaceDetailItem}>
           <div className={styles.marketplaceDetailValue}>{total.toLocaleString()}</div>
-          <div className={styles.marketplaceDetailLabel}>Tổng giá</div>
+          <div className={styles.marketplaceDetailLabel}>{totalLabel}</div>
         </div>
       </div>
       <div className={styles.marketplaceFooter}>
         <div className={styles.marketplaceSeller}>
           <small>Người bán: {seller}</small>
         </div>
-        <button className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}>
+        <button 
+          className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+          disabled={type === 'auction' && isOver} 
+        >
           {type === 'auction' ? 'Đặt giá' : 'Mua ngay'}
         </button>
       </div>

@@ -114,3 +114,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+.btnDangerCustom {
+  background-color: #dc3545; 
+  border-color: #dc3545;
+  color: #fff;
+}
+.btnDangerCustom:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  color: #fff;
+}
+
+.textDanger {
+  color: #dc3545 !important;
+}
+.textSuccess {
+  color: #198754 !important;
+}
+.isInvalid {
+  border-color: #dc3545;
+}
