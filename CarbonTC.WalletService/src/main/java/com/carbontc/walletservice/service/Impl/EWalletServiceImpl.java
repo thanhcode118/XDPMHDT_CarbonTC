@@ -9,16 +9,16 @@ import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.EWalletRepository;
 import com.carbontc.walletservice.repository.TransactionLogRepository;
 import com.carbontc.walletservice.service.EWalletService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class EWalletServiceImpl implements EWalletService {
 
@@ -49,7 +49,7 @@ public class EWalletServiceImpl implements EWalletService {
 
     // NỘP TIỀN
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public EWalletResponse deposit(Long walletId, BigDecimal amount) throws BusinessException {
         EWallet eWallet = eWalletRepository.findById(walletId)
                 .orElseThrow(() -> new BusinessException("Ví không tồn tại"));

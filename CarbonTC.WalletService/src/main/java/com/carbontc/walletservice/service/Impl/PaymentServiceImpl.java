@@ -50,7 +50,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, String> handleVNPayCallback(Map<String, String> params) throws Exception {
         Map<String, String> response = new HashMap<>();
 
@@ -90,14 +90,14 @@ public class PaymentServiceImpl implements PaymentService {
 
         String vnp_ResponseCode = params.get("vnp_ResponseCode");
         if ("00".equals(vnp_ResponseCode)) {
-            log.setStatus("SUCCESS");
-            log.setDescription("Nạp tiền thành công qua VNPay");
-            transactionLogRepository.save(log);
-
             EWallet eWallet = eWalletRepository.findById(log.getWalletId())
                     .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
             eWallet.setBalance(eWallet.getBalance().add(log.getAmount()));
             eWalletRepository.save(eWallet);
+
+            log.setStatus("SUCCESS");
+            log.setDescription("Nạp tiền thành công qua VNPay");
+            transactionLogRepository.save(log);
 
             response.put("RspCode", "00");
             response.put("Message", "Confirm Success");
