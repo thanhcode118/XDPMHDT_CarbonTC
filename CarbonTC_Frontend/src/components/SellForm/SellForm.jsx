@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import styles from './SellForm.module.css';
 
-const SellForm = ({ suggestedPrice, onSubmit, inventory, isLoadingInventory, inventoryError }) => {
+const SellForm = ({ 
+    suggestedPrice, 
+    isSuggestionLoading, 
+    suggestionType,      
+    onSubmit, 
+    inventory, 
+    isLoadingInventory, 
+    inventoryError
+  }) => {
   const [formData, setFormData] = useState({
     quantity: '',
-    price: suggestedPrice || '',
+    price: '',
     description: '',
     agreeTerms: false
   });
@@ -50,6 +58,25 @@ const SellForm = ({ suggestedPrice, onSubmit, inventory, isLoadingInventory, inv
       return;
     }
     onSubmit(formData);
+  };
+
+  const renderSuggestionText = () => {
+    if (isSuggestionLoading) {
+      return "Đang tải gợi ý giá...";
+    }
+    if (!suggestedPrice) {
+      return 'N/A';
+    }
+    
+    const formattedPrice = Math.round(suggestedPrice).toLocaleString();
+    
+    if (suggestionType === 'personalized') {
+      return (
+        <span>Giá gợi ý (cá nhân hóa): <strong>{formattedPrice} VNĐ/tín chỉ</strong></span>
+      );
+    }
+    // Mặc định là 'generic'
+    return `Giá thị trường (chung): ${formattedPrice} VNĐ/tín chỉ`;
   };
 
   const renderInventoryInfo = () => {
@@ -108,7 +135,7 @@ const SellForm = ({ suggestedPrice, onSubmit, inventory, isLoadingInventory, inv
               required
             />
             <small className={styles.textSecondary}>
-              Giá thị trường đề xuất: {suggestedPrice ? `${Math.round(suggestedPrice).toLocaleString()} VNĐ/tín chỉ` : 'N/A'}
+              {renderSuggestionText()}
             </small>
           </div>
           

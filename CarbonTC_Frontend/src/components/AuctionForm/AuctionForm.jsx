@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import styles from './AuctionForm.module.css';
 
-const AuctionForm = ({ onSubmit, inventory, isLoadingInventory, inventoryError }) => {
+const AuctionForm = ({ 
+    suggestedPrice, 
+    isSuggestionLoading, 
+    suggestionType,      
+    onSubmit, 
+    inventory, 
+    isLoadingInventory, 
+    inventoryError
+  }) => {
   const [formData, setFormData] = useState({
     quantity: '',
     startPrice: '',
@@ -45,6 +53,25 @@ const AuctionForm = ({ onSubmit, inventory, isLoadingInventory, inventoryError }
       return;
     }
     onSubmit(formData);
+  };
+
+  const renderSuggestionText = () => {
+    if (isSuggestionLoading) {
+      return "Đang tải gợi ý giá...";
+    }
+    if (!suggestedPrice) {
+      return 'N/A';
+    }
+    
+    const formattedPrice = Math.round(suggestedPrice).toLocaleString();
+    
+    if (suggestionType === 'personalized') {
+      return (
+        <span>Giá gợi ý (cá nhân hóa): <strong>{formattedPrice} VNĐ/tín chỉ</strong></span>
+      );
+    }
+    // Mặc định là 'generic'
+    return `Giá thị trường (chung): ${formattedPrice} VNĐ/tín chỉ`;
   };
 
   const renderInventoryInfo = () => {
@@ -102,6 +129,9 @@ const AuctionForm = ({ onSubmit, inventory, isLoadingInventory, inventoryError }
               placeholder="Nhập giá khởi điểm"
               required
             />
+            <small className={styles.textSecondary}>
+              {renderSuggestionText()}
+            </small>
           </div>
           
           <div className="col-md-6">

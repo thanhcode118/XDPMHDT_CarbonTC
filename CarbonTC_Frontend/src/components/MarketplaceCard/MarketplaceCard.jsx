@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './MarketplaceCard.module.css';
 import { useCountdown } from '../../hooks/useCountdown'; 
+
+import PlaceBidModal from '../../components/PlaceBidModal/PlaceBidModal';
+import BuyNowModal from '../../components/BuyNowModal/BuyNowModal';
 
 const MarketplaceCard = ({
   type,
@@ -16,6 +19,21 @@ const MarketplaceCard = ({
   seller,
   auctionEndTime 
 }) => {
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showBidModal, setShowBidModal] = useState(false);
+
+   const handleBuySubmit = (buyData) => {
+    console.log('Buy data:', buyData);
+    // Gọi API mua ngay
+    setShowBuyModal(false);
+  };
+
+  const handleBidSubmit = (bidData) => {
+    console.log('Bid data:', bidData);
+    // Gọi API đặt giá
+    setShowBidModal(false);
+  };
+
 
   const { days, hours, minutes, seconds, isOver } = useCountdown(auctionEndTime);
 
@@ -76,11 +94,38 @@ const MarketplaceCard = ({
         </div>
         <button 
           className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+          onClick={() => type === 'auction' ? setShowBidModal(true) : setShowBuyModal(true)}
           disabled={type === 'auction' && isOver} 
         >
           {type === 'auction' ? 'Đặt giá' : 'Mua ngay'}
         </button>
       </div>
+
+      {type === 'auction' ? (
+        <PlaceBidModal
+          isOpen={showBidModal}
+          onClose={() => setShowBidModal(false)}
+          onSubmit={handleBidSubmit}
+          listingData={{
+            quantity: quantity,
+            minimumBid: price,
+            currentPrice: total,
+            seller: seller,
+            timeRemaining: '2 ngày 14 giờ'
+          }}
+        />
+      ) : (
+        <BuyNowModal
+          isOpen={showBuyModal}
+          onClose={() => setShowBuyModal(false)}
+          onSubmit={handleBuySubmit}
+          listingData={{
+            quantity: quantity,
+            pricePerUnit: price,
+            seller: seller
+          }}
+        />
+      )}
     </div>
   );
 };

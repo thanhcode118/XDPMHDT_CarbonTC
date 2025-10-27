@@ -1,0 +1,395 @@
+/* Modal Overlay */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modalContent {
+    background: rgba(24, 24, 24, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modalHeader {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modalTitle {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.btnClose {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.btnClose:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.modalBody {
+    padding: 25px;
+}
+
+.modalFooter {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 25px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Transaction Summary */
+.transactionSummary {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.summaryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.summaryTitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.summaryStatus {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.statusAvailable {
+    background: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+}
+
+.statusAuction {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.summaryDetails {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.summaryDetail {
+    display: flex;
+    align-items: center;
+}
+
+.detailIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.detailIcon1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.detailIcon2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.detailIcon3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.detailInfo {
+    flex: 1;
+}
+
+.detailLabel {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.detailValue {
+    font-weight: 600;
+}
+
+/* Current Bid */
+.currentBid {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.currentBidLabel {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.currentBidValue {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Bid Input */
+.bidInputGroup {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.bidInput {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.bidInputAddon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0 15px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    display: flex;
+    align-items: center;
+}
+
+/* Payment Methods */
+.paymentMethods {
+    margin-bottom: 25px;
+}
+
+.paymentMethodTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.paymentMethod {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.paymentMethod:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.paymentMethod.selected {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+}
+
+.paymentMethodIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.bankIcon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.ewalletIcon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.cryptoIcon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.paymentMethodInfo {
+    flex: 1;
+}
+
+.paymentMethodName {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.paymentMethodDescription {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.paymentMethodRadio {
+    margin-left: 15px;
+}
+
+/* Form Styles */
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formLabel {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+    display: block;
+}
+
+.formControl {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.formControl::placeholder {
+    color: var(--text-secondary);
+}
+
+.formControl:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    color: var(--text-primary);
+    outline: none;
+}
+
+.inputGroup {
+    display: flex;
+}
+
+.inputGroupText {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 15px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+.formCheck {
+    display: flex;
+    align-items: center;
+}
+
+.formCheckInput {
+    margin-right: 10px;
+}
+
+.formCheckLabel {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.textSecondary {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 4px;
+    display: block;
+}
+
+/* Buttons */
+.btnCustom {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnPrimaryCustom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btnPrimaryCustom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btnOutlineCustom {
+    background: transparent;
+    color: #667eea;
+    border: 1px solid #667eea;
+}
+
+.btnOutlineCustom:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modalContent {
+        margin: 10px;
+        max-height: 95vh;
+    }
+    
+    .summaryDetails {
+        grid-template-columns: 1fr;
+    }
+    
+    .modalFooter {
+        flex-direction: column;
+    }
+    
+    .btnCustom {
+        width: 100%;
+    }
+}

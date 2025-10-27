@@ -9,13 +9,13 @@ import ListingTable from '../../components/ListingTable/ListingTable';
 import AuctionForm from '../../components/AuctionForm/AuctionForm';
 import EditListingModal from '../../components/EditListingModal/EditListingModal';
 import ConfirmDeleteModal from '../../components/ConfirmDeleteListingModal/ConfirmDeleteModal';
+import CreditSelector from '../../components/CreditSelector/CreditSelector';
 import styles from './Marketplace.module.css';
 
 import { 
   getListings, 
   getSuggestedPrice, 
   getMyListings, 
-  createAuction,
   getListingById, 
   updateListing,
   deleteListing,
@@ -32,32 +32,16 @@ const mapStatusToString = (status) => {
   }
 };
 
-const MOCK_AVAILABLE_CREDITS = [
-  { 
-    id: "a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
-    name: "Nguồn tín chỉ từ dự án Rừng A" 
-  },
-  { 
-    id: "c7d8e9f0-a1b2-c3d4-e5f6-a7b8c9d0e1f2", 
-    name: "Nguồn tín chỉ từ dự án Năng lượng B" 
-  },
-];
-
 const Marketplace = () => {
   const [activeTab, setActiveTab] = useState('buy');
   const [sidebarActive, setSidebarActive] = useState(false);
   
-  // States cho tab 'buy'
   const [listings, setListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true); 
   const [error, setError] = useState(null); 
 
   const [myListings, setMyListings] = useState([]);
   
-  const [aiSuggestedPrice, setAiSuggestedPrice] = useState(null);
-  const [isSuggestionLoading, setIsSuggestionLoading] = useState(true);
-  const [suggestionError, setSuggestionError] = useState(null);
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingListingId, setEditingListingId] = useState(null); 
   const [currentListingData, setCurrentListingData] = useState(null); 
@@ -72,10 +56,21 @@ const Marketplace = () => {
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
 
+  const [availableCredits, setAvailableCredits] = useState([]);
+  const [isCreditsLoading, setIsCreditsLoading] = useState(true);
+  const [creditsError, setCreditsError] = useState(null);
+
   const [selectedCreditId, setSelectedCreditId] = useState('');
   const [currentInventory, setCurrentInventory] = useState(null);
   const [isInventoryLoading, setIsInventoryLoading] = useState(false);
   const [inventoryError, setInventoryError] = useState(null);
+
+  const [bannerSuggestedPrice, setBannerSuggestedPrice] = useState(null);
+  const [isBannerSuggestionLoading, setIsBannerSuggestionLoading] = useState(true);
+
+  const [formSuggestedPrice, setFormSuggestedPrice] = useState(null);
+  const [isFormSuggestionLoading, setIsFormSuggestionLoading] = useState(false);
+  const [formSuggestionType, setFormSuggestionType] = useState('generic');
 
   const [filterInputs, setFilterInputs] = useState({
     type: '',    
@@ -142,7 +137,7 @@ const Marketplace = () => {
     setError(null);
     
     if (activeTab === 'buy') {
-      setListings([]); // Xóa danh sách cũ
+      setListings([]); 
       const fetchListings = async () => {
         setIsLoading(true);
         setError(null);
@@ -176,24 +171,83 @@ const Marketplace = () => {
   }, [activeTab, queryParams]); 
   useEffect(() => {
     const fetchAiSuggestion = async () => {
-      setIsSuggestionLoading(true);
-      setSuggestionError(null);
+      setIsFormSuggestionLoading(true);
       try {
         const response = await getSuggestedPrice();
         if (response.data && response.data.success) {
-          setAiSuggestedPrice(response.data.data); 
-        } else {
-          setSuggestionError(response.data.message || "Lỗi");
-        }
+          const genericPrice = response.data.data;
+          setBannerSuggestedPrice(genericPrice); 
+          setFormSuggestedPrice(genericPrice);   
+          setFormSuggestionType('generic');
+        } 
       } catch (err) {
-        setSuggestionError(err.message || "Không thể kết nối API gợi ý.");
         console.error(err);
       } finally {
-        setIsSuggestionLoading(false);
+        setIsBannerSuggestionLoading(false);
+        setIsFormSuggestionLoading(false); 
       }
     };
     fetchAiSuggestion();
   }, []);
+
+  useEffect(() => {
+    setCurrentInventory(null);
+    setInventoryError(null);
+
+    // Nếu người dùng bỏ chọn
+    if (!selectedCreditId) {
+      // Đặt giá của form trở lại giá chung
+      setFormSuggestedPrice(bannerSuggestedPrice); 
+      setFormSuggestionType('generic');
+      return;
+    }
+
+    // Nếu người dùng chọn 1 creditId
+    const fetchCreditData = async () => {
+      // Đặt 2 API vào trạng thái loading
+      setIsInventoryLoading(true);
+      setIsFormSuggestionLoading(true); // <-- Bắt đầu loading giá cá nhân hóa
+
+      // Tạo 2 hàm promise để gọi song song
+      const fetchInventory = getCreditInventory(selectedCreditId);
+      const fetchPersonalizedPrice = getSuggestedPrice(selectedCreditId); // <-- Gọi API với creditId
+
+      try {
+        // Chờ cả 2 API hoàn thành
+        const [inventoryResponse, priceResponse] = await Promise.all([
+          fetchInventory,
+          fetchPersonalizedPrice
+        ]);
+
+        // Xử lý kết quả Inventory
+        if (inventoryResponse.data && inventoryResponse.data.success) {
+          setCurrentInventory(inventoryResponse.data.data);
+        } else {
+          setInventoryError(inventoryResponse.data.message || "Lỗi tải tồn kho.");
+        }
+
+        // Xử lý kết quả Giá cá nhân hóa
+        if (priceResponse.data && priceResponse.data.success) {
+          setFormSuggestedPrice(priceResponse.data.data); // <-- Set giá mới cho form
+          setFormSuggestionType('personalized'); // Đánh dấu đây là giá cá nhân hóa
+        } else {
+          // Nếu lỗi, dùng lại giá chung
+          setFormSuggestedPrice(bannerSuggestedPrice);
+          setFormSuggestionType('generic');
+        }
+
+      } catch (err) {
+        setInventoryError(err.message || "Lỗi server.");
+        setFormSuggestedPrice(bannerSuggestedPrice); // Lỗi mạng, dùng lại giá chung
+        setFormSuggestionType('generic');
+      } finally {
+        setIsInventoryLoading(false);
+        setIsFormSuggestionLoading(false); // <-- Kết thúc loading
+      }
+    };
+
+    fetchCreditData();
+  }, [selectedCreditId, bannerSuggestedPrice]);
 
   
   const handleSellSubmit = async (formData) => {
@@ -270,24 +324,21 @@ const Marketplace = () => {
   };
 
   useEffect(() => {
-    // Reset tất cả state của modal khi mở
     setCurrentListingData(null);
     setModalError(null);
-    setModalSuggestedPrice(null); // <-- Reset gợi ý
+    setModalSuggestedPrice(null); 
     setIsModalSuggestionLoading(false);
 
     if (editingListingId && isEditModalOpen) {
       const fetchModalData = async () => {
         setIsModalLoading(true);
         try {
-          // Bước 1: Tải chi tiết listing
           const detailsResponse = await getListingById(editingListingId);
           
           if (detailsResponse.data && detailsResponse.data.success) {
             const listingData = detailsResponse.data.data;
-            setCurrentListingData(listingData); // <-- Set data cho form
+            setCurrentListingData(listingData); 
             
-            // Bước 2: Nếu thành công, dùng creditId để tải gợi ý
             if (listingData.creditId) {
               setIsModalSuggestionLoading(true);
               try {
@@ -296,7 +347,6 @@ const Marketplace = () => {
                   setModalSuggestedPrice(suggestionResponse.data.data);
                 }
               } catch (suggestionErr) {
-                // Lỗi tải gợi ý không nên chặn modal
                 console.error("Lỗi tải gợi ý giá cho modal:", suggestionErr);
               } finally {
                 setIsModalSuggestionLoading(false);
@@ -327,6 +377,73 @@ const Marketplace = () => {
           const response = await getCreditInventory(selectedCreditId);
           if (response.data && response.data.success) {
             setCurrentInventory(response.data.data); 
+          } else {
+            setInventoryError(response.data.message || "Không thể lấy tồn kho.");
+          }
+        } catch (err) {
+          setInventoryError(err.message || "Lỗi server.");
+        } finally {
+          setIsInventoryLoading(false);
+        }
+      };
+      fetchInventory();
+    }
+  }, [selectedCreditId]);
+
+  useEffect(() => {
+    if (activeTab === 'sell' || activeTab === 'auction') {
+      setIsCreditsLoading(true);
+      setCreditsError(null);
+      try {
+        const MOCK_DATA = [
+          {
+            creditId: "a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+            ownerId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            issuedByCVA: "cva-guid-123",
+            requestId: "request-guid-456",
+            amount: 150.75,
+            status: "Verified",
+            creditType: "Reforestation",
+            vintage: 2024,
+            creditSerialNumber: "VCS-2024-12345-XYZ",
+            expiryDate: "2034-10-27T00:00:00Z",
+            issuedAt: "2024-10-27T00:00:00Z",
+            createdAt: "2024-10-20T03:52:43Z"
+          },
+          {
+            creditId: "c7d8e9f0-a1b2-c3d4-e5f6-a7b8c9d0e1f2",
+            ownerId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            issuedByCVA: "cva-guid-123",
+            requestId: "request-guid-789",
+            amount: 500,
+            status: "Verified",
+            creditType: "Solar Energy", 
+            vintage: 2023,
+            creditSerialNumber: "VCS-2023-54321-ABC",
+            expiryDate: "2033-05-10T00:00:00Z",
+            issuedAt: "2023-05-10T00:00:00Z",
+            createdAt: "2023-05-01T10:00:00Z"
+          }
+        ];
+        setAvailableCredits(MOCK_DATA);
+      } catch (err) {
+        setCreditsError(`Không thể tải danh sách tín chỉ. ${err.message || "Lỗi không xác định."}`);
+      } finally {
+        setIsCreditsLoading(false);
+      }
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    setCurrentInventory(null);
+    setInventoryError(null);
+    if (selectedCreditId) {
+      const fetchInventory = async () => {
+        setIsInventoryLoading(true);
+        try {
+          const response = await getCreditInventory(selectedCreditId);
+          if (response.data && response.data.success) {
+            setCurrentInventory(response.data.data);
           } else {
             setInventoryError(response.data.message || "Không thể lấy tồn kho.");
           }
@@ -412,7 +529,7 @@ const Marketplace = () => {
   };
 
   const handleApplySuggestion = () => {
-    if (aiSuggestedPrice) {
+    if (bannerSuggestedPrice) {
       setActiveTab('sell');
     }
   };
@@ -450,43 +567,13 @@ const Marketplace = () => {
   };
 
   const getAiSuggestionContent = () => {
-    if (isSuggestionLoading) {
-      return "Đang tải gợi ý từ AI...";
-    }
-    if (suggestionError) {
-      return "Không thể tải gợi ý giá vào lúc này.";
-    }
-    if (aiSuggestedPrice) {
-      const formattedPrice = Math.round(aiSuggestedPrice).toLocaleString();
+    if (isBannerSuggestionLoading) return "Đang tải gợi ý từ AI...";
+    if (bannerSuggestedPrice) {
+      const formattedPrice = Math.round(bannerSuggestedPrice).toLocaleString();
       return `Dựa trên dữ liệu thị trường hiện tại, chúng tôi đề xuất bạn niêm yết tín chỉ của mình với giá <strong>${formattedPrice} VNĐ/tín chỉ</strong> để tối đa hóa lợi nhuận.`;
     }
     return "Không có gợi ý nào từ AI.";
   };
-
-  const renderCreditSelector = () => (
-    <div className={styles.formSection} data-aos="fade-up" style={{ marginBottom: '20px' }}>
-      <label htmlFor="creditSource" className={styles.formLabel}>
-        <strong>Bước 1: Chọn nguồn tín chỉ</strong>
-      </label>
-      <select
-        id="creditSource"
-        className={styles.formSelect}
-        value={selectedCreditId}
-        onChange={(e) => setSelectedCreditId(e.target.value)}
-      >
-        <option value="">-- Chọn nguồn Carbon Credit --</option>
-        {MOCK_AVAILABLE_CREDITS.map(credit => (
-          <option key={credit.id} value={credit.id}>
-            {credit.name} (ID: ...{credit.id.slice(-6)})
-          </option>
-        ))}
-      </select>
-      <small className={styles.textSecondary}>
-        Đây là danh sách (giả lập) các nguồn tín chỉ đã được xác minh của bạn.
-      </small>
-    </div>
-  );
-
 
   return (
     <div className={styles.app}>
@@ -601,13 +688,22 @@ const Marketplace = () => {
         )}
         {activeTab === 'sell' && (
           <div className={styles.tabContent}>
-            {renderCreditSelector()}
+            <CreditSelector 
+              credits={availableCredits}
+              selectedCreditId={selectedCreditId}
+              onSelectCredit={setSelectedCreditId} 
+              isLoading={isCreditsLoading}
+              error={creditsError}
+            />
 
             {selectedCreditId && (
               <SellForm 
-                suggestedPrice={aiSuggestedPrice}
                 onSubmit={handleSellSubmit}
-                // Truyền props tồn kho xuống
+                // Props cho giá gợi ý
+                suggestedPrice={formSuggestedPrice}
+                isSuggestionLoading={isFormSuggestionLoading}
+                suggestionType={formSuggestionType}
+                // Props cho tồn kho
                 inventory={currentInventory}
                 isLoadingInventory={isInventoryLoading}
                 inventoryError={inventoryError}
@@ -630,10 +726,22 @@ const Marketplace = () => {
         {/* --- TAB ĐẤU GIÁ --- */}
         {activeTab === 'auction' && (
           <div className={styles.tabContent}>
-            {renderCreditSelector()}
+            <CreditSelector 
+              credits={availableCredits}
+              selectedCreditId={selectedCreditId}
+              onSelectCredit={setSelectedCreditId}
+              isLoading={isCreditsLoading}
+              error={creditsError}
+            />
+
             {selectedCreditId && (
               <AuctionForm 
                 onSubmit={handleAuctionSubmit}
+                // Props cho giá gợi ý (sẽ dùng cho giá khởi điểm)
+                suggestedPrice={formSuggestedPrice}
+                isSuggestionLoading={isFormSuggestionLoading}
+                suggestionType={formSuggestionType}
+                // Props cho tồn kho
                 inventory={currentInventory}
                 isLoadingInventory={isInventoryLoading}
                 inventoryError={inventoryError}
