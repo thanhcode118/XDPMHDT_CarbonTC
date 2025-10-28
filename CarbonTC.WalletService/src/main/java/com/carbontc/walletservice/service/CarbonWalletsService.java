@@ -2,6 +2,7 @@ package com.carbontc.walletservice.service;
 
 import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
 import com.carbontc.walletservice.dto.request.CreditTransferRequest;
+import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.dto.response.CarbonWalletResponse;
 import com.carbontc.walletservice.dto.response.CreditTransferResponse;
 import com.carbontc.walletservice.entity.CarbonWallets;
@@ -12,5 +13,5 @@ public interface CarbonWalletsService {
     CarbonWalletResponse getCarbonWalletByUserId(String userId) throws BusinessException;
     void issueNewCredits(CreditIssuedEvent event) throws BusinessException;
     CarbonWallets findWalletByOwnerId(String userId) throws BusinessException ;
-    CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequest request) throws BusinessException;
+    CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequestForConsumer request) throws BusinessException;
 }

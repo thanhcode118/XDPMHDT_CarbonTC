@@ -1,6 +1,7 @@
 package com.carbontc.walletservice.controller;
 
 import com.carbontc.walletservice.dto.request.CreditTransferRequest;
+import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.dto.response.CarbonWalletResponse;
 import com.carbontc.walletservice.dto.response.CreditTransferResponse;
 import com.carbontc.walletservice.exception.BusinessException;
@@ -49,7 +50,7 @@ public class CarbonWalletController {
     @Operation(summary = "Chuyển tín chỉ từ ví của tôi cho người khác")
     @PostMapping("/transfer")
     public ResponseEntity<ApiResponse<CreditTransferResponse>> transferCredits(
-            @Valid @RequestBody CreditTransferRequest request) throws BusinessException {
+            @Valid @RequestBody CreditTransferRequestForConsumer request) throws BusinessException {
         String fromUserId = authencationUtil.getAuthenticatedUserId();
 
         CreditTransferResponse response = carbonWalletsService.transferCredits(fromUserId, request);

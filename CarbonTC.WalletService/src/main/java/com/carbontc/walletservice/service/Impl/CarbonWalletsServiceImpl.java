@@ -1,7 +1,7 @@
 package com.carbontc.walletservice.service.Impl;
 
 import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
-import com.carbontc.walletservice.dto.request.CreditTransferRequest;
+import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.dto.response.CarbonWalletResponse;
 import com.carbontc.walletservice.dto.response.CreditTransferResponse;
 import com.carbontc.walletservice.entity.CarbonCreditTransfer;
@@ -11,10 +11,10 @@ import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.CarbonCreditTransferRepository;
 import com.carbontc.walletservice.repository.CarbonWalletsRepository;
 import com.carbontc.walletservice.service.CarbonWalletsService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,7 +33,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
     public CarbonWalletResponse createCarbonWallet(String userId) throws BusinessException {
         if(carbonWalletsRepository.existsByOwnerId(userId)){
             throw new BusinessException("Ví carbon của dùng đã tồn tại");
-        };
+        }
 
         CarbonWallets newWallet = new CarbonWallets();
         newWallet.setOwnerId(userId);
@@ -50,7 +50,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
     @Transactional
     public CarbonWalletResponse getCarbonWalletByUserId(String userId) throws BusinessException {
         CarbonWallets carbonWallets = carbonWalletsRepository.findByOwnerId(userId)
-                .orElseThrow(()-> new BusinessException(" Không tìm thấy ví người dùng"));
+                .orElseThrow(()-> new BusinessException(" Không tìm thấy ví Carbon người dùng"));
         return mapToWalletResponse(carbonWallets);
     }
 
@@ -63,7 +63,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
 
     @Override
     public void issueNewCredits(CreditIssuedEvent event) throws BusinessException {
-        CarbonWallets wallets =  findWalletByOwnerId(event.getOwnerUserId());
+        CarbonWallets wallets = findWalletByOwnerId(event.getOwnerUserId());
 
         wallets.setBalance(wallets.getBalance().add(event.getCreditAmount()));
         wallets.setTotalEarned(wallets.getTotalEarned().add(event.getCreditAmount()));
@@ -83,8 +83,8 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
     }
 
     @Override
-    @Transactional
-    public CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequest request) throws BusinessException {
+    @Transactional(readOnly = true)
+    public CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequestForConsumer request) throws BusinessException {
 
         CarbonWallets senderWallet = carbonWalletsRepository.findByOwnerId(fromUserId)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy ví người gửi."));
@@ -122,7 +122,32 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
         return modelMapper.map(carbonWallet, CarbonWalletResponse.class);
     }
 
-    private CreditTransferResponse mapToTransferResponse(CarbonCreditTransfer creditTransfer ) {
-        return modelMapper.map(creditTransfer, CreditTransferResponse.class);
+    private CreditTransferResponse mapToTransferResponse(CarbonCreditTransfer transfer) {
+        if (transfer == null) {
+            return null;
+        }
+
+        CreditTransferResponse response = CreditTransferResponse.builder()
+                .transferId(transfer.getTransferId())
+                        .amount(transfer.getAmount())
+                                .transferType(transfer.getTransferType())
+                                        .referenceId(transfer.getReferenceId())
+                                                .createdAt(transfer.getCreatedAt())
+                                                        .build();
+
+        // Map các trường phức tạp (kiểm tra null)
+        if (transfer.getFromWallet() != null) {
+            response.setFromWalletId(transfer.getFromWallet().getWalletId());
+        } else {
+            response.setFromWalletId(null); // Hoặc giá trị mặc định nếu cần
+        }
+
+        if (transfer.getToWallet() != null) {
+            response.setToWalletId(transfer.getToWallet().getWalletId());
+        } else {
+            response.setToWalletId(null);
+        }
+
+        return response;
     }
 }
