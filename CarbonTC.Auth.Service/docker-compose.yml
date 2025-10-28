@@ -50,12 +50,12 @@ services:
   # ==============================
   auth-service:
     build:
-      context: ./CarbonTC.Auth.Service
+      context: .
       dockerfile: Dockerfile
     container_name: carbontc_auth_service
     restart: always
     ports:
-      - "5001:80"
+      - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 

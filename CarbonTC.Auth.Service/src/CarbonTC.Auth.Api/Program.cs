@@ -15,11 +15,15 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===== CONTROLLERS & API =====
+// ========================
+// ===== ADD SERVICES =====
+// ========================
+
+// Controllers & API Explorer
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// ===== SWAGGER WITH JWT =====
+// Swagger + JWT
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -34,11 +38,11 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
+    // JWT Authorization
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. \n\n" +
-                      "Enter 'Bearer' [space] and then your token in the text input below.\n\n" +
-                      "Example: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
+        Description = "JWT Authorization header using the Bearer scheme. " +
+                      "Enter 'Bearer' [space] and then your token.\n\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -61,7 +65,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ===== JWT AUTHENTICATION =====
+// JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -75,7 +79,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero, // Không cho phép clock skew
+        ClockSkew = TimeSpan.Zero,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
@@ -87,60 +91,62 @@ builder.Services.AddAuthentication(options =>
     {
         OnAuthenticationFailed = context =>
         {
-            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+            if (context.Exception is SecurityTokenExpiredException)
             {
-                context.Response.Headers.Append("Token-Expired", "true"); // ✅ Dùng Append
+                context.Response.Headers.Append("Token-Expired", "true");
             }
             return Task.CompletedTask;
         }
     };
 });
 
-// ===== AUTHORIZATION POLICIES =====
+// Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireAdminRole", policy =>
-        policy.RequireRole("Admin"));
-
-    options.AddPolicy("RequireUserRole", policy =>
-        policy.RequireRole("User", "Admin"));
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("RequireUserRole", policy => policy.RequireRole("User", "Admin"));
 });
 
-// ===== FLUENTVALIDATION =====
-builder.Services.AddValidatorsFromAssembly(
-    typeof(CarbonTC.Auth.Application.AssemblyReference).Assembly
-);
+// FluentValidation
+builder.Services.AddValidatorsFromAssembly(typeof(CarbonTC.Auth.Application.AssemblyReference).Assembly);
 
-// ===== MEDIATR WITH VALIDATION BEHAVIOR =====
+// MediatR + Validation Behavior
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(
-        typeof(CarbonTC.Auth.Application.AssemblyReference).Assembly
-    );
-
-    // Thêm ValidationBehavior vào pipeline
+    cfg.RegisterServicesFromAssembly(typeof(CarbonTC.Auth.Application.AssemblyReference).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
 
-// ===== APPLICATION & INFRASTRUCTURE LAYERS =====
+// Application & Infrastructure Layers
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// ===== CORS =====
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-    {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+              .AllowAnyHeader());
 });
 
+// ========================
+// ===== KESTREL =====
+// ========================
+// ✅ PHẢI ĐẶT TRƯỚC builder.Build()
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080); // Khớp với port container trong docker-compose
+});
+
+// ========================
 // ===== BUILD APP =====
+// ========================
+
 var app = builder.Build();
 
-// ===== AUTO MIGRATE DATABASE =====
+// Auto-migrate Database
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -156,20 +162,20 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ===== CONFIGURE HTTP REQUEST PIPELINE =====
+// ========================
+// ===== MIDDLEWARE =====
+// ========================
 
-// Exception Handling Middleware (PHẢI ĐẶT ĐẦU TIÊN)
+// Exception Handling (phải đặt đầu tiên)
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// Swagger
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "CarbonTC Auth API v1");
-        c.RoutePrefix = "swagger";
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "CarbonTC Auth API v1");
+    c.RoutePrefix = string.Empty; // ✅ ĐỔI: Swagger sẽ chạy ở root path "/"
+});
 
 // CORS
 app.UseCors("AllowAll");
@@ -181,7 +187,7 @@ app.UseAuthorization();
 // Map Controllers
 app.MapControllers();
 
-// Health Check Endpoint
+// Health Check
 app.MapGet("/health", () => Results.Ok(new
 {
     status = "healthy",
@@ -191,10 +197,14 @@ app.MapGet("/health", () => Results.Ok(new
 .WithTags("Health")
 .WithOpenApi();
 
-// Start Application
+// ========================
+// ===== RUN APP =====
+// ========================
+
 Console.WriteLine("🚀 CarbonTC Auth API is starting...");
 Console.WriteLine($"📍 Environment: {app.Environment.EnvironmentName}");
-Console.WriteLine($"🌐 Listening on: http://localhost:5183");
-Console.WriteLine($"📚 Swagger UI: http://localhost:5183/swagger");
+Console.WriteLine($"🌐 Listening on: http://localhost:5001 (mapped from container port 8080)");
+Console.WriteLine($"📚 Swagger UI: http://localhost:5001");
+Console.WriteLine($"💚 Health Check: http://localhost:5001/health");
 
 app.Run();
