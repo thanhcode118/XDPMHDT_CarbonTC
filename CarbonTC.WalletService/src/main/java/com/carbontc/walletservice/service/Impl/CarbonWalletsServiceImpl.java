@@ -1,10 +1,12 @@
 package com.carbontc.walletservice.service.Impl;
 
+import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
 import com.carbontc.walletservice.dto.request.CreditTransferRequest;
 import com.carbontc.walletservice.dto.response.CarbonWalletResponse;
 import com.carbontc.walletservice.dto.response.CreditTransferResponse;
 import com.carbontc.walletservice.entity.CarbonCreditTransfer;
 import com.carbontc.walletservice.entity.CarbonWallets;
+import com.carbontc.walletservice.entity.status.TransferType;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.CarbonCreditTransferRepository;
 import com.carbontc.walletservice.repository.CarbonWalletsRepository;
@@ -50,6 +52,34 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
         CarbonWallets carbonWallets = carbonWalletsRepository.findByOwnerId(userId)
                 .orElseThrow(()-> new BusinessException(" Không tìm thấy ví người dùng"));
         return mapToWalletResponse(carbonWallets);
+    }
+
+    @Override
+    @Transactional
+    public CarbonWallets findWalletByOwnerId(String userId) throws BusinessException {
+        return carbonWalletsRepository.findByOwnerId(userId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy ví Carbon của người dùng: " + userId));
+    }
+
+    @Override
+    public void issueNewCredits(CreditIssuedEvent event) throws BusinessException {
+        CarbonWallets wallets =  findWalletByOwnerId(event.getOwnerUserId());
+
+        wallets.setBalance(wallets.getBalance().add(event.getCreditAmount()));
+        wallets.setTotalEarned(wallets.getTotalEarned().add(event.getCreditAmount()));
+        wallets.setLastUpdated(LocalDateTime.now());
+        carbonWalletsRepository.save(wallets);
+
+        //LOG GIAO DỊCH
+        CarbonCreditTransfer log = new CarbonCreditTransfer();
+        log.setFromWallet(null); // <-- Không ai gửi cả
+        log.setToWallet(wallets); // Gửi cho user này
+        log.setAmount(event.getCreditAmount());
+        log.setTransferType(TransferType.ISSUE); // <-- Loại giao dịch là "Phát hành"
+        log.setReferenceId(event.getReferenceId());
+        log.setCreatedAt(event.getIssuedAt());
+
+        carbonCreditTransferRepository.save(log);
     }
 
     @Override
