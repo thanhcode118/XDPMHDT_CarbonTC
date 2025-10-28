@@ -113,9 +113,14 @@ public class EWalletServiceImpl implements EWalletService {
     }
 
     @Override
+    public EWallet findWalletByUserId(String userId) throws BusinessException {
+        return eWalletRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy ví người dùng"));
+    }
+
+    @Override
     public List<TransactionLogResponse> getTransactionHistoryByUserId(String userId) throws BusinessException {
-        EWallet eWallet = eWalletRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException("Không tìm thấy ví của người dùng"));
+       EWallet eWallet = findWalletByUserId(userId);
 
         Long walletId = eWallet.getWalletId();
 
