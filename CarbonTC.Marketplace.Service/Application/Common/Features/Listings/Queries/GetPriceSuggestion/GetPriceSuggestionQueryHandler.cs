@@ -32,19 +32,27 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
 
         public async Task<Result<float>> Handle(GetPriceSuggestionQuery request, CancellationToken cancellationToken)
         {
-            var creditToSell = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.CreditId);
-            if (creditToSell == null)
+            string verificationStandard;
+            int vintage;
+            float quantity;
+
+            if (request.CreditId == null)
             {
-                return Result.Failure<float>(new Error("NotFound", "Credit inventory not found."));
+                var creditToSell = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.CreditId.Value);
+                quantity = (float)creditToSell.AvailableAmount;
+
+                var cvaStandards = await _carbonLifecycleService.GetCVAStandardsAsync(request.CreditId.Value, cancellationToken);
+                verificationStandard = cvaStandards.StandardName;
+                vintage = cvaStandards.EffectiveDate.Year;
+            }
+            else
+            {
+                verificationStandard = "VERRA";
+                vintage = DateTime.UtcNow.Year;
+                quantity = 0;
             }
 
-            var quantity = creditToSell.AvailableAmount;
-
-            var cvaStandards = await _carbonLifecycleService.GetCVAStandardsAsync(request.CreditId, cancellationToken);
-
             var creditType = "RenewableEnergy";
-            var verificationStandard = cvaStandards.StandardName;
-            var vintage = cvaStandards.EffectiveDate.Year;
 
             // Fetch market supply and demand from cache
             var supplyKey = $"market:supply:{creditType}";
@@ -56,13 +64,11 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
             {
                 _logger.LogWarning("Cache miss for market data. Recalculating...");
 
-                var supplyTask = _unitOfWork.CreditInventories.GetTotalSupplyByTypeAsync(cancellationToken);
-                var demandTask = _unitOfWork.Listings.GetTotalDemandByTypeAsync(cancellationToken);
+                var supplyTask = await _unitOfWork.CreditInventories.GetTotalSupplyByTypeAsync(cancellationToken);
+                var demandTask = await _unitOfWork.Listings.GetTotalDemandByTypeAsync(cancellationToken);
 
-                await Task.WhenAll(supplyTask, demandTask);
-
-                marketSupply = (float)supplyTask.Result;
-                marketDemand = (float)demandTask.Result;
+                marketSupply = (float)supplyTask;
+                marketDemand = (float)demandTask;
 
                 var ttl = TimeSpan.FromMinutes(10);
                 await _cacheService.SetStringAsync(supplyKey, marketSupply, ttl);

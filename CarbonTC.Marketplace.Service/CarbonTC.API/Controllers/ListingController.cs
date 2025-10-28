@@ -7,6 +7,7 @@ using Application.Common.Features.Listings.Commands.UpdateListing;
 using Application.Common.Features.Listings.DTOs;
 using Application.Common.Features.Listings.Queries.GetAllListings;
 using Application.Common.Features.Listings.Queries.GetByIdListing;
+using Application.Common.Features.Listings.Queries.GetMyListings;
 using Application.Common.Features.Listings.Queries.GetPriceSuggestion;
 using CarbonTC.API.Common;
 using MediatR;
@@ -205,5 +206,24 @@ namespace CarbonTC.API.Controllers
 
             return BadRequest(ApiResponse<float>.ErrorResponse(result.Error.Message));
         }
+
+        [Authorize]
+        [HttpGet("my-listing")]
+        public async Task<IActionResult> GetMyListings(CancellationToken cancellationToken)
+        {
+            var query = await _mediator.Send(new GetMyListingsQuery(), cancellationToken);
+            if (query.IsSuccess)
+            {
+                var apiResponse = ApiResponse<List<ListingDto>>.SuccessResponse(query.Value, "User listings retrieved successfully.");
+                return Ok(apiResponse);
+            }
+            else
+            {
+                var errors = new List<string> { $"{query.Error.Code}: {query.Error.Message}" };
+                var apiResponse = ApiResponse<List<ListingDto>>.ErrorResponse("Failed to retrieve user listings.", errors);
+                return BadRequest(apiResponse);
+            }
+        }
+
     }
 }

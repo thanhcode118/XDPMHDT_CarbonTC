@@ -65,17 +65,22 @@ namespace Application.Common.Features.Listings.Commands.UpdateListing
 
             if (request.Type == ListingType.FixedPrice)
             {
-                listing.UpdateFixedPrice(request.PricePerUnit);
+                listing.UpdateFixedPrice(request.PricePerUnit!.Value); // Chắc chắn có giá trị
             }
             else if (request.Type == ListingType.Auction)
             {
+                // Nếu PricePerUnit null, có thể giữ nguyên giá trị hiện tại hoặc xử lý theo logic nghiệp vụ
+                if (request.PricePerUnit.HasValue)
+                {
+                    // Cập nhật giá nếu có
+                    // listing.UpdatePrice(request.PricePerUnit.Value); 
+                }
+
                 listing.UpdateAuctionDetails(
                     request.MinimumBid!.Value,
                     request.AuctionEndTime!.Value
                 );
             }
-
-            //listing.AddDomainEvent(new ListingUpdatedDomainEvent(listing.Id, DateTime.UtcNow));
         }
     }
 }

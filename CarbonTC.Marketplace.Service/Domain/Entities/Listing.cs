@@ -184,6 +184,9 @@ namespace Domain.Entities
             if (Status != ListingStatus.Open)
                 throw new DomainException("Listing is not open for purchase");
 
+            if (buyerId == OwnerId)
+                throw new DomainException("Owner cannot buy their own listing.");
+
             if (amountToBuy <= 0)
                 throw new DomainException("Amount to buy must be greater than zero.");
 

@@ -8,7 +8,7 @@ namespace Application.Common.Features.Listings.Queries.GetAllListings
     public record GetAllListingsQuery(
         int PageNumber = 1,
         int PageSize = 20,
-        ListingType? Type = ListingType.FixedPrice,
+        ListingType? Type = null,
         ListingStatus? Status = ListingStatus.Open,
         decimal? MinPrice = null,
         decimal? MaxPrice = null,

@@ -7,11 +7,11 @@ namespace Application.Common.Features.Listings.Commands.UpdateListing
     public record UpdateListingCommand(
         Guid ListingId,
         ListingType Type,
-        decimal PricePerUnit,
+        decimal? PricePerUnit, 
         ListingStatus Status,
-        DateTime? ClosedAt, 
+        DateTime? ClosedAt,
         decimal? MinimumBid,
-        DateTime? AuctionEndTime 
-    ): IRequest<Result>;
-    
+        DateTime? AuctionEndTime
+    ) : IRequest<Result>;
+
 }

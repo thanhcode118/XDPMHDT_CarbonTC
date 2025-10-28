@@ -72,7 +72,7 @@ namespace Infrastructure.Data.Repositories
             var listings = await _dbContext.Listings
                 .Include(l => l.PriceSuggestion)
                 .Include(l => l.Bids)
-                .Where(l => l.OwnerId == userId).ToListAsync();
+                .Where(l => l.OwnerId == userId).AsNoTracking().ToListAsync();
             return listings;
         }
 

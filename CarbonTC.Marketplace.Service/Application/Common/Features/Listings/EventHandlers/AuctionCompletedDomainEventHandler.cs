@@ -2,7 +2,6 @@
 using Domain.Events.AuctionBid;
 using Domain.Events.Listing;
 using MediatR;
-using SharedLibrary.Interfaces;
 
 namespace Application.Common.Features.Listings.EventHandlers
 {

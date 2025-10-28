@@ -17,7 +17,7 @@ namespace Application.Common.Features.Listings.Queries.GetExpiredAuctions
 
         public async Task<List<Listing?>> Handle(GetExpiredAuctionsQuery request, CancellationToken cancellationToken)
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var expiredListings = await _unitOfWork.Listings.FindAsync(
                 l => l.Type == ListingType.Auction &&
                      l.Status == ListingStatus.Open &&

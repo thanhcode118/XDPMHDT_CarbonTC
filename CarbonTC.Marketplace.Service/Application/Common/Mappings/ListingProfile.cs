@@ -12,6 +12,8 @@ namespace Application.Common.Mappings
                 .ForMember(dest => dest.AuctionBids, opt => opt.MapFrom(src => src.Bids))
                 .ForMember(dest => dest.SuggestedPrice, opt => opt.MapFrom(src => src.PriceSuggestion != null ? 
                                                         src.PriceSuggestion.SuggestedPrice : (decimal?)null));
+
+            CreateMap<Listing, ListingDto>().ReverseMap();
         }
     }
 }

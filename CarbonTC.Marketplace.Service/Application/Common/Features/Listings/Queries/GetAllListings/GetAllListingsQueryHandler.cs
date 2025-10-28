@@ -50,6 +50,7 @@ namespace Application.Common.Features.Listings.Queries.GetAllListings
                     OwnerId = x.OwnerId,
                     Type = x.Type,
                     PricePerUnit = x.PricePerUnit,
+                    Quantity = x.Quantity,
                     Status = x.Status,
                     CreatedAt = x.CreatedAt,
                     ClosedAt = x.ClosedAt,
