@@ -40,16 +40,16 @@ public class EWalletServiceImpl implements EWalletService {
 
         eWallet.setUserId(userId);
         eWallet.setCurrency(request.getCurrency());
-        eWallet.setBalance(BigDecimal.valueOf(0));
+        eWallet.setBalance(BigDecimal.ZERO);
         eWallet.setUpdatedAt(LocalDateTime.now());
-        EWallet saved = eWalletRepository.save(eWallet);
 
+        EWallet saved = eWalletRepository.save(eWallet);
         return mapToResponse(saved);
     }
 
     // NỘP TIỀN
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = BusinessException.class)
     public EWalletResponse deposit(Long walletId, BigDecimal amount) throws BusinessException {
         EWallet eWallet = eWalletRepository.findById(walletId)
                 .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
@@ -74,6 +74,7 @@ public class EWalletServiceImpl implements EWalletService {
 
 
     @Override
+    @Transactional(rollbackFor = BusinessException.class)
     public EWalletResponse withdraw(Long walletId, BigDecimal amount ) throws BusinessException {
 
         EWallet eWallet = eWalletRepository.findById(walletId)
