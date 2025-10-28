@@ -2,6 +2,7 @@ package com.carbontc.walletservice.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,9 +13,9 @@ public class Certificate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long certificateId;
 
-    private Long transactionId;
+    private String transactionId;
 
-    private Long buyerId;
+    private String buyerId;
 
     public Long getCertificateId() {
         return certificateId;
@@ -24,27 +25,27 @@ public class Certificate {
         this.certificateId = certificateId;
     }
 
-    public Long getTransactionId() {
+    public String getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(Long transactionId) {
+    public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 
-    public Long getBuyerId() {
+    public String getBuyerId() {
         return buyerId;
     }
 
-    public void setBuyerId(Long buyerId) {
+    public void setBuyerId(String buyerId) {
         this.buyerId = buyerId;
     }
 
-    public Double getCreditAmount() {
+    public BigDecimal getCreditAmount() {
         return creditAmount;
     }
 
-    public void setCreditAmount(Double creditAmount) {
+    public void setCreditAmount(BigDecimal creditAmount) {
         this.creditAmount = creditAmount;
     }
 
@@ -88,7 +89,7 @@ public class Certificate {
         this.certificateNumber = certificateNumber;
     }
 
-    private Double creditAmount;
+    private BigDecimal creditAmount;
 
     private String certificateUrl;
 

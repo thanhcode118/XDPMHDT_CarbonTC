@@ -20,5 +20,5 @@ public class CreditTransferRequest {
     @NotNull(message = "Loại chuyển khoản không được trống")
     private TransferType transferType;
 
-    private Long referenceId; // Tham chiếu tới giao dịch (nếu có)
+    private String referenceId; // Tham chiếu tới giao dịch (nếu có)
 }

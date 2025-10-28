@@ -1,8 +1,10 @@
 package com.carbontc.walletservice.entity;
 
 
+import com.carbontc.walletservice.entity.status.FeeType;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,27 +23,23 @@ public class TransactionFee {
         this.feeId = feeId;
     }
 
-    public Long getTransactionId() {
+    public String getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(Long transactionId) {
+    public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 
-    public String getFeeType() {
+    public FeeType getFeeType() {
         return feeType;
     }
 
-    public void setFeeType(String feeType) {
-        this.feeType = feeType;
-    }
-
-    public Double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
@@ -61,13 +59,18 @@ public class TransactionFee {
         this.calculatedAt = calculatedAt;
     }
 
-    private Long transactionId;
+    private String transactionId;
 
-    private String feeType; // PlatformFee, ServiceFee, ProcessingFee
+    @Enumerated(EnumType.STRING)
+    private FeeType feeType; // PlatformFee, ServiceFee
 
-    private Double amount;
+    private BigDecimal amount;
 
     private Double percentage;
+
+    public void setFeeType(FeeType feeType) {
+        this.feeType = feeType;
+    }
 
     public Payment getPayment() {
         return payment;
