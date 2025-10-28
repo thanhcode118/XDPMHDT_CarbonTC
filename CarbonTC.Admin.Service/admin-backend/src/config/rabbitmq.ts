@@ -65,7 +65,6 @@ export const connectRabbitMQ = async (): Promise<void> => {
       'dispute.*'
     );
 
-    // Handle connection errors
     conn.on('error', (error: any) => {
       logger.error('RabbitMQ connection error:', error);
     });
@@ -126,7 +125,7 @@ export const consumeMessages = async (
           ch.ack(msg);
         } catch (error) {
           logger.error('Error processing message:', error);
-          ch.nack(msg, false, false); // Don't requeue failed messages
+          ch.nack(msg, false, false);
         }
       }
     });
