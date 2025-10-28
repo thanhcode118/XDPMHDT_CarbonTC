@@ -21,6 +21,6 @@ public class CreditIssuedEvent {
 
     private String ownerUserId;  // ID người nhận tín chỉ (String UUID)
     private BigDecimal creditAmount; // Số lượng tín chỉ MỚI
-    private Long referenceId;  // Mã tham chiếu (ví dụ: Batch ID)
+    private String referenceId;  // Mã tham chiếu (ví dụ: Batch ID)
     private LocalDateTime issuedAt;
 }
