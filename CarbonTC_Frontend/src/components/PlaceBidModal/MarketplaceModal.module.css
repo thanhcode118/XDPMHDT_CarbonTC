@@ -19,7 +19,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -162,6 +162,7 @@
 .currentBid {
     text-align: center;
     margin-bottom: 20px;
+    position: relative;
 }
 
 .currentBidLabel {
@@ -177,17 +178,38 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    position: relative;
+    display: inline-block;
+}
+
+.currentBidValue::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 3px;
 }
 
 /* Bid Input */
 .bidInputGroup {
     display: flex;
     margin-bottom: 15px;
+    position: relative;
 }
 
 .bidInput {
+    flex: 1;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.bidInput:focus {
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
 }
 
 .bidInputAddon {
@@ -197,6 +219,7 @@
     padding: 0 15px;
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
+    font-weight: 600;
     display: flex;
     align-items: center;
 }
@@ -374,6 +397,271 @@
     background: rgba(102, 126, 234, 0.1);
 }
 
+/* Live Auction Indicator */
+.liveIndicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background: rgba(251, 191, 36, 0.1);
+    border-radius: 8px;
+}
+
+.liveDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #fbbf24;
+    margin-right: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+    }
+    
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+    }
+    
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    }
+}
+
+.liveText {
+    font-weight: 600;
+    color: #fbbf24;
+}
+
+/* Countdown Timer */
+.countdownTimer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.countdownItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 10px;
+}
+
+.countdownValue {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.countdownValue::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2));
+    animation: shine 2s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    20% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+}
+
+.countdownLabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Auto Bid Section */
+.autoBidSection {
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.autoBidTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.autoBidTitle i {
+    margin-right: 10px;
+    color: var(--ev-owner-color);
+}
+
+.autoBidStatus {
+    margin-left: auto;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+}
+
+/* Bid History */
+.bidHistory {
+    margin-top: 20px;
+}
+
+.bidHistoryTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.bidHistoryTitle::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-left: 10px;
+}
+
+.bidItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.bidItem:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.bidUser {
+    display: flex;
+    align-items: center;
+}
+
+.bidAvatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.bidName {
+    font-weight: 500;
+}
+
+.bidTime {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.bidAmount {
+    font-weight: 600;
+    color: var(--ev-owner-color);
+    font-size: 1.1rem;
+}
+
+.bidItem.highlight {
+    background: rgba(102, 126, 234, 0.1);
+    border-left: 3px solid var(--ev-owner-color);
+}
+
+/* Bid Suggestions */
+.bidSuggestions {
+    margin-top: 20px;
+}
+
+.bidSuggestion {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bidSuggestion:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.bidSuggestionAmount {
+    font-weight: 600;
+    color: var(--ev-owner-color);
+    margin-right: 10px;
+}
+
+.bidSuggestionLabel {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Animation Classes */
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.animate-slideInUp {
+    animation: slideInUp 0.5s ease-out;
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Price Chart */
+.priceChart {
+    height: 200px;
+    margin-bottom: 20px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 15px;
+}
+
+/* Đảm bảo canvas của Chart.js hiển thị đúng */
+.priceChart canvas {
+    border-radius: 8px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .modalContent {
@@ -391,5 +679,19 @@
     
     .btnCustom {
         width: 100%;
+    }
+    
+    .countdownItem {
+        margin: 0 5px;
+    }
+    
+    .countdownValue {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .currentBidValue {
+        font-size: 2rem;
     }
 }

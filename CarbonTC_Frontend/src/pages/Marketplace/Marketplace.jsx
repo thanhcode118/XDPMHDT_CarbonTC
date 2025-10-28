@@ -10,6 +10,8 @@ import AuctionForm from '../../components/AuctionForm/AuctionForm';
 import EditListingModal from '../../components/EditListingModal/EditListingModal';
 import ConfirmDeleteModal from '../../components/ConfirmDeleteListingModal/ConfirmDeleteModal';
 import CreditSelector from '../../components/CreditSelector/CreditSelector';
+import PlaceBidModal from '../../components/PlaceBidModal/PlaceBidModal'; // Import modal
+import BuyNowModal from '../../components/BuyNowModal/BuyNowModal'; // Import modal
 import styles from './Marketplace.module.css';
 
 import { 
@@ -72,6 +74,10 @@ const Marketplace = () => {
   const [isFormSuggestionLoading, setIsFormSuggestionLoading] = useState(false);
   const [formSuggestionType, setFormSuggestionType] = useState('generic');
 
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showBidModal, setShowBidModal] = useState(false);
+  const [selectedListing, setSelectedListing] = useState(null);
+
   const [filterInputs, setFilterInputs] = useState({
     type: '',    
     status: '1',  
@@ -89,6 +95,36 @@ const Marketplace = () => {
     maxPrice: null,
     ownerId: null
   });
+
+   // Thêm hàm xử lý mua ngay
+  const handleBuyClick = (listing) => {
+    setSelectedListing(listing);
+    setShowBuyModal(true);
+  };
+
+  // Thêm hàm xử lý đặt giá
+  const handleBidClick = (listing) => {
+    setSelectedListing(listing);
+    setShowBidModal(true);
+  };
+
+  // Thêm hàm submit cho mua ngay
+  const handleBuySubmit = (buyData) => {
+    console.log('Buy data:', buyData);
+    console.log('Selected listing:', selectedListing);
+    // Gọi API mua ngay
+    setShowBuyModal(false);
+    // TODO: Gọi API purchase
+  };
+
+  // Thêm hàm submit cho đặt giá
+  const handleBidSubmit = (bidData) => {
+    console.log('Bid data:', bidData);
+    console.log('Selected listing:', selectedListing);
+    // Gọi API đặt giá
+    setShowBidModal(false);
+    // TODO: Gọi API place bid
+  };
 
   const toggleSidebar = () => {
     setSidebarActive(!sidebarActive);
@@ -169,6 +205,7 @@ const Marketplace = () => {
       setIsLoading(false); 
     }
   }, [activeTab, queryParams]); 
+
   useEffect(() => {
     const fetchAiSuggestion = async () => {
       setIsFormSuggestionLoading(true);
@@ -562,7 +599,8 @@ const Marketplace = () => {
       total: total,
       totalLabel: totalLabel,
       seller: `Owner ID: ${item.ownerId}`,
-      auctionEndTime: item.auctionEndTime 
+      auctionEndTime: item.auctionEndTime,
+      rawData: item
     };
   };
 
@@ -679,9 +717,17 @@ const Marketplace = () => {
               {!isLoading && error && <p style={{ color: 'red' }}>Lỗi: {error}</p>}
               {!isLoading && !error && listings.length === 0 && <p>Không tìm thấy listing nào phù hợp.</p>}
               {!isLoading && !error && listings.length > 0 && (
-                listings.map((item) => (
-                  <MarketplaceCard key={item.id} {...mapApiDataToCardProps(item)} />
-                ))
+                listings.map((item) => {
+                  const cardProps = mapApiDataToCardProps(item);
+                  return (
+                    <MarketplaceCard 
+                      key={item.id} 
+                      {...cardProps}
+                      onBuyClick={() => handleBuyClick(cardProps.rawData)}
+                      onBidClick={() => handleBidClick(cardProps.rawData)}
+                    />
+                  );
+                })
               )}
             </div>
           </div>
@@ -750,6 +796,21 @@ const Marketplace = () => {
           </div>
         )}
 
+        <BuyNowModal
+          isOpen={showBuyModal}
+          onClose={() => setShowBuyModal(false)}
+          onSubmit={handleBuySubmit}
+          listingData={selectedListing}
+        />
+
+        <PlaceBidModal
+          isOpen={showBidModal}
+          onClose={() => setShowBidModal(false)}
+          onSubmit={handleBidSubmit}
+          listingData={selectedListing}
+        />
+
+
         <EditListingModal
           isOpen={isEditModalOpen}
           onClose={handleCloseModal}
@@ -760,6 +821,7 @@ const Marketplace = () => {
           suggestedPrice={modalSuggestedPrice}
           isSuggestionLoading={isModalSuggestionLoading}
         />
+
         <ConfirmDeleteModal
           isOpen={isDeleteModalOpen}
           onClose={handleCloseDeleteModal}
