@@ -14,8 +14,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Serilog;
-using CarbonTC.CarbonLifecycle.Api.Extensions; 
-using CarbonTC.CarbonLifecycle.Api.Middlewares; 
+using CarbonTC.CarbonLifecycle.Api.Extensions;
+using CarbonTC.CarbonLifecycle.Api.Middlewares;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using CarbonTC.CarbonLifecycle.Api.Services;
+using CarbonTC.CarbonLifecycle.Application.Services;
 
 
 public class Program
@@ -42,11 +47,48 @@ public class Program
             // ===== 3. THÊM CÁC SERVICES VÀO CONTAINER =====
             builder.Services.AddControllers();
 
-            // Swagger/OpenAPI
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
+            // === ĐĂNG KÝ DỊCH VỤ IIdentityService ===
+            builder.Services.AddHttpContextAccessor(); // Cần thiết để đọc HttpContext trong service
+            builder.Services.AddScoped<IIdentityService, CurrentUserService>();
+
+
+            // === CẤU HÌNH AUTHENTICATION (JWT) ===
+            builder.Services.AddAuthentication(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                    ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+                };
+            });
+
+            // === CẤU HÌNH AUTHORIZATION (POLICY) ===
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsEVOwner", policy => policy.RequireRole("EVOwner"));
+                options.AddPolicy("IsCVA", policy => policy.RequireRole("CVA"));
+                // Thêm các policy khác nếu cần (ví dụ: "IsBuyer")
+            });
+
+            builder.Services.AddEndpointsApiExplorer();
+
+            // ======================================================================
+            // === CẤU HÌNH SWAGGER (ĐÃ GỘP 2 KHỐI CỦA BẠN LẠI LÀM MỘT) ===
+            // ======================================================================
+            builder.Services.AddSwaggerGen(options =>
+            {
+                // A. Cấu hình thông tin chung (từ lần gọi thứ 2 của bạn)
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Carbon Lifecycle Service API",
                     Version = "v1",
@@ -64,13 +106,40 @@ public class Program
                     }
                 });
 
+                // B. Cấu hình XML Comments (từ lần gọi thứ 2 của bạn)
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
                 {
-                    c.IncludeXmlComments(xmlPath);
+                    options.IncludeXmlComments(xmlPath);
                 }
+
+                // C. Cấu hình "Authorize" (từ lần gọi thứ 1 của bạn)
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Description = "Nhập JWT Bearer token của bạn (ví dụ: 'Bearer eyJhbGci...')",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
+
 
             // Đăng ký Infrastructure Layer
             builder.Services.AddInfrastructure(builder.Configuration);
@@ -97,16 +166,15 @@ public class Program
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(appAssembly));
             builder.Services.AddAutoMapper(appAssembly);
 
-            // Thêm dịch vụ CORS
+            // Thêm dịch vụ CORS (bạn gọi 2 lần, nhưng không sao, cái này cụ thể hơn)
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowFrontend", // Đặt tên cho policy, ví dụ: "AllowFrontend"
+                options.AddPolicy("AllowFrontend", // Đặt tên cho policy
                     builder =>
                     {
                         builder.WithOrigins("http://localhost:5173") // Cho phép origin của frontend
-                               .AllowAnyHeader() // Cho phép tất cả các header (bao gồm Authorization)
-                               .AllowAnyMethod(); // Cho phép các phương thức GET, POST, PUT, DELETE, OPTIONS,...
-                                                  // .AllowCredentials(); // Bỏ comment dòng này nếu bạn cần gửi cookie hoặc thông tin xác thực phức tạp hơn
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
                     });
             });
 
@@ -115,32 +183,28 @@ public class Program
             Log.Information("Application built successfully.");
 
 
-
             // ===== KIỂM TRA KẾT NỐI DATABASE =====
             try
             {
                 Log.Information("Attempting database connection test...");
                 using var scope = app.Services.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                // Thực hiện một kết nối thử
                 await dbContext.Database.CanConnectAsync();
-
                 Log.Information("===== DATABASE CONNECTION TEST: SUCCESSFUL =====");
             }
             catch (Exception ex)
             {
-                // Ghi log lỗi nghiêm trọng nếu không kết nối được
                 Log.Fatal(ex, "===== DATABASE CONNECTION TEST: FAILED. Check connection string or firewall. =====");
-
-                // Dừng ứng dụng
                 return 1;
             }
             // ===========================================
+
             // Sử dụng CORS policy đã định nghĩa
-            app.UseCors("AllowFrontend"); // Sử dụng đúng tên policy đã đặt ở trên
+            app.UseCors("AllowFrontend");
+
             // Sử dụng Global Error Handling Middleware
             app.UseMiddleware<ErrorHandlingMiddleware>();
+
             // Apply migrations nếu đang ở môi trường Development
             if (app.Environment.IsDevelopment())
             {
@@ -175,7 +239,13 @@ public class Program
                 app.UseHttpsRedirection();
             }
 
+            // ======================================================================
+            // === THÊM MIDDLEWARE XÁC THỰC ===
+            // Phải đặt UseAuthentication TRƯỚC UseAuthorization
+            app.UseAuthentication();
             app.UseAuthorization();
+            // ======================================================================
+
             app.MapControllers();
 
             Log.Information("Carbon Lifecycle Service started successfully on {Environment}",

@@ -14,24 +14,21 @@ namespace CarbonTC.CarbonLifecycle.Api.Services
 
         public string? GetUserId()
         {
-            // Cố gắng lấy ID người dùng từ claims (thường là 'sub' hoặc 'nameidentifier' từ JWT)
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                      ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("sub");
-
-            // TODO: Xóa bỏ dòng code hardcoded này khi tích hợp xác thực thực sự
-            // Đây chỉ là giải pháp tạm thời để các handler có thể hoạt động
-            if (string.IsNullOrEmpty(userId))
-            {
-                return "test-user-123"; // ID người dùng hardcoded để test
-            }
-
-            return userId;
+            return _httpContextAccessor.HttpContext?.User?.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
         }
 
+        // SỬA TÊN PHƯƠNG THỨC: GetUserEmail -> GetUserRole
+        public string? GetUserRole()
+        {
+            return _httpContextAccessor.HttpContext?.User?.FindFirstValue("http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+        }
+
+        // BỔ SUNG (nếu bạn cần):
         public string? GetUserEmail()
         {
-            return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email)
-                   ?? "test.user@example.com"; // Email hardcoded để test
+            // Claim cho email thường là "email" hoặc ClaimTypes.Email
+            return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email) ??
+                   _httpContextAccessor.HttpContext?.User?.FindFirstValue("email");
         }
     }
 }

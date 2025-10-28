@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CarbonTC.CarbonLifecycle.Domain.Entities; 
+using CarbonTC.CarbonLifecycle.Domain.Entities;
 
 namespace CarbonTC.CarbonLifecycle.Domain.Repositories
 {

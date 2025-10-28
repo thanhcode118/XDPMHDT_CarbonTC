@@ -6,6 +6,7 @@ using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using CarbonTC.CarbonLifecycle.Application.Services; 
 
 namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
 {

@@ -64,6 +64,9 @@ namespace CarbonTC.CarbonLifecycle.Application.Mappings
 
                 // --- BỔ SUNG ÁNH XẠ MỚI CHO CVASTANDARD ---
                 CreateMap<CVAStandard, CvaStandardDto>();
+
+                // --- BỔ SUNG ÁNH XẠ MỚI CHO CARBONCREDITS ---
+                CreateMap<CarbonCredit, CarbonCreditDto>();
         }
     }
 }

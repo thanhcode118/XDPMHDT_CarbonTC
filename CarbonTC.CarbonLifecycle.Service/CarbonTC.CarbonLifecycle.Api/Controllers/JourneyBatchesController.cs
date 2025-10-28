@@ -2,6 +2,7 @@
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using CarbonTC.CarbonLifecycle.Application.Queries.JourneyBatch; 
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -13,7 +14,9 @@ using System.Threading.Tasks;
 namespace CarbonTC.CarbonLifecycle.Api.Controllers
 {
     // Kế thừa BaseApiController để có Mediator
-    // [Authorize] // Bỏ comment nếu API này yêu cầu đăng nhập
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize(Roles = "EVOwner")]
     public class JourneyBatchesController : BaseApiController
     {
         private readonly ILogger<JourneyBatchesController> _logger;
