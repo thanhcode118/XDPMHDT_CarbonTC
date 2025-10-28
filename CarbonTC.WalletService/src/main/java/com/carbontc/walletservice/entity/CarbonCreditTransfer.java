@@ -59,11 +59,11 @@ public class CarbonCreditTransfer {
         this.toWallet = toWallet;
     }
 
-    public Long getReferenceId() {
+    public String getReferenceId() {
         return referenceId;
     }
 
-    public void setReferenceId(Long referenceId) {
+    public void setReferenceId(String referenceId) {
         this.referenceId = referenceId;
     }
 
@@ -80,7 +80,7 @@ public class CarbonCreditTransfer {
     @Column(name = "transfer_type", nullable = false, length = 20)
     private TransferType transferType;
 
-    private Long referenceId; // TransactionId or ListingId
+    private String referenceId; // TransactionId or ListingId
 
     private LocalDateTime createdAt;
 
