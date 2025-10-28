@@ -1,15 +1,16 @@
-# C:\Users\LENOVO\Downloads\GIT\XDPMHDT_CarbonTC\docker-compose.yml
-
+version: '3.9'
 
 services:
-  # MySQL Database
+  # ========================
+  # MySQL
+  # ========================
   mysql:
     image: mysql:8.0
     container_name: carbontc_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: yourpassword
-      MYSQL_DATABASE: CarbonTC_Auth
+      MYSQL_ROOT_PASSWORD: YourStrongRootPassword123!
+      MYSQL_DATABASE: Carbon
       MYSQL_USER: carbontc
       MYSQL_PASSWORD: carbontc123
     ports:
@@ -18,12 +19,10 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - carbontc_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
 
-  # RabbitMQ Message Queue
+  # ========================
+  # RabbitMQ
+  # ========================
   rabbitmq:
     image: rabbitmq:3-management
     container_name: carbontc_rabbitmq
@@ -32,50 +31,78 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5672:5672"   # AMQP port
-      - "15672:15672" # Management UI
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - carbontc_network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
+  # ========================
   # Auth Service
+  # ========================
   auth-service:
-    build:
-      context: ./CarbonTC.Auth.Service
-      dockerfile: Dockerfile
+    image: vector0001/carbontc-auth-service:latest
     container_name: carbontc_auth_service
     restart: always
     ports:
-      - "5001:80"
+      - "5001:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=CarbonTC_Auth;User=root;Password=110820;
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=Carbon;User=root;Password=YourStrongRootPassword123!
       - Jwt__Secret=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
       - Jwt__Issuer=CarbonTC.Auth
       - Jwt__Audience=CarbonTC.Services
-      - Jwt__ExpirationInMinutes=60
-      - Jwt__RefreshTokenExpirationInDays=7
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Port=5672
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
     depends_on:
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      - mysql
+      - rabbitmq
+    networks:
+      - carbontc_network
+
+  # ========================
+  # Gateway Service
+  # ========================
+  gateway-service:
+    image: vector0001/carbontc-gateway-service:latest
+    container_name: carbontc_gateway_service
+    restart: always
+    ports:
+      - "5000:8080"
+    depends_on:
+      - auth-service
+    networks:
+      - carbontc_network
+
+  # ========================
+  # Market Service
+  # ========================
+  market-service:
+    image: vector0001/carbontc-market-service:latest
+    container_name: carbontc_market_service
+    restart: always
+    depends_on:
+      - mysql
+      - rabbitmq
+    networks:
+      - carbontc_network
+
+  # ========================
+  # Credit Inventory Service
+  # ========================
+  creditinventory-service:
+    image: vector0001/carbontc-creditinventory-service:latest
+    container_name: carbontc_creditinventory_service
+    restart: always
+    depends_on:
+      - mysql
+      - rabbitmq
     networks:
       - carbontc_network
 
 volumes:
   mysql_data:
-  rabbitmq_data:
 
 networks:
   carbontc_network:
