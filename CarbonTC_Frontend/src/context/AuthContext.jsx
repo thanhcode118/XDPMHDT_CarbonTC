@@ -86,8 +86,18 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.login(credentials);
       if (response.success) {
-        console.log('✅ [Login] Successful:', response.data.user);
-        setUser(response.data.user);
+        const userData = response.data.user;
+        console.log('✅ [Login] Successful:', userData);
+        setUser(userData);
+
+        const token = authService.getAccessToken?.() || localStorage.getItem('accessToken');
+        const payload = token ? authService.decodeToken(token) : null;
+        const roles = payload?.roles || payload?.role ? payload.role : [];
+
+        if (roles.includes('Admin')) {
+          window.location.href = `http://localhost:5174/admin?token=${encodeURIComponent(token)}`;
+          return response;
+        }
       }
       return response;
     } catch (error) {
