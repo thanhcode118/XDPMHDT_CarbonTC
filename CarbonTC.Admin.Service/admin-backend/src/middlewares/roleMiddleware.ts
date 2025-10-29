@@ -1,6 +1,13 @@
 import { Response, NextFunction } from 'express';
-import { AuthRequest, ForbiddenError, UnauthorizedError, UserRole } from '../types';
+import { 
+  AuthRequest, 
+  ForbiddenError, 
+  UnauthorizedError, 
+  UserRole 
+} from '../types';
 import logger from '../utils/logger';
+
+const normalizeRole = (role: string): string => role?.toLowerCase();
 
 export const requireRole = (...allowedRoles: UserRole[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
@@ -9,9 +16,11 @@ export const requireRole = (...allowedRoles: UserRole[]) => {
       if (!req.user) {
         throw new UnauthorizedError('Authentication required');
       }
+      const userRole = normalizeRole(req.user.role);
+      const allowed = allowedRoles.map((r) => normalizeRole(r));
 
       // Check if user has required role
-      if (!allowedRoles.includes(req.user.role)) {
+      if (!allowed.includes(userRole)) {
         logger.warn(
           `Access denied for user ${req.user.email} (${req.user.role}). Required roles: ${allowedRoles.join(', ')}`
         );
@@ -20,8 +29,8 @@ export const requireRole = (...allowedRoles: UserRole[]) => {
         );
       }
 
-      logger.debug(`Access granted for user ${req.user.email} (${req.user.role}) 
-        -> ${req.method} ${req.path}`);
+      logger.debug(`Access granted for user 
+        ${req.user.email} (${req.user.role}) -> ${req.method} ${req.path}`);
       return next();
 
     } catch (error) {
@@ -31,20 +40,19 @@ export const requireRole = (...allowedRoles: UserRole[]) => {
 };
 
 export const requireAdmin = requireRole(UserRole.ADMIN);
-
 export const requireAdminOrCVA = requireRole(UserRole.ADMIN, UserRole.CVA);
 
 export const requireOwnerOrAdmin = (userIdParam: string = 'userId') => {
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+  return (req: AuthRequest, _res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
         throw new UnauthorizedError('Authentication required');
       }
 
       const requestedUserId = req.params[userIdParam] || req.body[userIdParam];
-
+      const userRole = normalizeRole(req.user.role);
       // Allow if user is admin
-      if (req.user.role === UserRole.ADMIN) {
+      if (userRole === normalizeRole(UserRole.ADMIN)) {
         logger.debug(`Admin access granted: ${req.user.email}`);
         return next();
       }
@@ -57,7 +65,7 @@ export const requireOwnerOrAdmin = (userIdParam: string = 'userId') => {
 
       // Deny access
       logger.warn(
-        `Access denied: User ${req.user.email} attempted to access resource of user ${requestedUserId}`
+        `Access denied: User ${req.user.email} tried to access ${requestedUserId}`
       );
       throw new ForbiddenError('You can only access your own resources');
 
@@ -92,22 +100,19 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 };
 
 export const requirePermission = (resource: string, action: Permission['action']) => {
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+  return (req: AuthRequest, _res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
         throw new UnauthorizedError('Authentication required');
       }
+      const userRole = req.user.role;
+      const userPermissions = ROLE_PERMISSIONS[userRole] || [];
 
-      const userPermissions = ROLE_PERMISSIONS[req.user.role];
-
-      // Check if user has wildcard permission (admin)
-      const hasWildcard = userPermissions.some(
-        p => p.resource === '*' && p.action === 'admin'
+      const hasAdmin = userPermissions.some(
+        (p) => p.resource === "*" && p.action === "admin"
       );
 
-      if (hasWildcard) {
-        return next();
-      }
+      if (hasAdmin) return next();
 
       // Check if user has specific permission
       const hasPermission = userPermissions.some(
@@ -116,7 +121,7 @@ export const requirePermission = (resource: string, action: Permission['action']
 
       if (!hasPermission) {
         logger.warn(
-          `Permission denied: User ${req.user.email} (${req.user.role}) attempted ${action} on ${resource}`
+          `Permission denied: User ${req.user.email} (${req.user.role}) -> ${action} ${resource}`
         );
         throw new ForbiddenError(`You don't have permission to ${action} ${resource}`);
       }
@@ -130,7 +135,7 @@ export const requirePermission = (resource: string, action: Permission['action']
   };
 };
 
-export const logAccess = (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const logAccess = (req: AuthRequest, _res: Response, next: NextFunction): void => {
   if (req.user) {
     logger.info('Access log:', {
       userId: req.user.userId,
