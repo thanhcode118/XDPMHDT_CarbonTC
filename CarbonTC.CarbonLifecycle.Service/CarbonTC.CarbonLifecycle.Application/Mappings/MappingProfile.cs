@@ -67,6 +67,22 @@ namespace CarbonTC.CarbonLifecycle.Application.Mappings
 
                 // --- BỔ SUNG ÁNH XẠ MỚI CHO CARBONCREDITS ---
                 CreateMap<CarbonCredit, CarbonCreditDto>();
+
+            // DTO -> Entity (cho Commands)
+            CreateMap<CVAStandardCreateDto, CVAStandard>(); // Add Command
+            CreateMap<CVAStandardUpdateDto, CVAStandard>()  // Update Command (cần xử lý null trong handler)
+                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null)); // Chỉ map các thuộc tính không null từ DTO
+            CreateMap<AuditReportCreateDto, AuditReport>(); // Create AuditReport Command
+
+            // Entity -> DTO (cho Queries và Command Results)
+            CreateMap<VerificationRequest, VerificationRequestSummaryDto>(); // Query GetVerificationRequestsForCVA
+            CreateMap<VerificationRequest, VerificationRequestDto>() // Query GetVerificationRequestById & Review Command Result
+                .ForMember(dest => dest.AppliedStandard, opt => opt.MapFrom(src => src.CvaStandard)) // Map navigation property
+                .ForMember(dest => dest.IssuedCredits, opt => opt.MapFrom(src => src.CarbonCredits)); // Map collection
+            CreateMap<AuditReport, AuditReportCreateDto>(); // Có thể cần DTO kết quả riêng nếu khác CreateDto
+
+            // Đảm bảo ánh xạ cho CarbonCredit sang CarbonCreditDto đã có hoặc thêm vào nếu chưa:
+            CreateMap<CarbonCredit, CarbonCreditDto>(); // Cần cho VerificationRequestDto
         }
     }
 }

@@ -47,6 +47,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
             services.AddScoped<ICVAStandardRepository, CVAStandardRepository>();
             services.AddScoped<IVerificationRequestRepository, VerificationRequestRepository>();
             services.AddScoped<ICarbonCreditRepository, CarbonCreditRepository>();
+            services.AddScoped<IAuditReportRepository, AuditReportRepository>(); 
             services.AddScoped<IUnitOfWork, UnitOfWork>(); // Đăng ký UnitOfWork
 
             // Message Broker

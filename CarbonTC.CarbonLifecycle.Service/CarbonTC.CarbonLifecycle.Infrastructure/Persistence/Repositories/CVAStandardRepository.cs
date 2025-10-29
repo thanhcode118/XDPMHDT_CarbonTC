@@ -66,10 +66,9 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 throw new ArgumentNullException(nameof(standard));
             }
             standard.LastModifiedAt = DateTime.UtcNow;
-            _context.CVAStandards.Update(standard);
+            _context.CVAStandards.Update(standard); // EF Core Update là sync
             _logger.LogInformation("Marked CVAStandard with Id: {Id} as modified.", standard.Id);
-            // Không SaveChangesAsync ở đây (Update là sync)
-            return Task.CompletedTask;
+            return Task.CompletedTask; // Trả về Task hoàn thành
         }
 
         public async Task DeleteAsync(Guid id)
@@ -86,5 +85,20 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 _logger.LogWarning("CVAStandard with Id: {Id} not found for deletion.", id);
             }
         }
+
+        public async Task<IEnumerable<CVAStandard>> GetAllAsync(bool? isActive = null)
+    {
+        _logger.LogInformation("Fetching CVAStandards with IsActive filter: {IsActive}", isActive?.ToString() ?? "All");
+        var query = _context.CVAStandards.AsQueryable();
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(s => s.IsActive == isActive.Value);
+        }
+
+        return await query
+            .OrderBy(s => s.StandardName)
+            .ToListAsync();
+    }
     }
 }

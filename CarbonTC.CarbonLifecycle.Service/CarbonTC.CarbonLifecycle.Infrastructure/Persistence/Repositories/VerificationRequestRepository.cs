@@ -1,4 +1,5 @@
 ﻿using CarbonTC.CarbonLifecycle.Domain.Entities;
+using CarbonTC.CarbonLifecycle.Domain.Enums;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
             // Không SaveChangesAsync
         }
 
+        // Sửa UpdateAsync thành Task
         public Task UpdateAsync(VerificationRequest request)
         {
             if (request == null)
@@ -57,10 +59,9 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 throw new ArgumentNullException(nameof(request));
             }
             request.LastModifiedAt = DateTime.UtcNow;
-            _context.VerificationRequests.Update(request);
+            _context.VerificationRequests.Update(request); // EF Core Update là sync
             _logger.LogInformation("Marked VerificationRequest with Id: {Id} as modified.", request.Id);
-            // Không SaveChangesAsync
-            return Task.CompletedTask;
+            return Task.CompletedTask; // Trả về Task hoàn thành
         }
 
         public async Task DeleteAsync(Guid id)
@@ -77,5 +78,34 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 _logger.LogWarning("VerificationRequest with Id: {Id} not found for deletion.", id);
             }
         }
+
+        public async Task<IEnumerable<VerificationRequest>> GetAllPendingAsync()
+        {
+            _logger.LogInformation("Fetching all pending VerificationRequests.");
+            return await _context.VerificationRequests
+                .Where(vr => vr.Status == VerificationRequestStatus.Pending)
+                .OrderByDescending(vr => vr.RequestDate)
+                .ToListAsync();
+        }
+
+        public async Task<(IEnumerable<VerificationRequest>, int)> GetPendingWithPaginationAsync(int pageNumber, int pageSize)
+        {
+            _logger.LogInformation("Fetching pending VerificationRequests - Page: {PageNumber}, Size: {PageSize}", pageNumber, pageSize);
+
+            var query = _context.VerificationRequests
+                .Where(vr => vr.Status == VerificationRequestStatus.Pending);
+
+            var totalCount = await query.CountAsync(); // Đếm tổng số lượng trước khi phân trang
+
+            var items = await query
+                .OrderByDescending(vr => vr.RequestDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        
     }
 }
