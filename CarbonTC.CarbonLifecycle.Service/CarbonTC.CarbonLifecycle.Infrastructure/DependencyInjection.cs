@@ -12,6 +12,10 @@ using CarbonTC.CarbonLifecycle.Infrastructure.Services.FileStorage;
 using Microsoft.Extensions.Options;
 using CarbonTC.CarbonLifecycle.Domain.Abstractions;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
+// ===== BẮT ĐẦU CẬP NHẬT =====
+// Thêm using này để đăng ký Consumer
+using CarbonTC.CarbonLifecycle.Infrastructure.BackgroundServices;
+// ===== KẾT THÚC CẬP NHẬT =====
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure
 {
@@ -47,7 +51,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
             services.AddScoped<ICVAStandardRepository, CVAStandardRepository>();
             services.AddScoped<IVerificationRequestRepository, VerificationRequestRepository>();
             services.AddScoped<ICarbonCreditRepository, CarbonCreditRepository>();
-            services.AddScoped<IAuditReportRepository, AuditReportRepository>(); 
+            services.AddScoped<IAuditReportRepository, AuditReportRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>(); // Đăng ký UnitOfWork
 
             // Message Broker
@@ -67,6 +71,11 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
             // Domain Event Dispatcher
             services.AddScoped<IDomainEventDispatcher, // <-- Interface từ Domain.Abstractions
                               CarbonTC.CarbonLifecycle.Infrastructure.Services.Events.DomainEventDispatcher>();
+
+            // ===== BẮT ĐẦU CẬP NHẬT =====
+            // Đăng ký dịch vụ consumer chạy nền
+            services.AddHostedService<RabbitMQConsumerService>();
+            // ===== KẾT THÚC CẬP NHẬT =====
 
             return services;
         }

@@ -4,7 +4,8 @@ using Microsoft.Extensions.Logging;
 using CarbonTC.CarbonLifecycle.Application.Abstractions.Messaging;
 using CarbonTC.CarbonLifecycle.Domain.Events;
 using CarbonTC.CarbonLifecycle.Domain.Abstractions;
-using System.Reflection; // <-- Thêm using này
+using System.Reflection;
+using CarbonTC.CarbonLifecycle.Application.IntegrationEvents;
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
 {
@@ -21,13 +22,11 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// Phương thức public duy nhất mà Interface yêu cầu.
-        /// Nó sử dụng Reflection để gọi phương thức generic private bên dưới.
         public Task Dispatch(IDomainEvent domainEvent)
         {
             // 1. Lấy phương thức generic 
             var genericMethodInfo = GetType().GetMethod(
-                "DispatchInternal", 
+                "DispatchInternal",
                 BindingFlags.NonPublic | BindingFlags.Instance
             );
 
@@ -53,7 +52,6 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             }
         }
 
-        /// Phương thức helper generic (private) để xử lý logic publish
         private async Task DispatchInternal<TEvent>(TEvent domainEvent) where TEvent : IDomainEvent
         {
             if (domainEvent == null)
@@ -61,6 +59,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
 
             try
             {
+                // Hàm này sẽ quyết định routing key
                 var routingKey = GenerateRoutingKey(domainEvent);
 
                 await _messagePublisher.PublishAsync(domainEvent, routingKey);
@@ -83,16 +82,24 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             }
         }
 
+        // Sửa hàm này để thêm 2 DTOs 
         private string GenerateRoutingKey<TEvent>(TEvent domainEvent) where TEvent : IDomainEvent
         {
             var eventTypeName = domainEvent.GetType().Name;
 
             return eventTypeName switch
             {
+                // 1. Dành cho Service 4 (Wallet)
+                nameof(CreditIssuedIntegrationEvent) => "credit.issued",
+
+                // 2. Dành cho Service 3 (Marketplace)
+                //  dùng key "credit.inventory.update" để gửi
+                // Service 3 sẽ BIND "credit_inventory_queue" của họ vào key này
+                nameof(CreditInventoryUpdateIntegrationEvent) => "credit.inventory.update",
+
                 nameof(JourneyBatchSubmittedForVerificationEvent) => "carbonlifecycle.journeybatch.submitted",
                 nameof(VerificationRequestApprovedEvent) => "carbonlifecycle.verification.approved",
                 nameof(VerificationRequestRejectedEvent) => "carbonlifecycle.verification.rejected",
-                // Thêm các event khác từ Domain/Events nếu cần
                 nameof(VerificationRequestCreatedEvent) => "carbonlifecycle.verification.created",
                 nameof(CarbonCreditsApprovedEvent) => "carbonlifecycle.carboncredit.approved",
                 nameof(CarbonCreditsRejectedEvent) => "carbonlifecycle.carboncredit.rejected",

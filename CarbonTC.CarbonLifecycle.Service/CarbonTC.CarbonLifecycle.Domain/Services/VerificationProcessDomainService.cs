@@ -5,11 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
-using CarbonTC.CarbonLifecycle.Domain.Events; 
+using CarbonTC.CarbonLifecycle.Domain.Events;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Domain.ValueObjects;
-using CarbonTC.CarbonLifecycle.Domain.Abstractions; 
-
+using CarbonTC.CarbonLifecycle.Domain.Abstractions;
 
 namespace CarbonTC.CarbonLifecycle.Domain.Services
 {
@@ -129,27 +128,32 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
 
             if (totalCredits.Value > 0)
             {
-                // Tạo CarbonCredit Entity mới
                 var newCarbonCredit = new CarbonCredit
                 {
                     Id = Guid.NewGuid(),
                     JourneyBatchId = batch.Id,
                     UserId = batch.UserId,
-                    AmountKgCO2e = (decimal)totalCO2.ToKg().Value,
+                    AmountKgCO2e = (decimal)totalCO2.ToKg().Value, // Lấy từ kết quả tính toán
                     IssueDate = DateTime.UtcNow,
-                    ExpiryDate = null,
                     Status = CarbonCreditStatus.Issued,
-                    TransactionHash = null,
-                    CreatedAt = DateTime.UtcNow
+                    TransactionHash = "pending_wallet_tx", // Sẽ được cập nhật sau
+                    VerificationRequestId = verificationRequestId // Liên kết với request này
                 };
+
+                // 2. Giờ mới 'AddAsync'
                 await _carbonCreditRepository.AddAsync(newCarbonCredit);
 
                 // Cập nhật trạng thái JourneyBatch
                 batch.Status = JourneyBatchStatus.CreditsIssued;
                 batch.LastModifiedAt = DateTime.UtcNow;
 
-                // Phát Domain Event CarbonCreditsApproved
-                await _eventDispatcher.Dispatch(new CarbonCreditsApprovedEvent(batch.Id, batch.UserId, totalCredits));
+                // Phát Domain Event CarbonCreditsApproved (Sự kiện nội bộ)
+                await _eventDispatcher.Dispatch(new CarbonCreditsApprovedEvent(
+                    batch.Id,
+                    batch.UserId,
+                    newCarbonCredit.Id, // Lấy Id từ biến vừa tạo
+                    totalCredits
+                ));
             }
             else
             {

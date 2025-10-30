@@ -12,6 +12,7 @@ using CarbonTC.CarbonLifecycle.Domain.Events;
 using CarbonTC.CarbonLifecycle.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore.Metadata;
 using RModel = RabbitMQ.Client.IModel;
+using System.Collections.Generic;
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
 {

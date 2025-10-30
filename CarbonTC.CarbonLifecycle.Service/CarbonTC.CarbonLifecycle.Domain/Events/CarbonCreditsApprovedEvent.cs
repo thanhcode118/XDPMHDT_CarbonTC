@@ -9,13 +9,15 @@ namespace CarbonTC.CarbonLifecycle.Domain.Events
     {
         public Guid JourneyBatchId { get; }
         public string UserId { get; }
+        public Guid CreditId { get; }
         public CreditAmount ApprovedCreditAmount { get; } // Sử dụng Value Object
         public DateTime OccurredOn { get; } = DateTime.UtcNow;
 
-        public CarbonCreditsApprovedEvent(Guid journeyBatchId, string userId, CreditAmount approvedCreditAmount)
+        public CarbonCreditsApprovedEvent(Guid journeyBatchId, string userId, Guid creditId, CreditAmount approvedCreditAmount)
         {
             JourneyBatchId = journeyBatchId;
             UserId = userId;
+            CreditId = creditId; 
             ApprovedCreditAmount = approvedCreditAmount;
         }
     }

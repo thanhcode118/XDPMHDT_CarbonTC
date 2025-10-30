@@ -1,5 +1,4 @@
 ﻿// File: CarbonTC.CarbonLifecycle.Application/Abstractions/Services/IWalletService.cs
-// (Tạo thư mục Abstractions/Services nếu chưa có)
 using System;
 using System.Threading.Tasks;
 using CarbonTC.CarbonLifecycle.Application.DTOs; // Giả sử có WalletCreditMintDto
