@@ -43,15 +43,13 @@ services:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 51
 
   # ==============================
   # Auth Service (ASP.NET)
   # ==============================
   auth-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: vector0001/carbontc-auth-service
     container_name: carbontc_auth_service
     restart: always
     ports:
