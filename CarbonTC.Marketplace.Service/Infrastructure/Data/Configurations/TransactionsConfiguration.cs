@@ -4,12 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class TransactionsConfiguration : IEntityTypeConfiguration<Transactions>
+    public class TransactionsConfiguration : BaseEntityConfiguration<Transactions>
     {
-        public void Configure(EntityTypeBuilder<Transactions> builder)
+        public override void Configure(EntityTypeBuilder<Transactions> builder)
         {
+            base.Configure(builder);
+
             builder.ToTable("Transactions");
-            builder.HasKey(t => t.Id);
 
             builder.Property(t => t.Quantity).HasPrecision(18, 2);
             builder.Property(t => t.TotalAmount).HasPrecision(18, 2);

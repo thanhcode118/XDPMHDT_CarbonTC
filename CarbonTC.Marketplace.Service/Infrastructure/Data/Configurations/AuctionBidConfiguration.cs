@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class AuctionBidConfiguration : IEntityTypeConfiguration<AuctionBid>
+    public class AuctionBidConfiguration : BaseEntityConfiguration<AuctionBid>
     {
-        public void Configure(EntityTypeBuilder<AuctionBid> builder)
+        public override void Configure(EntityTypeBuilder<AuctionBid> builder)
         {
-            builder.ToTable("AuctionBids");
+            base.Configure(builder);
 
-            builder.HasKey(ab => ab.Id);
+            builder.ToTable("AuctionBids");
 
             builder.Property(b => b.BidAmount)
                    .HasColumnType("decimal(18, 2)");

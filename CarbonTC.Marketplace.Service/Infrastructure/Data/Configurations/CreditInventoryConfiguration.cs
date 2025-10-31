@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class CreditInventoryConfiguration : IEntityTypeConfiguration<CreditInventory>
+    public class CreditInventoryConfiguration : BaseEntityConfiguration<CreditInventory>
     {
-        public void Configure(EntityTypeBuilder<CreditInventory> builder)
+        public override void Configure(EntityTypeBuilder<CreditInventory> builder)
         {
-            builder.ToTable("CreditInventories");
+            base.Configure(builder);
 
-            builder.HasKey(ci => ci.Id);
+            builder.ToTable("CreditInventories");
 
             builder.Property(c => c.TotalAmount).HasPrecision(18, 2);
             builder.Property(c => c.AvailableAmount).HasPrecision(18, 2);

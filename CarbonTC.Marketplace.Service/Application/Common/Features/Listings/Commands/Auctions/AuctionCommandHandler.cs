@@ -1,75 +1,63 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.DTOs;
+using Application.Common.Interfaces;
 using Domain.Common.Response;
 using Domain.Enum;
 using Domain.Exceptions;
 using MediatR;
-using System.Security.Cryptography;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Common.Features.Listings.Commands.Auctions
 {
-    internal class AuctionCommandHandler : IRequestHandler<AuctionCommand ,Result<Object>>
+    internal class AuctionCommandHandler : IRequestHandler<AuctionCommand ,Result<AuctionBidResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUser;
         private readonly IBalanceService _balanceService;
         private readonly ICacheService _cacheService;
+        private readonly ILogger<AuctionCommandHandler> _logger;
 
-        public AuctionCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUser, IBalanceService balanceService, ICacheService cacheService)
+        public AuctionCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUser, IBalanceService balanceService, ICacheService cacheService, ILogger<AuctionCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _currentUser = currentUser;
             _balanceService = balanceService;
             _cacheService = cacheService;
+            _logger = logger;
         }
 
-        public async Task<Result<Object>> Handle(AuctionCommand request, CancellationToken cancellationToken)
+        public async Task<Result<AuctionBidResponse>> Handle(AuctionCommand request, CancellationToken cancellationToken)
         {
-            var userId = _currentUser.UserId!.Value;
+            if (!_currentUser.UserId.HasValue || _currentUser.UserId.Value == Guid.Empty)
+            {
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(
+                    new Error("Authentication", "User is not authenticated."));
+            }
+
+            var userId = _currentUser.UserId.Value;
 
             // 1. Authentication check
             if (userId == Guid.Empty)
             {
-                return Result<Object>.Failure(new Error("Authentication", "User is not authenticated."));
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(new Error("Authentication", "User is not authenticated."));
             }
 
-            // 2. Get listing info
+            // 2. Get listing
             var listing = await _unitOfWork.Listings.GetByIdAsync(request.ListingId, cancellationToken);
             if (listing == null)
             {
-                return Result<Object>.Failure(new Error("Listing", "Listing not found."));
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(new Error("Listing", "Listing not found."));
             }
 
-            // 3. Warm up balance if not in Redis
-            await _balanceService.WarmUpBalanceAsync(userId, listing.AuctionEndTime);
-
-            // 4. Get current user's bid on this listing (from domain)
-            var currentUserBid = listing.Bids
-                .Where(b => b.BidderId == userId)
-                .OrderByDescending(b => b.BidAmount)
-                .FirstOrDefault();
-
-            // 5. Get current highest bid
-            var currentHighestBid = listing.Bids
-                .Where(b => b.Status == BidStatus.Winning)
-                .OrderByDescending(b => b.BidAmount)
-                .FirstOrDefault();
-
-            // 6. Validation: Check if user is already highest bidder
-            if (currentHighestBid?.BidderId == userId)
+            // 3. Warm up balance with error handling
+            var warmupSuccess = await _balanceService.WarmUpBalanceAsync(userId, listing.AuctionEndTime);
+            if (!warmupSuccess)
             {
-                return Result<Object>.Failure(new Error("Bid", "You are already the highest bidder"));
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(new Error(
+                    "Balance",
+                    "Unable to verify balance. Please try again later."));
             }
 
-            // 7. Validation: If user has bid before, new bid must be higher
-            if (currentUserBid != null && request.BidAmount <= currentUserBid.BidAmount)
-            {
-                return Result<Object>.Failure(
-                    new Error("Bid", $"New bid must be higher than your current bid of {currentUserBid.BidAmount}"));
-            }
-
-
-            // 8. ATOMIC RESERVE: Reserve balance for this specific auction
-            //    This handles BOTH first-time bid AND raise-bid scenarios
+            // 4. Reserve balance atomically
             var reserved = await _balanceService.ReserveBalanceForAuctionAsync(
                 userId,
                 request.ListingId,
@@ -80,51 +68,115 @@ namespace Application.Common.Features.Listings.Commands.Auctions
                 var balance = await _balanceService.GetBalanceAsync(userId);
                 var currentLocked = await _balanceService.GetAuctionLockedAmountAsync(userId, request.ListingId);
 
-                return Result<Object>.Failure(new Error(
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(new Error(
                     "InsufficientBalance",
                     $"Insufficient balance. Available: {balance.available:N0}, " +
                     $"Currently locked for this auction: {currentLocked:N0}, " +
                     $"Required total: {request.BidAmount:N0}"));
             }
 
+            // 5. Acquire distributed lock for this auction
+            var lockKey = $"auction_lock:{request.ListingId}";
+            var lockValue = Guid.NewGuid().ToString();
+            var lockAcquired = await _cacheService.AcquireLockAsync(
+                lockKey,
+                lockValue,
+                TimeSpan.FromSeconds(5));
+
+            if (!lockAcquired)
+            {
+                // Release reserved balance before failing
+                await _balanceService.ReleaseBalanceForAuctionAsync(userId, request.ListingId);
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(new Error(
+                    "Concurrency",
+                    "Another bid is being processed. Please try again."));
+            }
+
             try
             {
-                // 9. Place bid in domain (will throw DomainException if invalid)
-                var previousWinnerId = currentHighestBid?.BidderId;
+                // 6. Place bid in domain (will throw DomainException if invalid)
+                var previousHighestBid = listing.Bids
+                    .Where(b => b.Status == BidStatus.Winning)
+                    .OrderByDescending(b => b.BidAmount)
+                    .FirstOrDefault();
+
+                var previousWinnerId = previousHighestBid?.BidderId;
+
+                // Domain method handles all business validations
                 var newBid = listing.PlaceBid(userId, request.BidAmount);
 
-                // 10. Release balance of previous winner (if exists and not current user)
-                if (previousWinnerId.HasValue &&
-                    currentHighestBid != null &&
-                    previousWinnerId.Value != userId)
-                {
-                    await _balanceService.ReleaseBalanceForAuctionAsync(
-                        previousWinnerId.Value,
-                        request.ListingId);
-                }
 
-                // 11. Save changes
+                // 7. Save changes to database
+                await _unitOfWork.Listings.UpdateAsync(listing, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                return Result<Object>.Success(new
+                // 8. Release balance of previous winner AFTER successful commit
+                if (previousWinnerId.HasValue &&
+                    previousHighestBid != null &&
+                    previousWinnerId.Value != userId)
                 {
-                    bid = newBid,
-                    message = currentUserBid != null
-                        ? $"Bid raised from {currentUserBid.BidAmount:N0} to {request.BidAmount:N0}"
-                        : $"Bid placed: {request.BidAmount:N0}"
+                    try
+                    {
+                        await _balanceService.ReleaseBalanceForAuctionAsync(
+                            previousWinnerId.Value,
+                            request.ListingId);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log but don't fail - transaction already committed
+                        // Previous winner's balance will be released when auction ends
+                        _logger.LogError(ex,
+                            "Failed to release balance for previous winner {UserId} on listing {ListingId}",
+                            previousWinnerId.Value,
+                            request.ListingId);
+                    }
+                }
+
+                // 9. Return success response
+                return Result<AuctionBidResponse>.Success( new AuctionBidResponse
+                {
+                    BidId = newBid.Id,
+                    ListingId = newBid.ListingId,
+                    BidderId = newBid.BidderId,
+                    BidAmount = newBid.BidAmount,
+                    BidTime = newBid.BidTime,
+                    Status = newBid.Status.ToString(),
+                    Message = $"Bid placed successfully: {request.BidAmount:N0}"
                 });
             }
             catch (DomainException ex)
             {
+                // Rollback balance reservation
                 await _balanceService.ReleaseBalanceForAuctionAsync(userId, request.ListingId);
 
-                return Result<Object>.Failure(new Error("Bid", ex.Message));
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(new Error("Bid", ex.Message));
             }
             catch (Exception ex)
             {
+                // Rollback balance reservation
                 await _balanceService.ReleaseBalanceForAuctionAsync(userId, request.ListingId);
 
-                return Result<Object>.Failure(new Error("Bid", "An unexpected error occurred while placing bid."));
+                _logger.LogError(ex,
+                    "Unexpected error placing bid for user {UserId} on listing {ListingId}",
+                    userId,
+                    request.ListingId);
+
+                return Result<AuctionBidResponse>.Failure<AuctionBidResponse>(new Error(
+                    "Bid",
+                    "An unexpected error occurred while placing bid. Please try again."));
+            }
+            finally
+            {
+                // Always release the lock
+                try
+                {
+                    await _cacheService.ReleaseLockAsync(lockKey, lockValue);
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't throw - lock will expire automatically
+                    _logger.LogError(ex, "Failed to release lock {LockKey}", lockKey);
+                }
             }
         }
     }

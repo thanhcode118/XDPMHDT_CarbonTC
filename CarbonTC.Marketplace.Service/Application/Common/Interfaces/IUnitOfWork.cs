@@ -1,5 +1,4 @@
-﻿using Domain.Exceptions;
-using Domain.Repositories;
+﻿using Domain.Repositories;
 
 namespace Application.Common.Interfaces
 {

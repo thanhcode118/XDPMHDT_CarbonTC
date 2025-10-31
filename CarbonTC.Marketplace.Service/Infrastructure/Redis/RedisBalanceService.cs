@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System.Globalization;
 
@@ -8,11 +9,15 @@ namespace Infrastructure.Redis
     {
         private readonly IDatabase _db;
         private readonly IWalletServiceClient _walletService;
+        private readonly ICacheService _cacheService;
+        private readonly ILogger<RedisBalanceService> _logger;
 
-        public RedisBalanceService(IDatabase db, IWalletServiceClient walletService)
+        public RedisBalanceService(IDatabase db, IWalletServiceClient walletService, ICacheService cacheService, ILogger<RedisBalanceService> logger)
         {
             _db = db;
             _walletService = walletService;
+            _cacheService = cacheService;
+            _logger = logger;
         }
 
         private string GetBalanceKey(Guid userId) => $"wallet:{userId}";
@@ -180,31 +185,71 @@ namespace Infrastructure.Redis
             return decimal.Parse(value, CultureInfo.InvariantCulture);
         }
 
-        public async Task WarmUpBalanceAsync(Guid userId, DateTime? auctionEndTime = null)
+        public async Task<bool> WarmUpBalanceAsync(Guid userId, DateTime? auctionEndTime = null)
         {
             var key = GetBalanceKey(userId);
-            if (!await _db.KeyExistsAsync(key))
+
+            if (await _db.KeyExistsAsync(key))
             {
-                var walletDto = await _walletService.GetBanlanceAsync(userId);
-                if (walletDto == null) return;
+                var newTtl = CalculateTtl(auctionEndTime);
+                var currentTtl = await _db.KeyTimeToLiveAsync(key);
+                if (currentTtl == null || newTtl > currentTtl)
+                {
+                    await _db.KeyExpireAsync(key, newTtl);
+                }
+                return true;
+            }
+
+            var lockKey = $"warmup_lock:{userId}";
+            var lockValue = Guid.NewGuid().ToString();
+            var lockAcquired = await _cacheService.AcquireLockAsync(
+                lockKey,
+                lockValue,
+                TimeSpan.FromSeconds(3));
+
+            if (!lockAcquired)
+            {
+                await Task.Delay(100); 
+
+                if (await _db.KeyExistsAsync(key))
+                    return true;
+
+                _logger.LogWarning("Failed to acquire warmup lock for user {UserId}", userId);
+                return false;
+            }
+
+            try
+            {
+                if (await _db.KeyExistsAsync(key))
+                    return true;
+
+                var walletDto = await _walletService.GetBalanceAsync();
+
+                if (walletDto == null)
+                {
+                    _logger.LogError("Wallet not found for user {UserId}", userId);
+                    return false;
+                }
 
                 await _db.HashSetAsync(key, new HashEntry[]
                 {
-                    new("available", walletDto.Available.ToString(CultureInfo.InvariantCulture)),
+                    new("available", walletDto.Balance.ToString(CultureInfo.InvariantCulture)),
                     new("locked", "0")
                 });
 
                 var ttl = CalculateTtl(auctionEndTime);
                 await _db.KeyExpireAsync(key, ttl);
-                return;
+
+                return true;
             }
-
-            var newTtl = CalculateTtl(auctionEndTime);
-            var currentTtl = await _db.KeyTimeToLiveAsync(key);
-
-            if (currentTtl == null || newTtl > currentTtl)
+            catch (Exception ex)
             {
-                await _db.KeyExpireAsync(key, newTtl);
+                _logger.LogError(ex, "Failed to warm up balance for user {UserId}", userId);
+                return false; 
+            }
+            finally
+            {
+                await _cacheService.ReleaseLockAsync(lockKey, lockValue);
             }
         }
 

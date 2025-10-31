@@ -231,5 +231,25 @@ namespace Infrastructure.Redis
         }
 
         #endregion
+
+        #region
+        public async Task<bool> AcquireLockAsync(string key, string value, TimeSpan expiry)
+        {
+            return await _db.StringSetAsync(key, value, expiry, When.NotExists);
+        }
+
+        public async Task<bool> ReleaseLockAsync(string key, string value)
+        {
+            var script = @"
+                if redis.call('get', KEYS[1]) == ARGV[1] then
+                    return redis.call('del', KEYS[1])
+                else
+                    return 0
+                end";
+            var result = (int)(long)await _db.ScriptEvaluateAsync(script, new RedisKey[] { key }, new RedisValue[] { value });
+            return result == 1;
+        }
+
+        #endregion
     }
 }

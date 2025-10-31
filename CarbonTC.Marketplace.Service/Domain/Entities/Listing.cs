@@ -151,16 +151,22 @@ namespace Domain.Entities
             if (bidAmount < MinimumBid)
                 throw new DomainException($"Bid amount must be at least {MinimumBid}");
 
+            if (bidderId == OwnerId)
+                throw new DomainException("You cannot bid on your own listing");
+
             var currentHighestBid = _bids
                 .Where(b => b.Status == BidStatus.Winning)
                 .OrderByDescending(b => b.BidAmount)
                 .FirstOrDefault();
 
-            if (currentHighestBid != null && bidAmount <= currentHighestBid.BidAmount)
-                throw new DomainException("Bid must be higher than current highest bid");
+            if (currentHighestBid != null)
+            {
+                if (bidAmount <= currentHighestBid.BidAmount)
+                    throw new DomainException("Bid must be higher than current highest bid");
 
-            if (currentHighestBid?.BidderId == bidderId)
-                throw new DomainException("You are already the highest bidder");
+                if (currentHighestBid.BidderId == bidderId)
+                    throw new DomainException("You are already the highest bidder");
+            }
 
             // Outbid previous winner
             if (currentHighestBid != null)
@@ -171,7 +177,9 @@ namespace Domain.Entities
             var newBid = AuctionBid.Create(Id, bidderId, bidAmount);
             _bids.Add(newBid);
 
-            AddDomainEvent(new BidPlacedDomainEvent(Id, bidderId, bidAmount, newBid.BidTime, currentHighestBid.BidderId));
+            Guid? previousWinnerId = currentHighestBid?.BidderId;
+
+            AddDomainEvent(new BidPlacedDomainEvent(Id, bidderId, bidAmount, newBid.BidTime, previousWinnerId));
 
             return newBid;
         }

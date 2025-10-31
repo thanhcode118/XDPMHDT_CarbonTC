@@ -56,11 +56,6 @@ namespace Application.Common.Features.Listings.EventHandlers
 
             await _integrationEvent.PublishAsync<TransactionWalletDto>(transactionWalletDto, "transactions_exchange", ExchangeType.Direct, "transaction.created");
 
-            //await _walletService.CommitPaymentAsync(
-            //    notification.BuyerId,
-            //    notification.TotalPrice,
-            //    cancellationToken);
-
             await _balanceService.CommitPurchaseAsync(
                 notification.BuyerId,
                 notification.TotalPrice);

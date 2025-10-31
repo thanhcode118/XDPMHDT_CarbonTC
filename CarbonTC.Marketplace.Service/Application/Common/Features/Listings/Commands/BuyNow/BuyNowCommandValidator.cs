@@ -6,7 +6,6 @@ namespace Application.Common.Features.Listings.Commands.BuyNow
     {
         public BuyNowCommandValidator()
         {
-            RuleFor(x => x.CreditId).NotEmpty().WithMessage("CreditId is required.");
             RuleFor(x => x.ListingId).NotEmpty().WithMessage("ListingId is required.");
             RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Amount must be greater than zero.");
         }

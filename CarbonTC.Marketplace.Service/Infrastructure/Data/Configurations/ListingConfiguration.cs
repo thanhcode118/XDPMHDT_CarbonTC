@@ -4,12 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class ListingConfiguration : IEntityTypeConfiguration<Listing>
+    public class ListingConfiguration : BaseEntityConfiguration<Listing>
     {
-        public void Configure(EntityTypeBuilder<Listing> builder)
+        public override void Configure(EntityTypeBuilder<Listing> builder)
         {
+            base.Configure(builder);
+
             builder.ToTable("Listings");
-            builder.HasKey(l => l.Id);
 
             builder.Property(l => l.PricePerUnit)
                    .HasPrecision(18, 2)

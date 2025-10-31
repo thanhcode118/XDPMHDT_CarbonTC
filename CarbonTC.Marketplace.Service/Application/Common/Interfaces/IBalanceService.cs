@@ -13,7 +13,7 @@
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task WarmUpBalanceAsync(Guid userId, DateTime? auctionEndTime = null);
+        Task<bool> WarmUpBalanceAsync(Guid userId, DateTime? auctionEndTime = null);
         /// <summary>
         /// Tạm khoá số dư cho phiên đấu giá
         /// </summary>

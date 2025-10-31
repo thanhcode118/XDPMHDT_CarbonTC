@@ -4,12 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class PriceSuggestionConfiguration : IEntityTypeConfiguration<PriceSuggestion>
+    public class PriceSuggestionConfiguration : BaseEntityConfiguration<PriceSuggestion>
     {
-        public void Configure(EntityTypeBuilder<PriceSuggestion> builder)
+        public override void Configure(EntityTypeBuilder<PriceSuggestion> builder)
         {
+            base.Configure(builder);
+
             builder.ToTable("PriceSuggestions");
-            builder.HasKey(ps => ps.Id);
 
             builder.Property(p => p.SuggestedPrice)
                    .HasPrecision(18, 2)

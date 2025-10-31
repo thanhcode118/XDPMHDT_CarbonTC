@@ -10,7 +10,6 @@ namespace CarbonTC.API.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Lấy secret key từ configuration
             var secretKey = configuration["Jwt:Key"] ?? configuration["Jwt:SecretKey"];
 
             if (string.IsNullOrEmpty(secretKey))
@@ -18,10 +17,6 @@ namespace CarbonTC.API.Extensions
                 throw new InvalidOperationException("JWT Key not found in configuration!");
             }
 
-            var issuer = configuration["Jwt:Issuer"];
-            var audience = configuration["Jwt:Audience"];
-
-            // Tạo signing key
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
             services.AddAuthentication(options =>
@@ -31,11 +26,9 @@ namespace CarbonTC.API.Extensions
             })
             .AddJwtBearer(options =>
             {
-                // Lấy giá trị đơn
                 var issuer = configuration["Jwt:Issuer"];
                 var audience = configuration["Jwt:Audience"];
 
-                // Lấy danh sách (arrays) từ appsettings
                 var allowedIssuers = configuration.GetSection("Jwt:AllowedIssuers").Get<string[]>();
                 var allowedAudiences = configuration.GetSection("Jwt:AllowedAudiences").Get<string[]>();
 
@@ -44,15 +37,18 @@ namespace CarbonTC.API.Extensions
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = signingKey,
 
-                    ValidateIssuer = true,        
-                    ValidateAudience = true,      
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
 
-                    ValidIssuer = issuer,                     
-                    ValidIssuers = allowedIssuers,            
-                    ValidAudience = audience,                 
-                    ValidAudiences = allowedAudiences         
+                    ValidIssuer = issuer,
+                    ValidIssuers = allowedIssuers,
+                    ValidAudience = audience,
+                    ValidAudiences = allowedAudiences,
+
+                    NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+                    RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
                 };
 
                 options.Events = new JwtBearerEvents
@@ -82,19 +78,28 @@ namespace CarbonTC.API.Extensions
 
                     OnTokenValidated = context =>
                     {
-                        Console.WriteLine("Token validated successfully");
+
+                        var name = context.Principal?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+                        var email = context.Principal?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                        var status = context.Principal?.FindFirst("status")?.Value;
                         return Task.CompletedTask;
                     }
                 };
             });
 
-            // Cấu hình Authorization cơ bản
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-                options.AddPolicy("ManagerOrAdmin", policy => policy.RequireRole("Manager", "Admin"));
-                options.AddPolicy("User", policy => policy.RequireRole("User", "Manager", "Admin"));
-                options.AddPolicy("EmailVerified", policy => policy.RequireClaim("email_verified", "true"));
+                options.AddPolicy("AdminOnly", policy =>
+                    policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
+
+                options.AddPolicy("ManagerOrAdmin", policy =>
+                    policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Manager", "Admin"));
+
+                options.AddPolicy("User", policy =>
+                    policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "User", "Manager", "Admin"));
+
+                options.AddPolicy("ActiveStatus", policy =>
+                    policy.RequireClaim("status", "Active"));
             });
 
             return services;

@@ -27,7 +27,7 @@ namespace Application.Common.Features.Listings.Commands.BuyNow
                 return Result.Failure(new Error("Listing", "Listing not found."));
             }
             
-            var buyerId = _currentUser.UserId;  
+            var buyerId = _currentUser.UserId;
             if (buyerId is null)
                 return Result.Failure(new Error("Authentication", "User is not authenticated."));
 

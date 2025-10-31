@@ -19,9 +19,11 @@ namespace Infrastructure.Services
         {
             get
             {
-                var userIdStr = User?.FindFirst("userId")?.Value
+                var userIdStr = User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value
+                    ?? User?.FindFirst("nameidentifier")?.Value
+                    ?? User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
                     ?? User?.FindFirst("sub")?.Value
-                    ?? User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    ?? User?.FindFirst("userId")?.Value;
 
                 return Guid.TryParse(userIdStr, out var userId) ? userId : null;
             }

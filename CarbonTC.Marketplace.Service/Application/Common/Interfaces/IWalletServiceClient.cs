@@ -8,6 +8,6 @@ namespace Application.Common.Interfaces
         Task<bool> ReserveFundsAsync(Guid userId, decimal amount, CancellationToken cancellationToken = default);
         Task<bool> CommitPaymentAsync(Guid userId, decimal amount, CancellationToken cancellationToken = default);
         Task<bool> RollbackReservationAsync(Guid userId, decimal amount, CancellationToken cancellationToken = default);
-        Task<WalletDto?> GetBanlanceAsync(Guid UserId, CancellationToken cancellationToken = default);
+        Task<WalletDto?> GetBalanceAsync(CancellationToken cancellationToken = default);
     }
 }

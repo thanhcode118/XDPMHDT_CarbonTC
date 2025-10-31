@@ -17,7 +17,7 @@ namespace Infrastructure.SignalR.Services
         public async Task NotifyAuctionEnded(AuctionCompletedDomainEvent winner)
         {
             await _hubContext.Clients.Group($"auction_{winner.ListingId}")
-                .SendAsync("EndAuction", new {
+                .SendAsync("auctionended", new {
                     ListingId = winner.ListingId,
                     WinningBidderId = winner.WinningBidderId,
                     WinningBidAmount = winner.WinningBidAmount
@@ -32,13 +32,13 @@ namespace Infrastructure.SignalR.Services
         public async Task NotifyBidPlaced(Guid listingId, AuctionBidDto bidDto)
         {
             await _hubContext.Clients.Group($"auction_{listingId}")
-                .SendAsync("BidPlaced", bidDto);
+                .SendAsync("bidplaced", bidDto);
         }
 
         public async Task NotifyUserOutbid(Guid userId, Guid listingId)
         {
             await _hubContext.Clients.User(userId.ToString())
-                .SendAsync("UserOutbid", listingId);
+                .SendAsync("useroutbid", listingId);
         }
     }
 }

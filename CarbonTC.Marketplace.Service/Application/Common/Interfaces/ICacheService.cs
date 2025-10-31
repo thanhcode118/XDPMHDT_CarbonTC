@@ -58,6 +58,14 @@ namespace Application.Common.Interfaces
 
         #endregion
 
+        #region Locks
+
+        Task<bool> AcquireLockAsync(string key, string value, TimeSpan expiry);
+        Task<bool> ReleaseLockAsync(string key, string value);
+
+
+        #endregion
+
         #region General
 
         Task RemoveAsync(string key);

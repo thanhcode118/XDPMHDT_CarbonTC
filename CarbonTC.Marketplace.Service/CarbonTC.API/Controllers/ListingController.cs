@@ -1,4 +1,5 @@
-﻿using Application.Common.Features.Listings.Commands.Auctions;
+﻿using Application.Common.DTOs;
+using Application.Common.Features.Listings.Commands.Auctions;
 using Application.Common.Features.Listings.Commands.BuyNow;
 using Application.Common.Features.Listings.Commands.CloseAuction;
 using Application.Common.Features.Listings.Commands.CreateListing;
@@ -125,7 +126,6 @@ namespace CarbonTC.API.Controllers
             var command = new BuyNowCommand
             {
                 ListingId = id,
-                CreditId = requestDto.CreditId,
                 Amount = requestDto.Amount
             };
 
@@ -143,17 +143,40 @@ namespace CarbonTC.API.Controllers
 
         [Authorize]
         [HttpPost("auctions/{listingId:guid}/bids")]
-        public async Task<IActionResult> PlaceBid(Guid listingId, [FromBody] AuctionCommand command, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> PlaceBid(Guid listingId, [FromBody]AuctionDto auction, CancellationToken cancellationToken = default)
         {
-            var result = await _mediator.Send(command, cancellationToken);
-            if (result.IsSuccess)
+            try
             {
-                return Ok(ApiResponse<object>.SuccessResponse(result, "Bid placed successfully."));
+                var bidCommand = new AuctionCommand
+                {
+                    ListingId = listingId,
+                    BidAmount = auction.BidAmount
+                };
+
+                var result = await _mediator.Send(bidCommand, cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    var errors = new List<string> { $"{result.Error.Code}: {result.Error.Message}" };
+                    var errorResponse = ApiResponse<object>.ErrorResponse(result.Error.Message, errors);
+
+                    return BadRequest(errorResponse);
+                }
+                var value = result.Value;
+
+                return Ok(ApiResponse<object>.SuccessResponse(value, "Bid placed successfully."));
             }
-            else
+            catch (InvalidOperationException ex)
             {
-                var errors = new List<string> { $"{result.Error.Code}: {result.Error.Message}" };
-                return BadRequest(ApiResponse<object>.ErrorResponse("Bid.Failed", errors));
+                return BadRequest(ApiResponse<object>.ErrorResponse(
+                    "Invalid operation",
+                    new List<string> { ex.Message }));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                    "Unexpected error",
+                    new List<string> { ex.Message }));
             }
 
         }

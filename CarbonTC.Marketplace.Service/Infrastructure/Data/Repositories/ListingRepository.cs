@@ -44,6 +44,7 @@ namespace Infrastructure.Data.Repositories
             var listing = await _dbContext.Listings
                 .Include(l => l.Bids)
                 .Include(l => l.PriceSuggestion)
+                .AsTracking()
                 .FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
             return listing;
         }

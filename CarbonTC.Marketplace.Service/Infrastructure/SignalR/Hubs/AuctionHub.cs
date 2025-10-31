@@ -1,6 +1,5 @@
 ﻿using Application.Common.Features.Listings.Commands.WarmUpUserBalance;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
