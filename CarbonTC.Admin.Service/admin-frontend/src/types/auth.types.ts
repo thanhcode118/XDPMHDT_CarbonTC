@@ -19,6 +19,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 
+  checkAuth: () => Promise<boolean> | boolean;
+  setLoading: (loading: boolean) => void;
   setToken: (token: string, refreshToken: string) => void;
   setUser: (user: User) => void;
   login: (token: string, refreshToken: string, user: User) => void;

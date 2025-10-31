@@ -5,7 +5,7 @@ import type { AuthState, User } from '../types';
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       refreshToken: null,
       user: null,
@@ -19,6 +19,15 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user: User) => {
         set({ user, isAuthenticated: true });
+      },
+
+      setLoading: (loading: boolean) => {
+        set({ isLoading: loading });
+      },
+
+      checkAuth: () => {
+        const { token, user } = get();
+        return !!token && !!user;
       },
 
       login: (token: string, refreshToken: string, user: User) => {
