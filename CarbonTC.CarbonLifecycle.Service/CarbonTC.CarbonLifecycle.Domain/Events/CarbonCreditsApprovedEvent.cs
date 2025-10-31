@@ -1,5 +1,4 @@
 ﻿//Sự kiện này sẽ được phát ra khi một JourneyBatch được xác minh thành công và các tín chỉ carbon được tạo/phê duyệt..
-
 using System;
 using CarbonTC.CarbonLifecycle.Domain.ValueObjects; // Để sử dụng CreditAmount
 
