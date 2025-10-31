@@ -6,6 +6,8 @@ using CarbonTC.CarbonLifecycle.Domain.Events;
 using CarbonTC.CarbonLifecycle.Domain.Abstractions;
 using System.Reflection;
 using CarbonTC.CarbonLifecycle.Application.IntegrationEvents;
+using MediatR;
+using CarbonTC.CarbonLifecycle.Application.Common;
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
 {
@@ -13,13 +15,16 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
     {
         private readonly IMessagePublisher _messagePublisher;
         private readonly ILogger<DomainEventDispatcher> _logger;
+        private readonly IMediator _mediator; 
 
         public DomainEventDispatcher(
             IMessagePublisher messagePublisher,
-            ILogger<DomainEventDispatcher> logger)
+            ILogger<DomainEventDispatcher> logger,
+            IMediator mediator)
         {
             _messagePublisher = messagePublisher ?? throw new ArgumentNullException(nameof(messagePublisher));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator)); 
         }
 
         public Task Dispatch(IDomainEvent domainEvent)
@@ -57,15 +62,14 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             if (domainEvent == null)
                 throw new ArgumentNullException(nameof(domainEvent));
 
+            // === 1. Gửi ra RabbitMQ (External) ===
             try
             {
-                // Hàm này sẽ quyết định routing key
                 var routingKey = GenerateRoutingKey(domainEvent);
-
                 await _messagePublisher.PublishAsync(domainEvent, routingKey);
 
                 _logger.LogInformation(
-                    "Domain event dispatched: {EventType}, RoutingKey: {RoutingKey}, OccurredOn: {OccurredOn}",
+                    "Domain event dispatched externally: {EventType}, RoutingKey: {RoutingKey}, OccurredOn: {OccurredOn}",
                     domainEvent.GetType().Name,
                     routingKey,
                     domainEvent.OccurredOn
@@ -75,11 +79,50 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             {
                 _logger.LogError(
                     ex,
-                    "Failed to dispatch domain event: {EventType}",
+                    "Failed to dispatch domain event externally: {EventType}",
                     domainEvent.GetType().Name
                 );
-                throw;
+                // Cân nhắc có nên throw hay không, tạm thời để tiếp tục
             }
+
+            // === 2. Gửi vào MediatR (Internal) NẾU đây là sự kiện Domain thuần túy ===
+            if (IsPureDomainEvent(domainEvent))
+            {
+                try
+                {
+                    // Bọc sự kiện domain trong INotification wrapper
+                    var notification = new DomainEventNotification<TEvent>(domainEvent);
+
+                    // Publish nội bộ
+                    await _mediator.Publish(notification);
+
+                    _logger.LogInformation(
+                        "Domain event dispatched internally via MediatR: {EventType}",
+                        domainEvent.GetType().Name
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Failed to dispatch domain event internally via MediatR: {EventType}",
+                        domainEvent.GetType().Name
+                    );
+                    throw; // Lỗi dispatch nội bộ thì nên throw
+                }
+            }
+        }
+
+        private bool IsPureDomainEvent(IDomainEvent domainEvent)
+        {
+            var type = domainEvent.GetType();
+            // Nếu event nằm trong namespace IntegrationEvents, nó là Integration Event
+            // và không nên được publish lại lên MediatR.
+            if (type.Namespace == typeof(CreditIssuedIntegrationEvent).Namespace)
+            {
+                return false;
+            }
+            return true;
         }
 
         // Sửa hàm này để thêm 2 DTOs 
