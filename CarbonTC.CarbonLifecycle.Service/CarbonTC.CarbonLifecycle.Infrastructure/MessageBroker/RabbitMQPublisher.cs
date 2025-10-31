@@ -116,6 +116,110 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             }
         }
 
+        public async Task PublishIntegrationEventAsync<TEvent>(TEvent @event, string routingKey = null)
+            where TEvent : class
+        {
+            if (@event == null)
+                throw new ArgumentNullException(nameof(@event));
+
+            EnsureInitialized();
+
+            // Gọi một hàm retry mới cho các sự kiện generic (không phải IDomainEvent)
+            await Task.Run(() => PublishGenericWithRetry(@event, routingKey));
+        }
+
+        private void PublishGenericWithRetry<TEvent>(TEvent @event, string routingKey)
+            where TEvent : class
+        {
+            int retryCount = 0;
+            Exception lastException = null;
+
+            while (retryCount < _settings.RetryCount)
+            {
+                try
+                {
+                    EnsureConnection();
+                    // Gọi một hàm publish message mới cho các sự kiện generic
+                    PublishGenericMessage(@event, routingKey);
+
+                    _logger.LogInformation(
+                        "Published integration event: {EventType}, RoutingKey: {RoutingKey}",
+                        @event.GetType().Name,
+                        routingKey ?? GenerateGenericRoutingKey(@event) // Dùng fallback mới
+                    );
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    retryCount++;
+
+                    _logger.LogWarning(
+                        ex,
+                        "Failed to publish integration event (Attempt {Attempt}/{MaxAttempts}): {EventType}",
+                        retryCount,
+                        _settings.RetryCount,
+                        @event.GetType().Name
+                    );
+
+                    if (retryCount < _settings.RetryCount)
+                    {
+                        Task.Delay(_settings.RetryDelayMilliseconds).Wait();
+                        RecreateConnection();
+                    }
+                }
+            }
+
+            _logger.LogError(
+                lastException,
+                "Failed to publish integration event after {MaxAttempts} attempts: {EventType}",
+                _settings.RetryCount,
+                @event.GetType().Name
+            );
+
+            throw new InvalidOperationException(
+                $"Failed to publish integration event after {_settings.RetryCount} attempts",
+                lastException
+            );
+        }
+
+        private void PublishGenericMessage<TEvent>(TEvent @event, string routingKey)
+            where TEvent : class
+        {
+            var message = JsonSerializer.Serialize(@event, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            });
+
+            var body = Encoding.UTF8.GetBytes(message);
+            var properties = _channel.CreateBasicProperties();
+            properties.Persistent = true;
+            properties.ContentType = "application/json";
+            properties.Type = @event.GetType().Name;
+            properties.Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            properties.MessageId = Guid.NewGuid().ToString();
+
+            // Dùng routing key được cung cấp, hoặc fallback nếu nó null
+            var finalRoutingKey = routingKey ?? GenerateGenericRoutingKey(@event);
+
+            _channel.BasicPublish(
+                exchange: _settings.ExchangeName,
+                routingKey: finalRoutingKey,
+                basicProperties: properties,
+                body: body
+            );
+        }
+
+        // Hàm fallback để tạo routing key cho các event generic
+        private string GenerateGenericRoutingKey<TEvent>(TEvent @event) where TEvent : class
+        {
+            var eventType = @event.GetType().Name.Replace("IntegrationEvent", "").ToLower();
+            // Đặt một prefix khác để phân biệt
+            return $"integration.{eventType}";
+        }
+
         private void PublishWithRetry<TEvent>(TEvent @event, string routingKey)
             where TEvent : IDomainEvent
         {

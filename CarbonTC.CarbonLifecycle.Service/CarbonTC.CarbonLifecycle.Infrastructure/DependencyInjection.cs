@@ -91,6 +91,11 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
         {
             return Task.CompletedTask;
         }
+        public Task PublishIntegrationEventAsync<TEvent>(TEvent @event, string routingKey = null)
+            where TEvent : class
+        {
+            return Task.CompletedTask;
+        }
 
         public Task PublishBatchAsync<TEvent>(IEnumerable<TEvent> events, string routingKey = null)
             where TEvent : CarbonTC.CarbonLifecycle.Domain.Events.IDomainEvent
