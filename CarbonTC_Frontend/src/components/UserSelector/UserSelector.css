@@ -1,0 +1,108 @@
+.user-selector {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.user-selector h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.user-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.user-btn {
+  padding: 10px 20px;
+  border: 2px solid #007bff;
+  background-color: white;
+  color: #007bff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.user-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.user-btn.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.user-info {
+  background-color: white;
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid #28a745;
+  margin-bottom: 20px;
+}
+
+.user-info h3 {
+  margin-top: 0;
+  color: #28a745;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+.storage-info {
+  background-color: white;
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid #ffc107;
+}
+
+.storage-info h4 {
+  margin-top: 0;
+  color: #856404;
+}
+
+.check-btn, .clear-btn {
+  padding: 8px 16px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.check-btn {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.check-btn:hover {
+  background-color: #138496;
+}
+
+.clear-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.clear-btn:hover {
+  background-color: #5a6268;
+}

@@ -5,7 +5,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -14,8 +14,9 @@
 }
 
 .modalContent {
-    background: rgba(24, 24, 24, 0.95);
+    background: var(--card-bg);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     width: 100%;
@@ -694,4 +695,79 @@
     .currentBidValue {
         font-size: 2rem;
     }
+}
+
+.isInvalid {
+  border-color: #dc3545; /* Màu đỏ cho lỗi */
+}
+
+.textDanger {
+  color: #dc3545;
+  font-size: 0.875em;
+}
+
+.requiredField {
+    border: 1px solid #f87171;
+    border-radius: 8px;
+    padding: 10px;
+    background: rgba(248, 113, 113, 0.05);
+}
+
+.termsLink {
+    color: #667eea;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.termsLink:hover {
+    color: #764ba2;
+}
+
+/* Trong MarketplaceModal.module.css */
+
+.errorAlert {
+    background: linear-gradient(135deg, #bd7575 0%, #fed7d7 100%);
+    border: 1px solid #feb2b2;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.ownerBidError {
+    background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+    border: 1px solid #fbd38d;
+}
+
+.errorIcon {
+    color: #dd6b20;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.errorContent {
+    flex: 1;
+}
+
+.errorContent strong {
+    color: #dd6b20;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.errorContent p {
+    color: #744210;
+    margin: 0;
+    font-size: 13px;
+}
+
+.errorHint {
+    color: #744210;
+    font-style: italic;
+    margin-top: 8px;
+    display: block;
+    font-size: 12px;
 }

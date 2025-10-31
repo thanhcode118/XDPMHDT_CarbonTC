@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Topbar from '../../components/Topbar/Topbar';
 import AISuggestion from '../../components/AISuggestion/AISuggestion';
@@ -10,11 +10,13 @@ import AuctionForm from '../../components/AuctionForm/AuctionForm';
 import EditListingModal from '../../components/EditListingModal/EditListingModal';
 import ConfirmDeleteModal from '../../components/ConfirmDeleteListingModal/ConfirmDeleteModal';
 import CreditSelector from '../../components/CreditSelector/CreditSelector';
-import PlaceBidModal from '../../components/PlaceBidModal/PlaceBidModal'; // Import modal
-import BuyNowModal from '../../components/BuyNowModal/BuyNowModal'; // Import modal
+import PlaceBidModal from '../../components/PlaceBidModal/PlaceBidModal'; 
+import BuyNowModal from '../../components/BuyNowModal/BuyNowModal'; 
+import PurchaseSuccessModal from '../../components/PurchaseSuccessModal/PurchaseSuccessModal'; 
 import styles from './Marketplace.module.css';
 
 import { 
+  getUserIdFromToken,
   getListings, 
   getSuggestedPrice, 
   getMyListings, 
@@ -22,8 +24,20 @@ import {
   updateListing,
   deleteListing,
   getCreditInventory, 
-  createListing       
+  createListing,
+  buyListing,
+  placeBid  
 } from '../../services/listingService';
+
+import { 
+    startConnection, 
+    stopConnection, 
+    joinAuctionGroup, 
+    leaveAuctionGroup, 
+    registerAuctionEvents 
+} from '../../services/signalrService';
+import UserSelector from '../../components/UserSelector/UserSelector';
+import { toast, ToastContainer } from 'react-toastify';
 
 const mapStatusToString = (status) => {
   switch (status) {
@@ -74,9 +88,20 @@ const Marketplace = () => {
   const [isFormSuggestionLoading, setIsFormSuggestionLoading] = useState(false);
   const [formSuggestionType, setFormSuggestionType] = useState('generic');
 
+  const [isActionModalLoading, setIsActionModalLoading] = useState(false);
+  const [actionModalError, setActionModalError] = useState(null);
+
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showBidModal, setShowBidModal] = useState(false);
   const [selectedListing, setSelectedListing] = useState(null);
+
+  const [isSubmittingAction, setIsSubmittingAction] = useState(false);
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState({});
+
+  const [auctionUpdates, setAuctionUpdates] = useState({});
+  
 
   const [filterInputs, setFilterInputs] = useState({
     type: '',    
@@ -96,34 +121,190 @@ const Marketplace = () => {
     ownerId: null
   });
 
-   // Thêm hàm xử lý mua ngay
-  const handleBuyClick = (listing) => {
-    setSelectedListing(listing);
-    setShowBuyModal(true);
+  const handleBuyClick = async (listingFromList) => {
+    setActionModalError(null);       
+    setIsActionModalLoading(true); 
+    setShowBuyModal(true);         
+    setSelectedListing(null); 
+    try {
+      const response = await getListingById(listingFromList.id);
+      if (response.data && response.data.success) {
+        setSelectedListing(response.data.data); 
+      } else {
+        setActionModalError(response.data.message || "Không thể tải chi tiết niêm yết.");
+      }
+    } catch (err) {
+      setActionModalError(err.message || "Lỗi kết nối máy chủ.");
+    } finally {
+      setIsActionModalLoading(false); 
+    }       
   };
 
-  // Thêm hàm xử lý đặt giá
-  const handleBidClick = (listing) => {
-    setSelectedListing(listing);
-    setShowBidModal(true);
-  };
-
-  // Thêm hàm submit cho mua ngay
-  const handleBuySubmit = (buyData) => {
-    console.log('Buy data:', buyData);
-    console.log('Selected listing:', selectedListing);
-    // Gọi API mua ngay
+  const handleCloseBuyModal = () => {
     setShowBuyModal(false);
-    // TODO: Gọi API purchase
+    setSelectedListing(null);
+    setActionModalError(null); 
   };
 
-  // Thêm hàm submit cho đặt giá
-  const handleBidSubmit = (bidData) => {
-    console.log('Bid data:', bidData);
-    console.log('Selected listing:', selectedListing);
-    // Gọi API đặt giá
-    setShowBidModal(false);
-    // TODO: Gọi API place bid
+  const handleCloseBidModal = () => {
+        if (selectedListing) {
+            // *** RỜI ROOM SIGNALR ***
+            leaveAuctionGroup(selectedListing.id);
+        }
+        setShowBidModal(false);
+        setSelectedListing(null);
+        setActionModalError(null);
+    };
+
+  
+  const handleBidClick = async (listingFromList) => {
+    const currentUserId = getUserIdFromToken();
+    if (listingFromList.ownerId === currentUserId) {
+        setActionModalError("Bạn không thể đặt giá trên sản phẩm của chính mình");
+        setShowBidModal(true);
+        return;
+    }
+
+    setActionModalError(null);
+    setIsActionModalLoading(true);
+    setShowBidModal(true);
+    setSelectedListing(null);
+
+    try {
+        const response = await getListingById(listingFromList.id);
+        if (response.data && response.data.success) {
+            const listingDetails = response.data.data;
+            setSelectedListing(listingDetails);
+            // *** THAM GIA ROOM SIGNALR ***
+            joinAuctionGroup(listingDetails.id); 
+        } else {
+            setActionModalError(response.data.message || "Không thể tải chi tiết.");
+        }
+    } catch (err) {
+        setActionModalError(err.message || "Lỗi kết nối máy chủ.");
+    } finally {
+        setIsActionModalLoading(false);
+    }
+};
+
+const handleBuySubmit = async (buyData) => {
+  if (!selectedListing || !selectedListing.id) {
+    alert("Lỗi: Không tìm thấy thông tin listing.");
+    return;
+  }
+
+  const listingIdToUpdate = selectedListing.id; 
+  const boughtQuantity = buyData.quantity;
+
+  setIsSubmittingAction(true); 
+  setActionModalError(null);   
+
+  try {
+    const response = await buyListing(selectedListing.id, buyData.quantity);
+
+    if (response.data && response.data.success) {
+
+      setSuccessData({
+        type: 'buy',
+        quantity: 50,
+        pricePerUnit: 14500,
+        totalAmount: 725000,
+        sellerName: 'Công ty ABC',
+        creditType: 'Carbon Credit từ xe điện',
+        transactionId: 'TX-2024-001234',
+        estimatedDelivery: '2-3 ngày làm việc'
+      });
+      setShowSuccessModal(true);
+
+      handleCloseBuyModal();
+      
+      setListings(prevListings => {
+        const newListings = prevListings.map(listing => {
+            if (listing.id === listingIdToUpdate) {
+                const remainingQuantity = Math.max(0, listing.quantity - boughtQuantity);
+                
+                // Trả về object mới với quantity đã cập nhật
+                return {
+                    ...listing,
+                    quantity: remainingQuantity,
+                    // (Tùy chọn) Cập nhật status nếu quantity = 0?
+                    // status: remainingQuantity <= 0 ? 2 : listing.status // Giả định 2 = Closed/Sold
+                };
+            }
+            return listing;
+        });
+        return newListings.filter(listing => listing.quantity > 0);
+      });
+    } else {
+        const specificError = response.data?.errors?.[0]; 
+        const generalMessage = response.data?.message;
+        const errorMsg = specificError || generalMessage || "Giao dịch không thành công.";
+      setActionModalError(errorMsg);
+    }
+  } catch (err) {
+    setActionModalError(err.message || "Lỗi kết nối máy chủ.");
+  } finally {
+    setIsSubmittingAction(false); 
+  }
+};
+
+const handleBidSubmit = async (bidData) => {
+      if (!selectedListing || !selectedListing.id) {
+          alert("Lỗi: Không tìm thấy thông tin listing.");
+          return;
+      }
+      
+      setActionModalError(null);
+
+      // Lấy thông tin auction hiện tại từ state `auctionUpdates`
+      const currentAuctionState = auctionUpdates[selectedListing.id] || {};
+      const currentPrice = currentAuctionState.latestBid?.bidAmount || selectedListing.minimumBid || 0;
+
+      // Validation cơ bản phía client
+      if (bidData.bidAmount <= currentPrice) {
+            setActionModalError(`Giá đặt phải cao hơn giá hiện tại (${currentPrice.toLocaleString()} VNĐ).`);
+            return;
+      }
+
+      setIsSubmittingAction(true);
+      setActionModalError(null);
+
+      try {
+          // Gọi API đặt giá mới
+          const response = await placeBid(selectedListing.id, bidData.bidAmount);
+
+          if (response.data && response.data.success) {
+              console.log("Đặt giá thành công! Chờ cập nhật từ SignalR...");
+              setActionModalError(null);
+          } else {
+              const specificError = response.data?.errors?.[0];
+              const generalMessage = response.data?.message;
+              let errorMsg = specificError || generalMessage || "Đặt giá không thành công.";
+
+              if (errorMsg.includes('own listing')) {
+                  errorMsg = "Bạn không thể đặt giá trên sản phẩm của chính mình";
+              }
+              setActionModalError(errorMsg);
+          }
+      } catch (err) {
+          let errorMsg = err.message || "Lỗi kết nối máy chủ.";
+      
+          // Xử lý lỗi từ response 
+          if (err.response?.data?.errors?.[0]) {
+              errorMsg = err.response.data.errors[0];
+          } else if (err.response?.data?.message) {
+              errorMsg = err.response.data.message;
+          }
+          
+          // Lỗi cho trường hợp chủ sở hữu
+          if (errorMsg.includes('own listing')) {
+              errorMsg = "Bạn không thể đặt giá trên sản phẩm của chính mình";
+          }
+          
+          setActionModalError(errorMsg);
+      } finally {
+          setIsSubmittingAction(false);
+      }
   };
 
   const toggleSidebar = () => {
@@ -168,6 +349,76 @@ const Marketplace = () => {
       setIsLoading(false);
     }
   };
+
+  const handleRealtimeBid = useCallback((bidDto) => {
+    // bidDto = { listingId, bidderId, bidAmount, bidTime }
+    console.log("Received BidPlaced:", bidDto);
+    setAuctionUpdates(prev => ({
+        ...prev,
+        [bidDto.listingId]: {
+            ...(prev[bidDto.listingId] || {}),
+            latestBid: bidDto, 
+            currentPrice: bidDto.bidAmount 
+        }
+    }));
+  }, []);
+
+    const handleRealtimeEndAuction = useCallback((endData) => {
+        // endData = { listingId, winningBidderId, winningBidAmount }
+        console.log("Received EndAuction:", endData);
+        setAuctionUpdates(prev => ({
+            ...prev,
+            [endData.listingId]: {
+                ...(prev[endData.listingId] || {}), 
+                isEnded: true,
+                winnerInfo: endData
+            }
+        }));
+    }, []);
+
+    const handleRealtimeOutbid = useCallback((listingId) => {
+        console.log(`You were outbid on listing: ${listingId}`);
+        toast.warn(
+          `Bạn vừa bị trả giá cao hơn tại một phiên đấu giá!`, 
+          {
+            position: "top-right",
+            autoClose: 5000,  
+            theme: "light",
+            onClick: () => {
+              const outbidListing = listings.find(l => l.id === listingId);
+              if (outbidListing) {
+                handleBidClick(outbidListing); 
+              }
+            }
+          }
+        );
+    }, [listings]);
+
+
+  useEffect(() => {
+    const setupSignalR = async () => {
+      try {
+        // Chờ cho đến khi startConnection() THỰC SỰ hoàn thành
+        const conn = await startConnection(); 
+
+        if (conn) {
+          registerAuctionEvents({
+            onBidPlaced: handleRealtimeBid,
+            onEndAuction: handleRealtimeEndAuction,
+            onUserOutbid: handleRealtimeOutbid
+          });
+          } else {
+            console.error("❌ Không thể đăng ký SignalR events: Kết nối thất bại.");
+          }
+      } catch (err) {
+        console.error("Lỗi nghiêm trọng khi khởi tạo SignalR:", err);
+      }
+     };  
+     setupSignalR(); 
+     return () => {
+      stopConnection();
+     };
+  }, [handleRealtimeBid, handleRealtimeEndAuction, handleRealtimeOutbid]);
   
   useEffect(() => {
     setError(null);
@@ -243,11 +494,11 @@ const Marketplace = () => {
     const fetchCreditData = async () => {
       // Đặt 2 API vào trạng thái loading
       setIsInventoryLoading(true);
-      setIsFormSuggestionLoading(true); // <-- Bắt đầu loading giá cá nhân hóa
+      setIsFormSuggestionLoading(true); 
 
       // Tạo 2 hàm promise để gọi song song
       const fetchInventory = getCreditInventory(selectedCreditId);
-      const fetchPersonalizedPrice = getSuggestedPrice(selectedCreditId); // <-- Gọi API với creditId
+      const fetchPersonalizedPrice = getSuggestedPrice(selectedCreditId);
 
       try {
         // Chờ cả 2 API hoàn thành
@@ -265,7 +516,7 @@ const Marketplace = () => {
 
         // Xử lý kết quả Giá cá nhân hóa
         if (priceResponse.data && priceResponse.data.success) {
-          setFormSuggestedPrice(priceResponse.data.data); // <-- Set giá mới cho form
+          setFormSuggestedPrice(priceResponse.data.data);
           setFormSuggestionType('personalized'); // Đánh dấu đây là giá cá nhân hóa
         } else {
           // Nếu lỗi, dùng lại giá chung
@@ -275,17 +526,16 @@ const Marketplace = () => {
 
       } catch (err) {
         setInventoryError(err.message || "Lỗi server.");
-        setFormSuggestedPrice(bannerSuggestedPrice); // Lỗi mạng, dùng lại giá chung
+        setFormSuggestedPrice(bannerSuggestedPrice); 
         setFormSuggestionType('generic');
       } finally {
         setIsInventoryLoading(false);
-        setIsFormSuggestionLoading(false); // <-- Kết thúc loading
+        setIsFormSuggestionLoading(false); 
       }
     };
 
     fetchCreditData();
   }, [selectedCreditId, bannerSuggestedPrice]);
-
   
   const handleSellSubmit = async (formData) => {
     if (!selectedCreditId) {
@@ -527,7 +777,6 @@ const Marketplace = () => {
         setDeleteError(errorMsg);
       }
     } catch (err) {
-      // Lỗi mạng hoặc server 500
       setDeleteError(err.message || "Lỗi kết nối máy chủ.");
     } finally {
       setIsDeleteLoading(false);
@@ -581,9 +830,10 @@ const Marketplace = () => {
     let trendType = 'up'; 
     
     if (isAuction) {
-      total = item.minimumBid; 
-      totalLabel = "Giá khởi điểm";
-      priceLabel = "Giá/tín chỉ (tham khảo)";
+      price = item.minimumBid || 0;
+      total = item.minimumBid * item.quantity; 
+      totalLabel = "Tổng giá khởi điểm";
+      priceLabel = "Giá/TC (khởi điểm)";
       trendType = 'time'; 
     }
     
@@ -618,6 +868,19 @@ const Marketplace = () => {
       <button className={styles.mobileToggle} id="sidebarToggle" onClick={toggleSidebar}>
         <i className="bi bi-list"></i>
       </button>
+      
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       
       <Sidebar 
         activePage="marketplace" 
@@ -798,16 +1061,23 @@ const Marketplace = () => {
 
         <BuyNowModal
           isOpen={showBuyModal}
-          onClose={() => setShowBuyModal(false)}
+          onClose={handleCloseBuyModal} 
           onSubmit={handleBuySubmit}
           listingData={selectedListing}
+          isLoading={isActionModalLoading} 
+          isSubmitting={isSubmittingAction}
+          error={actionModalError}       
         />
 
         <PlaceBidModal
           isOpen={showBidModal}
-          onClose={() => setShowBidModal(false)}
+          onClose={handleCloseBidModal} 
           onSubmit={handleBidSubmit}
           listingData={selectedListing}
+          isLoading={isActionModalLoading} 
+          isSubmitting={isSubmittingAction}
+          error={actionModalError}
+          auctionRealtimeData={selectedListing ? auctionUpdates[selectedListing.id] : null}
         />
 
 
@@ -829,6 +1099,14 @@ const Marketplace = () => {
           isLoading={isDeleteLoading}
           error={deleteError}
         />
+
+        <PurchaseSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          transactionData={successData}
+        />
+
+        <UserSelector/>
       </div>
     </div>
   );

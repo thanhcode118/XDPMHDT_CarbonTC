@@ -100,76 +100,11 @@ const EditListingModal = ({
 
     if (!isOpen) return null;
 
-    const modalStyle = {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '20px'
-    };
-
-    const modalContentStyle = {
-        backgroundColor: '#181818ff',
-        borderRadius: '12px',
-        padding: '24px',
-        width: '100%',
-        maxWidth: '600px',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
-    };
-
-    const suggestionBoxStyle = {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        border: 'none',
-        borderRadius: '8px',
-        padding: '16px 20px',
-        marginTop: '8px',
-        marginBottom: '16px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        fontSize: '14px',
-        color: 'white',
-        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
-    };
-
-    const applyButtonStyle = {
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        color: '#667eea',
-        border: 'none',
-        borderRadius: '6px',
-        padding: '8px 16px',
-        cursor: 'pointer',
-        fontSize: '13px',
-        fontWeight: '600',
-        whiteSpace: 'nowrap',
-        transition: 'all 0.2s ease',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-    };
-
-    const loadingBoxStyle = {
-        backgroundColor: '#2a2a2a',
-        border: '1px dashed #555',
-        borderRadius: '8px',
-        padding: '16px 20px',
-        marginTop: '8px',
-        marginBottom: '16px',
-        fontSize: '14px',
-        color: '#aaa',
-        fontStyle: 'italic',
-        textAlign: 'center'
-    };
+   
 
     return (
-        <div style={modalStyle} onClick={onClose}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalStyle} onClick={onClose}>
+            <div className={styles.modalContentStyle} onClick={(e) => e.stopPropagation()}>
                 <h3 className={styles.filterTitle}>Chỉnh sửa niêm yết</h3>
                 
                 {isLoading && <p>Đang tải dữ liệu...</p>}
@@ -221,13 +156,13 @@ const EditListingModal = ({
 
                             <div className="col-12">
                                 {isSuggestionLoading && (
-                                    <div style={loadingBoxStyle}>
+                                    <div className={styles.loadingBoxStyle}>
                                         <i className="bi bi-hourglass-split" style={{ marginRight: '8px' }}></i>
                                         Đang phân tích và tạo gợi ý từ AI...
                                     </div>
                                 )}
                                 {!isSuggestionLoading && suggestedPrice && (
-                                    <div style={suggestionBoxStyle}>
+                                    <div className={styles.suggestionBoxStyle}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <i className="bi bi-stars" style={{ fontSize: '20px' }}></i>
                                             <div>
@@ -242,7 +177,7 @@ const EditListingModal = ({
                                         <button 
                                             type="button" 
                                             onClick={handleApplySuggestion}
-                                            style={applyButtonStyle}
+                                            className={styles.applyButtonStyle}
                                             onMouseEnter={(e) => {
                                                 e.target.style.backgroundColor = 'white';
                                                 e.target.style.transform = 'translateY(-2px)';

@@ -15,8 +15,8 @@ const MarketplaceCard = ({
   totalLabel = "Tổng giá", 
   seller,
   auctionEndTime,
-  onBuyClick, // Thêm prop này
-  onBidClick  // Thêm prop này
+  onBuyClick, 
+  onBidClick  
 }) => {
   const { days, hours, minutes, seconds, isOver } = useCountdown(auctionEndTime);
 
@@ -30,7 +30,7 @@ const MarketplaceCard = ({
         {days > 0 && `${days}d `}
         {hours > 0 && `${hours}h `}
         {minutes > 0 && `${minutes}m `}
-        {seconds >= 0 && `${seconds}s`}
+        {seconds >= 0 && `${seconds}s`}``
       </span>
     );
   };

@@ -1,5 +1,26 @@
 import apiClientPD from './apiClientPD.jsx';
 
+export const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+        const base64Payload = token.split(".")[1];
+        const payload = JSON.parse(atob(base64Payload));
+        
+        // Lấy userId từ các key có thể chứa nó
+        return (
+            payload["sub"] ||
+            payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]
+        );
+    } catch (error) {
+        console.error("Lỗi khi giải mã token:", error);
+        return null;
+    }
+};
+
+
+
 /**
  * Lấy danh sách listings với các tham số query
  * @param {object} params - Các tham số query (pageNumber, pageSize, type, status, v.v.)
@@ -68,4 +89,24 @@ export const deleteListing = (id) => {
  */
 export const getCreditInventory = (creditId) => {
   return apiClientPD.get(`/CreditInventory?creditId=${creditId}`);
+};
+
+/**
+ * Mua tín chỉ từ một listing (giá cố định)
+ * @param {string} listingId - ID của listing cần mua
+ * @param {number} amount - Số lượng tín chỉ muốn mua
+ */
+export const buyListing = (listingId, amount) => {
+  const body = { amount: amount }; 
+  return apiClientPD.post(`/Listing/${listingId}/buy`, body);
+};
+
+/**
+ * Đặt giá cho một phiên đấu giá
+ * @param {string} listingId - ID của listing đấu giá
+ * @param {number} bidAmount - Số tiền muốn đặt
+ */
+export const placeBid = (listingId, bidAmount) => {
+  const body = { bidAmount: bidAmount };
+  return apiClientPD.post(`/Listing/auctions/${listingId}/bids`, body);
 };
