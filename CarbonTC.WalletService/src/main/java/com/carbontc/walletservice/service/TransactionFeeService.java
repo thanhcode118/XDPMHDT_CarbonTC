@@ -1,6 +1,7 @@
 package com.carbontc.walletservice.service;
 
 import com.carbontc.walletservice.entity.status.FeeType;
+import com.carbontc.walletservice.exception.BusinessException;
 
 import java.math.BigDecimal;
 
@@ -12,4 +13,7 @@ public interface TransactionFeeService {
      * @param feeType Loại phí
      */
     void recordFee(String transactionId, BigDecimal feeAmount, FeeType feeType);
+
+    public BigDecimal withdrawPendingFeeToAdmin(String adminId) throws BusinessException;
+
 }
