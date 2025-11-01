@@ -18,8 +18,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreditIssuedEvent {
+    @JsonProperty("ownerUserld")
+    private String ownerUserId;
 
-    private String ownerUserId;  // ID người nhận tín chỉ (String UUID)
     private BigDecimal creditAmount; // Số lượng tín chỉ MỚI
     private String referenceId;  // Mã tham chiếu (ví dụ: Batch ID)
     private LocalDateTime issuedAt;
