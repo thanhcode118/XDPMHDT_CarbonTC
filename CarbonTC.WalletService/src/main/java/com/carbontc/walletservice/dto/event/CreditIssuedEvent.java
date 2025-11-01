@@ -22,6 +22,9 @@ public class CreditIssuedEvent {
     private String ownerUserId;
 
     private BigDecimal creditAmount; // Số lượng tín chỉ MỚI
-    private String referenceId;  // Mã tham chiếu (ví dụ: Batch ID)
+
+    @JsonProperty("referenceld")
+    private String referenceId;
+
     private LocalDateTime issuedAt;
 }
