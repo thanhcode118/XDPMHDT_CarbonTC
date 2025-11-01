@@ -32,7 +32,8 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/api/wallet/**",
                                 "/api/payments/**",  // Cho phép test VNPay API
-                                "/api/carbon-wallet/**"
+                                "/api/carbon-wallet/**",
+                                "/api/certificates/download/**"
                         ).permitAll()
                         // Các API khác vẫn cần xác thực
                         .anyRequest().authenticated()

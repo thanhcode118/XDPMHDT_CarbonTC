@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
     // Xử lý giao dịch từ Marketplace
-
     public static final String TRANSACTION_QUEUE = "wallet_service_transaction_queue";
     public static final String TRANSACTION_EXCHANGE = "transaction_exchange";
     public static final String TRANSACTION_ROUTING_KEY = "transaction_created";
@@ -33,7 +32,7 @@ public class RabbitMQConfig {
 
     // Xử lý Tín chỉ mới từ Carbon Lifecycle
     public static final String CREDIT_QUEUE = "wallet_service_credit_queue";
-    public static final String CREDIT_EXCHANGE = "credit_exchange";
+    public static final String CREDIT_EXCHANGE = "carbonlifecycle.events";
     public static final String CREDIT_ROUTING_KEY = "credit_issued";
 
     @Bean

@@ -4,7 +4,7 @@ import com.carbontc.walletservice.config.RabbitMQConfig;
 import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
 import com.carbontc.walletservice.dto.event.TransactionCompletedEvent;
 import com.carbontc.walletservice.dto.event.TransactionCreatedEvent;
-import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer; // Đảm bảo DTO này tồn tại và đúng
+import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.entity.Certificate;
 import com.carbontc.walletservice.entity.EWallet;
 import com.carbontc.walletservice.entity.status.FeeType;
@@ -43,9 +43,8 @@ public class RabbitMQConsumerService {
      * Lắng nghe sự kiện MUA BÁN từ Marketplace Service.
      */
     @RabbitListener(queues = RabbitMQConfig.TRANSACTION_QUEUE)
-    @Transactional(rollbackFor = Exception.class) // Thêm Transactional ở đây
-    public void handleTransaction(TransactionCreatedEvent event) { // Đổi tên biến cho đúng chuẩn Java
-        // Log debug (Rất tốt)
+    @Transactional(rollbackFor = Exception.class)
+    public void handleTransaction(TransactionCreatedEvent event) {
         log.info(">>>>>> RAW EVENT RECEIVED: {}", event);
         if (event != null) {
             log.info(">>>>>> Buyer ID from Event: {}", event.getBuyerUserId());
@@ -53,7 +52,6 @@ public class RabbitMQConsumerService {
             log.info(">>>>>> Transaction ID from Event: {}", event.getTransactionId());
         } else {
             log.error(">>>>>> EVENT RECEIVED IS NULL! Skipping processing.");
-            // Không throw lỗi, chỉ ghi log và dừng lại để RabbitMQ ACK tin nhắn null này
             return;
         }
 
@@ -102,10 +100,10 @@ public class RabbitMQConsumerService {
 
             log.info("Xử lý TransactionId: {} thành công", event.getTransactionId());
 
-        } catch (BusinessException e) { // Bắt lỗi nghiệp vụ cụ thể
+        } catch (BusinessException e) {
             log.error("Xử lý TransactionId: {} thất bại (Lỗi nghiệp vụ): {}", event.getTransactionId(), e.getMessage());
 
-            // Gửi tin nhắn FAILED (Đã sửa đích và key)
+            // Gửi tin nhắn FAILED
             TransactionCompletedEvent failed = TransactionCompletedEvent.builder()
                     .transactionId(event.getTransactionId())
                     .status("FAILED")
@@ -114,14 +112,14 @@ public class RabbitMQConsumerService {
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.failed", failed);
 
-        } catch (Exception e) { // Bắt các lỗi không mong muốn khác
+        } catch (Exception e) {
             log.error("Xử lý TransactionId: {} thất bại (Lỗi hệ thống): {}", event.getTransactionId(), e.getMessage(), e); // Log cả stack trace
 
-            // Gửi tin nhắn FAILED (Đã sửa đích và key)
+
             TransactionCompletedEvent failed = TransactionCompletedEvent.builder()
                     .transactionId(event.getTransactionId())
                     .status("FAILED")
-                    .message("Lỗi hệ thống: " + e.getMessage()) // Có thể che giấu chi tiết lỗi
+                    .message("Lỗi hệ thống: " + e.getMessage())
                     .completedAt(LocalDateTime.now())
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.failed", failed);
@@ -133,7 +131,7 @@ public class RabbitMQConsumerService {
      * Lắng nghe sự kiện PHÁT HÀNH TÍN CHỈ MỚI
      */
     @RabbitListener(queues = RabbitMQConfig.CREDIT_QUEUE)
-    @Transactional(rollbackFor = Exception.class) // Giữ Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void handleCreditIssued(CreditIssuedEvent creditIssuedEvent) {
         log.info("Nhận được CreditIssuedEvent cho user: {}", creditIssuedEvent.getOwnerUserId());
 
