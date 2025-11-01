@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/withdraw-requests")
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class WithdrawRequestController {
     @PostMapping("/{requestId}/approve")
     @PreAuthorize("hasAuthority('ROLE_Admin')")
     public ResponseEntity<ApiResponse<WithdrawRequestResponse>> approveRequest(@PathVariable Long requestId) throws BusinessException {
-        WithdrawRequestResponse response = withdrawRequestService.rejectRequest(requestId);
+        WithdrawRequestResponse response = withdrawRequestService.approveRequest(requestId);
         return ResponseEntity.ok(ApiResponse.success("Duyệt yêu cầu thành công, đã trừ tiền từ ví user.", response));
     }
 
@@ -51,5 +53,13 @@ public class WithdrawRequestController {
     public ResponseEntity<ApiResponse<WithdrawRequestResponse>> rejectRequest(@PathVariable Long requestId) throws BusinessException {
         WithdrawRequestResponse response = withdrawRequestService.rejectRequest(requestId);
         return ResponseEntity.ok(ApiResponse.success("Đã từ chối yêu cầu rút tiền.", response));
+    }
+
+    @Operation(summary = "Admin lấy danh sách yêu cầu rút tiền")
+    @GetMapping("/pending")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse<List<WithdrawRequestResponse>>> getPendingRequests() throws BusinessException {
+        List<WithdrawRequestResponse> response = withdrawRequestService.getPendingRequests();
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách yêu cầu rút tiền thành công.", response));
     }
 }

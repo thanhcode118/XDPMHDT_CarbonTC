@@ -10,12 +10,14 @@ import com.carbontc.walletservice.repository.EWalletRepository;
 import com.carbontc.walletservice.repository.WithdrawRequestRepository;
 import com.carbontc.walletservice.service.EWalletService;
 import com.carbontc.walletservice.service.WithdrawRequestService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -90,8 +92,19 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
             return mapToRespone(updatedRequest);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<WithdrawRequestResponse> getPendingRequests() throws BusinessException {
+
+        List<WithdrawRequest> withdrawRequests = withdrawRequestRepository.findWithdrawRequestByStatus(WithdrawStatus.PENDING);
+
+        return withdrawRequests.stream()
+                .map(this::mapToRespone)
+                .collect(Collectors.toList());
+    }
+
     //HEPLER MAPPER
-    public WithdrawRequestResponse mapToRespone(WithdrawRequest withdrawRequest) throws BusinessException {
+    public WithdrawRequestResponse mapToRespone(WithdrawRequest withdrawRequest){
         return modelMapper.map(withdrawRequest, WithdrawRequestResponse.class);
     }
 }
