@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
-import { Box, type SxProps, type Theme, useMediaQuery } from '@mui/material';
+import { Box, type SxProps, type Theme } from '@mui/material';
 import {
   DataGrid,
   type GridColDef,
@@ -14,7 +14,7 @@ import {
 } from '@mui/x-data-grid';
 import React, { useState } from 'react';
 
-import theme from '../../common/theme/themes';
+// import theme from '../../common/theme/themes';
 
 import * as tableNoData from './tableNoData';
 
@@ -67,7 +67,7 @@ export default function CustomTable<T extends Record<string, any>>({
   noDataMessage = 'No data to display',
   // rowSelectionModel = [],
 }: CustomTableProps<T>): React.JSX.Element {
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   const [SelectedIds, setSelectedIds] = useState<

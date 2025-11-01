@@ -4,8 +4,10 @@ export type ThemeMode = 'light' | 'dark';
 
 export interface User {
   id: string;
-  email: string;
+  userId?: string;
   name?: string | null;
+  fullName?: string | null | undefined;
+  email: string;
   role: UserRole;
   avatarUrl?: string;
   status: 'ACTIVE' | 'INACTIVE';

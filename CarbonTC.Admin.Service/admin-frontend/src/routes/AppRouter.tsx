@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import { ROUTES } from '../common/constants';
+import { AuthCallback, RedirectToLogin } from '../components/auths';
 import LayoutDashboard from '../components/layouts/layoutDashboard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PrivateRoute from '../routes/PrivateRoute';
@@ -24,10 +25,10 @@ function AppRouter() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Redirect root to dashboard */}
-          <Route
-            path={ROUTES.ADMIN.BASE}
-            element={<Navigate to={ROUTES.ADMIN.DASHBOARD} replace />}
-          />
+          <Route path={ROUTES.ADMIN.BASE} element={<RedirectToLogin />} />
+
+          {/* Auth callback route */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Protected routes with Layout */}
           <Route
