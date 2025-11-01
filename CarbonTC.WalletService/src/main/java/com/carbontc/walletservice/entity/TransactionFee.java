@@ -1,6 +1,7 @@
 package com.carbontc.walletservice.entity;
 
 
+import com.carbontc.walletservice.entity.status.FeeStatus;
 import com.carbontc.walletservice.entity.status.FeeType;
 import jakarta.persistence.*;
 
@@ -63,6 +64,17 @@ public class TransactionFee {
 
     @Enumerated(EnumType.STRING)
     private FeeType feeType; // PlatformFee, ServiceFee
+
+    @Enumerated(EnumType.STRING)
+    private FeeStatus feeStatus;
+
+    public FeeStatus getFeeStatus() {
+        return feeStatus;
+    }
+
+    public void setFeeStatus(FeeStatus feeStatus) {
+        this.feeStatus = feeStatus;
+    }
 
     private BigDecimal amount;
 

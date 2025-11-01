@@ -2,6 +2,7 @@ package com.carbontc.walletservice.service.Impl;
 
 import com.carbontc.walletservice.entity.EWallet;
 import com.carbontc.walletservice.entity.TransactionFee;
+import com.carbontc.walletservice.entity.status.FeeStatus;
 import com.carbontc.walletservice.entity.status.FeeType;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.EWalletRepository;
@@ -36,7 +37,7 @@ public class TransactionFeeServiceImpl implements TransactionFeeService {
         transactionFee.setAmount(feeAmount);
         transactionFee.setFeeType(feeType);
         transactionFee.setCalculatedAt(LocalDateTime.now());
-        transactionFee.setFeeType(feeType.PENDING_WITHDRAWAL);
+        transactionFee.setFeeStatus(FeeStatus.PENDING_WITHDRAWAL);
         transactionFeeRepository.save(transactionFee);
     }
 
@@ -47,7 +48,7 @@ public class TransactionFeeServiceImpl implements TransactionFeeService {
                 .orElseThrow(() -> new BusinessException("Không tìm thấy ví admin"));
 
 
-        List<TransactionFee> transactionFees = transactionFeeRepository.findByStatus(FeeType.PENDING_WITHDRAWAL);
+        List<TransactionFee> transactionFees = transactionFeeRepository.findByStatus(FeeStatus.PENDING_WITHDRAWAL);
 
         if (transactionFees.isEmpty()) {
             log.info("Không có phí nào chờ rút");
@@ -61,7 +62,7 @@ public class TransactionFeeServiceImpl implements TransactionFeeService {
         eWalletService.deposit(adminWallet.getWalletId(), totalFee);
 
         for (TransactionFee transactionFee : transactionFees) {
-            transactionFee.setFeeType(FeeType.WITHDRAWN);
+            transactionFee.setFeeStatus(FeeStatus.WITHDRAWN);
         }
         transactionFeeRepository.saveAll(transactionFees);
         log.info("Đã rút thành công tiền về ví admin",totalFee,adminId);
