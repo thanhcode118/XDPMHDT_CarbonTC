@@ -110,3 +110,33 @@ export const placeBid = (listingId, bidAmount) => {
   const body = { bidAmount: bidAmount };
   return apiClientPD.post(`/Listing/auctions/${listingId}/bids`, body);
 };
+
+
+
+
+
+/**
+ * Lấy danh sách giao dịch BÁN của user
+ * @param {object} params - Các tham số query (status, pageNumber, sortBy, ...)
+ */
+export const getSalesTransactions = (params) => {
+    return apiClientPD.get('/users/me/transactions/sales', { params });
+};
+
+/**
+ * Lấy danh sách giao dịch MUA của user
+ * @param {object} params - Các tham số query
+ */
+export const getPurchasesTransactions = (params) => {
+    return apiClientPD.get('/users/me/transactions/purchases', { params });
+};
+
+/**
+ * Lấy dữ liệu thống kê tóm tắt giao dịch
+ */
+export const getTransactionSummary = () => {
+    // Lưu ý: Endpoint là /Transaction/summary, không phải /users/me/...
+    // Điều này có nghĩa là nó có thể là API của Admin.
+    // Hãy đảm bảo apiClient của bạn có quyền truy cập endpoint này.
+    return apiClientPD.get('/Transaction/summary');
+};

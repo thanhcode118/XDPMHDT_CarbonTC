@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
  * @param {string} targetDate - Chuỗi ISO 8601 (ví dụ: "2025-11-07T05:27:02.618")
  */
 const useCountdown = (targetDate) => {
-  const countDownDate = new Date(targetDate).getTime();
+  const countDownDate = new Date(targetDate).getTime() + 7 * 60 * 60 * 1000;
 
   const [countDown, setCountDown] = useState(
     countDownDate - new Date().getTime()

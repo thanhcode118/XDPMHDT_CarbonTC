@@ -1,9 +1,11 @@
 import React from 'react';
 import styles from './ListingTable.module.css';
+import { convertUTCToVnTime } from '../../utils/formatters';
 
 const ListingTable = ({ listings, onEdit, onCancel, onViewDetails }) => {
   
   const getStatusBadge = (status) => {
+    console.log('Listing status:', status);
     switch (status) {
       case 'active':
         return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Đang bán</span>;
@@ -13,6 +15,8 @@ const ListingTable = ({ listings, onEdit, onCancel, onViewDetails }) => {
         return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Đã bán</span>;
       case 'cancelled':
         return <span className={`${styles.badge} ${styles.badgeDanger}`}>Đã hủy</span>;
+      case 'closed':
+        return <span className={`${styles.badge} ${styles.badgeSecondary}`}>Đã đóng</span>;
       default:
         return <span className={styles.badge}>{status}</span>;
     }
@@ -65,13 +69,13 @@ const ListingTable = ({ listings, onEdit, onCancel, onViewDetails }) => {
                     {/* Hiển thị ngày đăng VÀ ngày kết thúc (nếu có) */}
                     <td>
                       <div>
-                        Đăng: {new Date(listing.createdAt).toLocaleString('vi-VN')}
+                        Đăng: {convertUTCToVnTime(new Date(listing.createdAt)).toLocaleString('vi-VN')}
                       </div>
                       
                       {/* Chỉ hiển thị nếu là đấu giá VÀ có ngày kết thúc */}
                       {listing.type === 2 && listing.auctionEndTime && (
                         <div style={{ color: '#4891b4ff', fontWeight: 'bold', marginTop: '4px' }}>
-                          Kết thúc: {new Date(listing.auctionEndTime).toLocaleString('vi-VN')}
+                          Kết thúc: {convertUTCToVnTime(new Date(listing.auctionEndTime)).toLocaleString('vi-VN')}
                         </div>
                       )}
                     </td>

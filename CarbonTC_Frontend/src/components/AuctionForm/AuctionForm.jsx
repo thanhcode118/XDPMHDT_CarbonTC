@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import styles from './AuctionForm.module.css';
+import { 
+  formatCurrency,
+} from '../../utils/formatters'; // Điều chỉnh đường dẫn theo project của bạn
 
 const AuctionForm = ({ 
     suggestedPrice, 
@@ -35,7 +38,7 @@ const AuctionForm = ({
       if (numValue <= 0) {
         setQuantityError('Số lượng phải lớn hơn 0');
       } else if (inventory && numValue > inventory.availableAmount) {
-        setQuantityError(`Bạn chỉ có ${inventory.availableAmount} tín chỉ khả dụng.`);
+        setQuantityError(`Bạn chỉ có ${formatCurrency(inventory.availableAmount)} tín chỉ khả dụng.`);
       } else {
         setQuantityError(''); 
       }
@@ -63,7 +66,7 @@ const AuctionForm = ({
       return 'N/A';
     }
     
-    const formattedPrice = Math.round(suggestedPrice).toLocaleString();
+    const formattedPrice = formatCurrency(Math.round(suggestedPrice));
     
     if (suggestionType === 'personalized') {
       return (
@@ -84,7 +87,7 @@ const AuctionForm = ({
     if (inventory) {
       return (
         <small className={styles.textSuccess}>
-          Bạn có <strong>{inventory.availableAmount}</strong> tín chỉ khả dụng
+          Bạn có <strong>{formatCurrency(inventory.availableAmount)}</strong> tín chỉ khả dụng
         </small>
       );
     }
@@ -109,6 +112,7 @@ const AuctionForm = ({
               onChange={handleChange}
               placeholder="Nhập số lượng tín chỉ"
               required
+              min="1"
             />
             {quantityError ? (
               <small className={styles.textDanger}>{quantityError}</small>
@@ -118,7 +122,9 @@ const AuctionForm = ({
           </div>
           
           <div className="col-md-6">
-            <label htmlFor="startPrice" className={styles.formLabel}>Giá khởi điểm (VNĐ)</label>
+            <label htmlFor="startPrice" className={styles.formLabel}>
+              Giá khởi điểm (VNĐ/tín chỉ)
+            </label>
             <input
               type="number"
               className={styles.formControl}
@@ -128,6 +134,8 @@ const AuctionForm = ({
               onChange={handleChange}
               placeholder="Nhập giá khởi điểm"
               required
+              min="0"
+              step="1000"
             />
             <small className={styles.textSecondary}>
               {renderSuggestionText()}
@@ -135,7 +143,9 @@ const AuctionForm = ({
           </div>
           
           <div className="col-md-6">
-            <label htmlFor="startDate" className={styles.formLabel}>Thời gian bắt đầu</label>
+            <label htmlFor="startDate" className={styles.formLabel}>
+              Thời gian bắt đầu
+            </label>
             <input
               type="datetime-local"
               className={styles.formControl}
@@ -145,10 +155,13 @@ const AuctionForm = ({
               onChange={handleChange}
               required
             />
+            <small className={styles.textMuted}>Giờ Việt Nam (UTC+7)</small>
           </div>
           
           <div className="col-md-6">
-            <label htmlFor="endDate" className={styles.formLabel}>Thời gian kết thúc</label>
+            <label htmlFor="endDate" className={styles.formLabel}>
+              Thời gian kết thúc
+            </label>
             <input
               type="datetime-local"
               className={styles.formControl}
@@ -158,6 +171,7 @@ const AuctionForm = ({
               onChange={handleChange}
               required
             />
+            <small className={styles.textMuted}>Giờ Việt Nam (UTC+7)</small>
           </div>
           
           <div className="col-12">

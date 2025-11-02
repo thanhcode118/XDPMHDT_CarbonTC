@@ -522,73 +522,255 @@
     color: #4ade80;
 }
 
-/* Bid History */
+/* Bid History - Modern Timeline Design */
 .bidHistory {
-    margin-top: 20px;
+    margin-top: 32px;
+    position: relative;
 }
 
 .bidHistoryTitle {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 15px;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 24px;
     display: flex;
     align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.bidHistoryTitle::before {
+    content: '📊';
+    font-size: 20px;
 }
 
 .bidHistoryTitle::after {
     content: '';
     flex: 1;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
-    margin-left: 10px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.3) 0%, transparent 100%);
+    border-radius: 2px;
+}
+
+.noBids {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 2px dashed rgba(102, 126, 234, 0.2);
 }
 
 .bidItem {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: bidSlideIn 0.5s ease backwards;
+}
+
+.bidItem::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px 0 0 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .bidItem:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateX(8px);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+}
+
+.bidItem:hover::before {
+    opacity: 1;
+}
+
+.bidItem.highlight {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    border: 2px solid rgba(102, 126, 234, 0.5);
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.2),
+                inset 0 0 20px rgba(102, 126, 234, 0.1);
+    transform: scale(1.02);
+    animation: bidPulse 2s ease-in-out infinite;
+}
+
+.bidItem.highlight::before {
+    opacity: 1;
+    width: 4px;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+}
+
+.bidItem.highlight::after {
+    content: '👑';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 20px;
+    animation: crownFloat 2s ease-in-out infinite;
 }
 
 .bidUser {
     display: flex;
     align-items: center;
+    gap: 12px;
+    flex: 1;
 }
 
 .bidAvatar {
-    width: 30px;
-    height: 30px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    margin-right: 10px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+    object-fit: cover;
+}
+
+.bidItem:hover .bidAvatar {
+    border-color: #667eea;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+    transform: scale(1.1);
+}
+
+.bidItem.highlight .bidAvatar {
+    border: 3px solid #667eea;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.7);
 }
 
 .bidName {
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+}
+
+.bidItem.highlight .bidName {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
 }
 
 .bidTime {
-    font-size: 0.8rem;
+    font-size: 12px;
     color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bidTime::before {
+    content: '🕐';
+    font-size: 11px;
 }
 
 .bidAmount {
-    font-weight: 600;
-    color: var(--ev-owner-color);
-    font-size: 1.1rem;
+    font-weight: 800;
+    font-size: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    text-align: right;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: rgba(102, 126, 234, 0.1);
+    transition: all 0.3s ease;
 }
 
-.bidItem.highlight {
-    background: rgba(102, 126, 234, 0.1);
-    border-left: 3px solid var(--ev-owner-color);
+.bidItem:hover .bidAmount {
+    background-color: rgba(102, 126, 234, 0.15);
+    transform: scale(1.05);
+}
+
+.bidItem.highlight .bidAmount {
+    font-size: 20px;
+    background-color: rgba(102, 126, 234, 0.2);
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Animations */
+@keyframes bidSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes bidPulse {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.2),
+                    inset 0 0 20px rgba(102, 126, 234, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(102, 126, 234, 0.35),
+                    inset 0 0 30px rgba(102, 126, 234, 0.15);
+    }
+}
+
+@keyframes crownFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(-5deg);
+    }
+    50% {
+        transform: translateY(-5px) rotate(5deg);
+    }
+}
+
+/* Staggered animation for multiple bids */
+.bidItem:nth-child(1) { animation-delay: 0.1s; }
+.bidItem:nth-child(2) { animation-delay: 0.2s; }
+.bidItem:nth-child(3) { animation-delay: 0.3s; }
+.bidItem:nth-child(4) { animation-delay: 0.4s; }
+.bidItem:nth-child(5) { animation-delay: 0.5s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bidItem {
+        padding: 14px 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .bidAmount {
+        align-self: flex-end;
+        font-size: 16px;
+    }
+    
+    .bidItem.highlight .bidAmount {
+        font-size: 18px;
+    }
+    
+    .bidAvatar {
+        width: 36px;
+        height: 36px;
+    }
 }
 
 /* Bid Suggestions */
@@ -770,4 +952,376 @@
     margin-top: 8px;
     display: block;
     font-size: 12px;
+}
+
+/* Bid Suggestions Styles */
+/* Bid Suggestions Styles - Modern Design */
+.bidSuggestions {
+    margin: 24px 0;
+    padding: 0;
+}
+
+.suggestionTitle {
+    font-size: 15px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.suggestionTitle i {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 18px;
+}
+
+.suggestionGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.suggestionCard {
+    position: relative;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 16px;
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    overflow: hidden;
+}
+
+.suggestionCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.suggestionCard:hover {
+    border-color: rgba(102, 126, 234, 0.6);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25),
+                0 0 20px rgba(102, 126, 234, 0.15);
+}
+
+.suggestionCard:hover::before {
+    opacity: 1;
+}
+
+.suggestionCardActive {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3),
+                inset 0 0 20px rgba(102, 126, 234, 0.1);
+    transform: scale(1.05);
+}
+
+.suggestionCardActive::before {
+    opacity: 1;
+}
+
+.suggestionHeader {
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.suggestionLabel {
+    font-weight: 600;
+    font-size: 11px;
+    color: #b8bcc8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.suggestionCardActive .suggestionLabel {
+    color: #667eea;
+    font-weight: 700;
+}
+
+.suggestionAmount {
+    font-size: 16px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.5px;
+}
+
+.suggestionCardActive .suggestionAmount {
+    font-size: 17px;
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+/* Animation when card appears */
+.suggestionCard {
+    animation: fadeInUp 0.5s ease backwards;
+}
+
+.suggestionCard:nth-child(1) { animation-delay: 0.1s; }
+.suggestionCard:nth-child(2) { animation-delay: 0.2s; }
+.suggestionCard:nth-child(3) { animation-delay: 0.3s; }
+.suggestionCard:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .suggestionGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .suggestionCard {
+        padding: 14px 10px;
+    }
+    
+    .suggestionAmount {
+        font-size: 14px;
+    }
+}
+
+/* Auction Ended Message - Epic Design */
+.auctionEndedMessage {
+    position: relative;
+    padding: 32px 28px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, 
+        rgba(220, 53, 69, 0.15) 0%, 
+        rgba(255, 107, 107, 0.15) 50%,
+        rgba(220, 53, 69, 0.15) 100%);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(220, 53, 69, 0.4);
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin: 24px 0;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(220, 53, 69, 0.3),
+                inset 0 0 40px rgba(220, 53, 69, 0.1);
+    animation: auctionEndPulse 3s ease-in-out infinite;
+}
+
+/* Animated background gradient */
+.auctionEndedMessage::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 70%
+    );
+    animation: shimmer 3s linear infinite;
+    pointer-events: none;
+}
+
+/* Decorative corners */
+.auctionEndedMessage::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 32px;
+    animation: flagWave 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+/* Winner info styling */
+.auctionEndedMessage span {
+    display: block;
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 0.2) 0%, 
+        rgba(255, 193, 7, 0.2) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    font-size: 16px;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3),
+                inset 0 0 20px rgba(255, 215, 0, 0.1);
+    animation: winnerGlow 2s ease-in-out infinite;
+}
+
+/* Winner crown icon */
+.auctionEndedMessage span::before {
+    content: '👑';
+    font-size: 24px;
+    margin-right: 8px;
+    display: inline-block;
+    animation: crownBounce 1s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+
+/* Winner info sparkle effect */
+.auctionEndedMessage span::after {
+    content: '✨';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Confetti elements */
+.auctionEndedMessage .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+    top: -10px;
+    animation: confettiFall 3s linear infinite;
+}
+
+/* Animations */
+@keyframes auctionEndPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 8px 32px rgba(220, 53, 69, 0.3),
+                    inset 0 0 40px rgba(220, 53, 69, 0.1);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 12px 40px rgba(220, 53, 69, 0.5),
+                    inset 0 0 60px rgba(220, 53, 69, 0.15);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+@keyframes flagWave {
+    0%, 100% {
+        transform: rotate(-10deg) scale(1);
+    }
+    50% {
+        transform: rotate(10deg) scale(1.2);
+    }
+}
+
+@keyframes winnerGlow {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.3),
+                    inset 0 0 20px rgba(255, 215, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.6),
+                    inset 0 0 40px rgba(255, 215, 0, 0.2);
+    }
+}
+
+@keyframes crownBounce {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(-10deg);
+    }
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1) rotate(0deg);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(-50%) scale(1.3) rotate(180deg);
+    }
+}
+
+@keyframes confettiFall {
+    0% {
+        top: -10px;
+        opacity: 1;
+    }
+    100% {
+        top: 100%;
+        opacity: 0;
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhanced text with gradient */
+.auctionEndedMessage > span:first-child {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 50%, #ff6b6b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: gradientShift 3s linear infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .auctionEndedMessage {
+        padding: 24px 20px;
+        font-size: 16px;
+    }
+    
+    .auctionEndedMessage span {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    .auctionEndedMessage::after {
+        font-size: 24px;
+        top: 8px;
+        right: 8px;
+    }
 }

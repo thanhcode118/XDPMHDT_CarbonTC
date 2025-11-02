@@ -13,6 +13,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import styles from './MarketplaceModal.module.css';
 import { useCountdown } from '../../hooks/useCountdown';
+import { convertUTCToVnTime } from '../../utils/formatters';
 
 ChartJS.register(
     CategoryScale,
@@ -44,7 +45,12 @@ const PlaceBidModal = ({
 
     const formatBidTime = (isoTime) => {
         if (!isoTime) return '';
-        return new Date(isoTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        const vnTime = convertUTCToVnTime(isoTime);
+        return vnTime.toLocaleTimeString('vi-VN', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit'
+        });
     };
 
     const createHistoryEntry = (bid) => {
@@ -138,11 +144,23 @@ const PlaceBidModal = ({
     };
 
     const bidSuggestions = [
-        { amount: minBidAmount, label: 'Giá tối thiểu' },
-        { amount: minBidAmount + 500, label: 'Tăng 500 VNĐ' },
-        { amount: minBidAmount + 1000, label: 'Tăng 1,000 VNĐ' },
-        { amount: minBidAmount + 5000, label: 'Tăng 5,000 VNĐ' }
-    ];
+    { 
+        amount: minBidAmount, 
+        label: 'Tối thiểu' 
+    },
+    { 
+        amount: minBidAmount + 1000, 
+        label: 'Tăng 2K' 
+    },
+    { 
+        amount: minBidAmount + 4000, 
+        label: 'Tăng 5K' 
+    },
+    { 
+        amount: minBidAmount + 9000, 
+        label: 'Tăng 10K' 
+    }
+];
 
     const useDebounce = (value, delay) => {
         const [debouncedValue, setDebouncedValue] = useState(value);
@@ -496,6 +514,13 @@ const PlaceBidModal = ({
                                 </div>
                             ) : (
                                 <div className={styles.auctionEndedMessage}>
+                                    {/* Confetti decorations */}
+                                    <span className={styles.confetti} style={{left: '10%', animationDelay: '0s'}}></span>
+                                    <span className={styles.confetti} style={{left: '30%', animationDelay: '0.5s'}}></span>
+                                    <span className={styles.confetti} style={{left: '50%', animationDelay: '1s'}}></span>
+                                    <span className={styles.confetti} style={{left: '70%', animationDelay: '1.5s'}}></span>
+                                    <span className={styles.confetti} style={{left: '90%', animationDelay: '2s'}}></span>
+                                    
                                     Phiên đấu giá đã kết thúc!
                                     {winnerInfo && (
                                         <span> Người thắng: ...{winnerInfo.winningBidderId?.slice(-6)} với giá {winnerInfo.winningBidAmount?.toLocaleString()} VNĐ</span>
@@ -559,21 +584,28 @@ const PlaceBidModal = ({
                                     {/* Bid Suggestions */}
                                     {!auctionIsFinished && (
                                         <div className={styles.bidSuggestions}>
-                                            <h6>Gợi ý:</h6>
-                                            {bidSuggestions.map((suggestion, index) => (
-                                                <div 
-                                                    key={index}
-                                                    className={styles.bidSuggestion}
-                                                    onClick={() => setBidAmountSuggestion(suggestion.amount)}
-                                                >
-                                                    <span className={styles.bidSuggestionLabel}>
-                                                        {suggestion.label}:
-                                                    </span>
-                                                    <span className={styles.bidSuggestionAmount}>
-                                                        {suggestion.amount.toLocaleString()} VNĐ
-                                                    </span>
-                                                </div>
-                                            ))}
+                                            <h6 className={styles.suggestionTitle}>
+                                                <i className="bi bi-lightbulb"></i>
+                                                Mức giá đề xuất
+                                            </h6>
+                                            <div className={styles.suggestionGrid}>
+                                                {bidSuggestions.map((suggestion, index) => (
+                                                    <div 
+                                                        key={index}
+                                                        className={`${styles.suggestionCard} ${
+                                                            bidAmount === suggestion.amount.toString() ? styles.suggestionCardActive : ''
+                                                        }`}
+                                                        onClick={() => setBidAmountSuggestion(suggestion.amount)}
+                                                    >
+                                                        <div className={styles.suggestionHeader}>
+                                                            <span className={styles.suggestionLabel}>{suggestion.label}</span>
+                                                        </div>
+                                                        <div className={styles.suggestionAmount}>
+                                                            {suggestion.amount.toLocaleString()} VNĐ
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
                                 </form>
@@ -587,7 +619,7 @@ const PlaceBidModal = ({
                                 <p className={styles.noBids}>{(listingData?.auctionBids || []).length > 0 ? 'Đang tải lịch sử...' : 'Chưa có lượt trả giá nào.'}</p>
                             ) : (
                                 bidHistory.map((bid, index) => (
-                                    <div key={`${bid.id}_${index}_${bid.amount}`} className={`${styles.bidItem} ${index === 0 ? styles.highlight : ''}`}>
+                                    <div key={`${bid.id}_${index}_${bid.amount}`} className={`${styles.bidItem} ${index === 0 ? styles.highlight : ''} m-3`}>
                                         <div className={styles.bidUser}>
                                             <img src={bid.avatar} alt="Bidder" className={styles.bidAvatar} />
                                             <div>

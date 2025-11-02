@@ -26,11 +26,11 @@ const MarketplaceCard = ({
     }
     
     return (
-      <span style={{ minWidth: '80px', display: 'inline-block' }}>
+      <span className='ms-2' style={{ minWidth: '80px', display: 'inline-block' }}>
         {days > 0 && `${days}d `}
         {hours > 0 && `${hours}h `}
         {minutes > 0 && `${minutes}m `}
-        {seconds >= 0 && `${seconds}s`}``
+        {seconds >= 0 && `${seconds}s`}
       </span>
     );
   };

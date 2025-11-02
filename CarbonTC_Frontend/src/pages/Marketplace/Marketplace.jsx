@@ -38,13 +38,15 @@ import {
 } from '../../services/signalrService';
 import UserSelector from '../../components/UserSelector/UserSelector';
 import { toast, ToastContainer } from 'react-toastify';
+import { convertVnTimeToUTC } from '../../utils/formatters';
 
 const mapStatusToString = (status) => {
   switch (status) {
     case 1: return 'active'; 
-    case 2: return 'sold';   
-    case 3: return 'cancelled'
-    default: return 'pending';
+    case 2: return 'closed';     
+    case 3: return 'cancelled';  
+    case 4: return 'sold';       
+    default: return 'pending';   
   }
 };
 
@@ -97,7 +99,7 @@ const Marketplace = () => {
 
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
 
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(true);
   const [successData, setSuccessData] = useState({});
 
   const [auctionUpdates, setAuctionUpdates] = useState({});
@@ -206,12 +208,12 @@ const handleBuySubmit = async (buyData) => {
 
       setSuccessData({
         type: 'buy',
-        quantity: 50,
-        pricePerUnit: 14500,
-        totalAmount: 725000,
+        quantity: buyData.quantity,
+        pricePerUnit: buyData.totalAmount / buyData.quantity,
+        totalAmount: buyData.totalAmount,
         sellerName: 'Công ty ABC',
         creditType: 'Carbon Credit từ xe điện',
-        transactionId: 'TX-2024-001234',
+        transactionId: '',
         estimatedDelivery: '2-3 ngày làm việc'
       });
       setShowSuccessModal(true);
@@ -275,6 +277,17 @@ const handleBidSubmit = async (bidData) => {
 
           if (response.data && response.data.success) {
               console.log("Đặt giá thành công! Chờ cập nhật từ SignalR...");
+              setSuccessData({
+                type: 'bid',
+                quantity: 50,
+                pricePerUnit: 14500,
+                totalAmount: 725000,
+                sellerName: 'Công ty ABC',
+                creditType: 'Carbon Credit từ xe điện',
+                transactionId: 'TX-2024-001234',
+                estimatedDelivery: '2-3 ngày làm việc'
+              });
+              setShowSuccessModal(true);
               setActionModalError(null);
           } else {
               const specificError = response.data?.errors?.[0];
@@ -366,6 +379,68 @@ const handleBidSubmit = async (bidData) => {
     const handleRealtimeEndAuction = useCallback((endData) => {
         // endData = { listingId, winningBidderId, winningBidAmount }
         console.log("Received EndAuction:", endData);
+
+        const currentUserId = getUserIdFromToken();
+        const isWinner = currentUserId === endData.winningBidderId;
+
+        const endedListing = listings.find(listing => listing.id === endData.listingId);
+        const isOwner = endedListing && endedListing.ownerId === currentUserId;
+
+        if (isWinner) {
+        toast.success(
+            `🎉 Chúc mừng! Bạn đã thắng phiên đấu giá với giá ${endData.winningBidAmount?.toLocaleString()} VNĐ!`, 
+            {
+                position: "top-right",
+                autoClose: 10000, // 10 giây
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+            }
+        );
+        setSuccessData({
+          type: 'bid',
+          quantity: 50,
+          pricePerUnit: 14500,
+          totalAmount: 725000,
+          sellerName: 'Công ty ABC',
+          creditType: 'Carbon Credit từ xe điện',
+          transactionId: 'TX-2024-001234',
+          estimatedDelivery: '2-3 ngày làm việc'
+        });
+        setShowSuccessModal(true);
+
+
+        } else if (isOwner) {
+            toast.info(
+                `🏁 Phiên đấu giá của bạn đã kết thúc. Người thắng: ...${endData.winningBidderId?.slice(-6)}`, 
+                {
+                    position: "top-right",
+                    autoClose: 8000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    theme: "light",
+                }
+            );
+        } else {
+            // Thông báo cho những người tham gia khác
+            toast.warn(
+                `ℹ️ Phiên đấu giá bạn tham gia đã kết thúc. Người thắng: ...${endData.winningBidderId?.slice(-6)}`, 
+                {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    theme: "light",
+                }
+            );
+        }
+
         setAuctionUpdates(prev => ({
             ...prev,
             [endData.listingId]: {
@@ -578,7 +653,7 @@ const handleBidSubmit = async (bidData) => {
         type: 2, 
         quantity: parseFloat(formData.quantity),
         minimumBid: parseFloat(formData.startPrice), 
-        auctionEndTime: new Date(formData.endDate).toISOString(), 
+        auctionEndTime: convertVnTimeToUTC(formData.endDate), 
       };
       
       const response = await createListing(auctionData); 
