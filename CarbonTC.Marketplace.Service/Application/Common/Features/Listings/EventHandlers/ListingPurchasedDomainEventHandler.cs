@@ -2,23 +2,16 @@
 using Application.Common.Interfaces;
 using Domain.Events.Listing;
 using MediatR;
-using RabbitMQ.Client;
 
 namespace Application.Common.Features.Listings.EventHandlers
 {
     public class ListingPurchasedDomainEventHandler : INotificationHandler<ListingPurchasedDomainEvent>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IWalletServiceClient _walletService;
-        private readonly IBalanceService _balanceService;
-        private readonly IIntegrationEventService _integrationEvent;
 
-        public ListingPurchasedDomainEventHandler(IUnitOfWork unitOfWork, IWalletServiceClient walletService, IBalanceService balanceService, IIntegrationEventService integrationEvent)
+        public ListingPurchasedDomainEventHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _walletService = walletService;
-            _balanceService = balanceService;
-            _integrationEvent = integrationEvent;
         }
 
         public async Task Handle(ListingPurchasedDomainEvent notification, CancellationToken cancellationToken)
@@ -53,12 +46,6 @@ namespace Application.Common.Features.Listings.EventHandlers
             await _unitOfWork.CreditInventories.UpdateAsync(creditInventory, cancellationToken);
             await _unitOfWork.Transactions.AddAsync(transaction, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            await _integrationEvent.PublishAsync<TransactionWalletDto>(transactionWalletDto, "transactions_exchange", ExchangeType.Direct, "transaction.created");
-
-            await _balanceService.CommitPurchaseAsync(
-                notification.BuyerId,
-                notification.TotalPrice);
         }
 
         private decimal CalculatePlatformFee(decimal moneyAmount, decimal percentage = 0.02m)

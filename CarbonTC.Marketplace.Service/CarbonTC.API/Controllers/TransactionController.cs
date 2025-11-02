@@ -1,4 +1,6 @@
-﻿using Application.Common.Features.Transactions.Queries.GetAllTransactions;
+﻿using Application.Common.DTOs;
+using Application.Common.Features.Transactions.Queries.GetAllTransactions;
+using Application.Common.Features.Transactions.Queries.GetDashboardSummary;
 using Application.Common.Interfaces;
 using CarbonTC.API.Common;
 using Domain.Entities;
@@ -118,6 +120,19 @@ namespace CarbonTC.API.Controllers
 
             var transactions = await _mediator.Send(modifiedQuery, cancellationToken);
             return Ok(ApiResponse<object>.SuccessResponse(transactions, "Your sales retrieved successfully"));
+        }
+    
+        
+        [Authorize]
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary(CancellationToken cancellationToken = default)
+        {
+            var transactionSummary = await _mediator.Send(new GetDashboardSummaryQuery(), cancellationToken);
+            if (transactionSummary.IsSuccess)
+            {
+                return Ok(ApiResponse<TransactionSummaryDto>.SuccessResponse(transactionSummary.Value));
+            }
+            return Unauthorized();
         }
     }
 }

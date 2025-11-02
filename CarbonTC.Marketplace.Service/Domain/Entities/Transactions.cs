@@ -1,5 +1,6 @@
 ﻿using Domain.Common;
 using Domain.Enum;
+using Domain.Events.Listing;
 using Domain.Events.Transactions;
 using Domain.Exceptions;
 
@@ -15,6 +16,9 @@ namespace Domain.Entities
         public TransactionStatus Status { get; private set; }
         public DateTime? CompletedAt { get; private set; }
         public string? FailureReason { get; private set; }
+
+
+        private const decimal PLATFORM_FEE_PERCENTAGE = 0.02m;
 
         private Transactions() {}
 
@@ -51,13 +55,17 @@ namespace Domain.Entities
             var totalAmount = quantity * pricePerUnit;
 
             var transaction = new Transactions(buyerId, sellerId, listingId, quantity, totalAmount);
+
             transaction.AddDomainEvent(new TransactionCreatedDomainEvent(
                 transaction.Id,
                 buyerId,
                 sellerId,
-                listingId,
+                totalAmount,
                 quantity,
-                totalAmount));
+                transaction.PlatformFee,
+                transaction.CreatedAt
+                ));
+            transaction.AddDomainEvent(new BalanceDeductedDomainEvent(buyerId, totalAmount));
 
             return transaction;
         }
@@ -105,6 +113,12 @@ namespace Domain.Entities
             FailureReason = reason;
 
             AddDomainEvent(new TransactionDisputedDomainEvent(Id, reason));
+        }
+
+        public decimal PlatformFee => CalculatePlatformFee();
+        private decimal CalculatePlatformFee()
+        {
+            return TotalAmount * PLATFORM_FEE_PERCENTAGE;
         }
     }
 }

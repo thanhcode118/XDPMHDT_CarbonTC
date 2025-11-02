@@ -40,7 +40,18 @@ namespace Application.Common.Features.Transactions.Queries.GetAllTransactions
             }
             if (query.EndDate.HasValue)
             {
-                queryable = queryable.Where(t => t.CreatedAt <= query.EndDate.Value);
+                var endDate = query.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+                queryable = queryable.Where(t => t.CreatedAt <= endDate);
+            }
+
+            if (query.MinAmount.HasValue)
+            {
+                queryable = queryable.Where(t => t.TotalAmount >= query.MinAmount.Value);
+            }
+
+            if (query.MaxAmount.HasValue)
+            {
+                queryable = queryable.Where(t => t.TotalAmount <= query.MaxAmount.Value);
             }
 
             switch (query.SortBy)

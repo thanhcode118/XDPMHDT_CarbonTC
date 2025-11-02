@@ -58,38 +58,6 @@ namespace Application.Common.Features.Listings.Commands.BuyNow
                 await _balanceService.ReleaseBalanceForPurchaseAsync(buyerId.Value, totalPrice);
                 return Result.Failure(new Error("Transaction", $"An unexpected error occurred: {ex.Message}"));
             }
-
-/*
-            var hasEnough = await _walletClient.HasSufficientBalanceAsync(buyerId.Value, totalPrice, cancellationToken);
-            if (!hasEnough)
-                return Result.Failure(new Error("Wallet", "Insufficient funds."));
-
-            var reserved = await _walletClient.ReserveFundsAsync(buyerId.Value, totalPrice, cancellationToken);
-            if (!reserved)
-                return Result.Failure(new Error("Wallet", "Unable to reserve funds."));
-
-            var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(listing.CreditId, cancellationToken);
-            if (creditInventory == null)
-            {
-                await _walletClient.RollbackReservationAsync(buyerId.Value, totalPrice, cancellationToken);
-                return Result.Failure(new Error("CreditInventory", "Credit inventory not found."));
-            }
-
-            try
-            {
-                listing.BuyNow(buyerId.Value, request.Amount);
-
-                await _unitOfWork.Listings.UpdateAsync(listing, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                await _walletClient.RollbackReservationAsync(buyerId.Value, totalPrice, cancellationToken);
-                return Result.Failure(new Error("Transaction", $"An unexpected error occurred: {ex.Message}"));
-            }
-*/
         }
     }
 }

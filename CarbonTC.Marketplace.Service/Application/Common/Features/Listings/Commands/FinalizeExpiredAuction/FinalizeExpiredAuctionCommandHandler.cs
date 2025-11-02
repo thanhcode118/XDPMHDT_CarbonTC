@@ -32,6 +32,9 @@ namespace Application.Common.Features.Listings.Commands.FinalizeExpiredAuction
             if (listing.AuctionEndTime > DateTime.UtcNow)
                 return Result.Failure(new Error("Listing.NotExpired", "This listing has not expired yet."));
 
+            listing.CompleteAuction(); 
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             var winnerBid = listing.Bids
                                  .Where(b => b.Status == BidStatus.Winning)
                                  .OrderByDescending(b => b.BidAmount)
@@ -47,8 +50,6 @@ namespace Application.Common.Features.Listings.Commands.FinalizeExpiredAuction
                 _logger.LogInformation("Closing auction {ListingId} with no winner.", listing.Id);
             }
 
-            listing.CompleteAuction(); 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }

@@ -1,4 +1,5 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.DTOs;
+using Application.Common.Interfaces;
 using Domain.Events.Transactions;
 using MediatR;
 using RabbitMQ.Client;
@@ -16,7 +17,18 @@ namespace Application.Common.Features.Transactions.EventHandlers
 
         public async Task Handle(TransactionCreatedDomainEvent notification, CancellationToken cancellationToken)
         {
-            await _integrationEventService.PublishAsync(notification, "TransactionCreate", ExchangeType.Fanout, "");
+            var transactionWalletDto = new TransactionWalletDto
+            {
+                TransactionId = notification.TransactionId.ToString(),
+                BuyerUserId = notification.BuyerUserId.ToString(),
+                SellerUserId = notification.SellerUserId.ToString(),
+                MoneyAmount = notification.MoneyAmount,
+                CreditAmount = notification.CreditAmount,
+                PlatformFee = notification.PlatformFee,    
+                CreatedAt = DateTime.UtcNow.ToString("o")
+            };
+
+            await _integrationEventService.PublishAsync<TransactionWalletDto>(transactionWalletDto, "transactions_exchange", ExchangeType.Direct, "transaction.created");
         }
     }
 }

@@ -31,10 +31,11 @@ namespace Application.Common.Features.Listings.Commands.DeleteListing
             if (haverAnyTransactions.Any())
                 return Result.Failure(new Error("Listing.HasTransactions", "Cannot delete listing that has associated transactions."));
 
-            var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.ListingId, cancellationToken);
+            var creditInventory = await _unitOfWork.CreditInventories.GetByCreditIdAsync(listing.CreditId, cancellationToken);
             if(creditInventory != null)
             {
                 creditInventory.ReleaseFromListing(listing.Quantity);
+                await _unitOfWork.CreditInventories.UpdateAsync(creditInventory, cancellationToken);
             }
 
             await _unitOfWork.Listings.DeleteAsync(listing, cancellationToken);
