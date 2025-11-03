@@ -39,27 +39,4 @@ public class WithdrawRequestController {
                 .body(ApiResponse.success("Gửi yêu cầu rút tiền thành công. Chờ duyệt.", response));
     }
 
-    @Operation(summary = "Admin duyệt chấp nhận rút tiền")
-    @PostMapping("/{requestId}/approve")
-    @PreAuthorize("hasAuthority('ROLE_Admin')")
-    public ResponseEntity<ApiResponse<WithdrawRequestResponse>> approveRequest(@PathVariable Long requestId) throws BusinessException {
-        WithdrawRequestResponse response = withdrawRequestService.approveRequest(requestId);
-        return ResponseEntity.ok(ApiResponse.success("Duyệt yêu cầu thành công, đã trừ tiền từ ví user.", response));
-    }
-
-    @Operation(summary = "Admin duyệt chấp nhận rút tiền")
-    @PostMapping("/{requestId}/reject")
-    @PreAuthorize("hasAuthority('ROLE_Admin')")
-    public ResponseEntity<ApiResponse<WithdrawRequestResponse>> rejectRequest(@PathVariable Long requestId) throws BusinessException {
-        WithdrawRequestResponse response = withdrawRequestService.rejectRequest(requestId);
-        return ResponseEntity.ok(ApiResponse.success("Đã từ chối yêu cầu rút tiền.", response));
-    }
-
-    @Operation(summary = "Admin lấy danh sách yêu cầu rút tiền")
-    @GetMapping("/pending")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponse<List<WithdrawRequestResponse>>> getPendingRequests() throws BusinessException {
-        List<WithdrawRequestResponse> response = withdrawRequestService.getPendingRequests();
-        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách yêu cầu rút tiền thành công.", response));
-    }
 }

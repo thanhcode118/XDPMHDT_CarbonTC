@@ -48,7 +48,7 @@ public class TransactionFeeServiceImpl implements TransactionFeeService {
                 .orElseThrow(() -> new BusinessException("Không tìm thấy ví admin"));
 
 
-        List<TransactionFee> transactionFees = transactionFeeRepository.findByStatus(FeeStatus.PENDING_WITHDRAWAL);
+        List<TransactionFee> transactionFees = transactionFeeRepository.findByFeeStatus(FeeStatus.PENDING_WITHDRAWAL);
 
         if (transactionFees.isEmpty()) {
             log.info("Không có phí nào chờ rút");

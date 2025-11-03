@@ -34,7 +34,7 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
     @Override
     @Transactional
     public WithdrawRequestResponse createRequest(CreateWithdrawRequest request) throws BusinessException {
-        EWallet eWallet = eWalletRepository.findById(request.getUserId())
+        EWallet eWallet = eWalletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của khách hàng"));
 
         if (eWallet.getBalance().compareTo(request.getAmount()) < 0) {
@@ -70,7 +70,7 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
         request.setStatus(WithdrawStatus.REJECTED);
         request.setProcessedAt(LocalDateTime.now());
         WithdrawRequest updatedRequest = withdrawRequestRepository.save(request);
-        eWalletService.withdraw(request.getUserId(), request.getAmount());
+        eWalletService.withdraw(request.getWallet().getWalletId(), request.getAmount());
 
         return mapToRespone(updatedRequest);
     }
