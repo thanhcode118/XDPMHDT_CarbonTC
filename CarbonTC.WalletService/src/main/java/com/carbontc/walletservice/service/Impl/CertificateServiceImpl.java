@@ -71,6 +71,7 @@ public class CertificateServiceImpl implements CertificateService {
         cert.setUniqueHash(uniqueHash);
         cert.setCertificateNumber(serialNumber);
         cert.setIssuedAt(LocalDateTime.now());
+        cert.setExpiryDate(LocalDateTime.now().plusDays(30));
 
         byte[] pdfBytes = generatePdfBytes(cert, transactionId, buyerUserId, creditAmount, serialNumber);
 
