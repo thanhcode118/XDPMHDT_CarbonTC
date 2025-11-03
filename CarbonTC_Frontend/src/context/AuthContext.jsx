@@ -90,14 +90,38 @@ export const AuthProvider = ({ children }) => {
         console.log('✅ [Login] Successful:', userData);
         setUser(userData);
 
-        const token = authService.getAccessToken?.() || localStorage.getItem('accessToken');
-        const payload = token ? authService.decodeToken(token) : null;
-        const roles = payload?.roles || payload?.role ? payload.role : [];
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        const payload = accessToken ? authService.decodeToken(accessToken) : null;
+        const role = payload?.role;
 
-        if (roles.includes('Admin')) {
-          window.location.href = `http://localhost:5174/admin?token=${encodeURIComponent(token)}`;
-          return response;
-        }
+      if (role === 'Admin') {
+        // Không cần redirect bằng window.location vì đã merge Admin UI
+        console.log('👑 [Login] Admin user detected - Redirecting to admin dashboard');
+        return {
+          ...response,
+          isAdmin: true,
+          redirectTo: '/admin/dashboard'
+        };
+      }
+
+        // if (role === 'Admin') {
+        //   const userJson = encodeURIComponent(JSON.stringify(userData));
+        //   const adminUrl = `/admin/dashboard?token=${accessToken}&refreshToken=${refreshToken}&user=${userJson}`;
+        //   console.log('🔗 [Login] Redirecting to admin URL:', adminUrl);
+        //   window.location.href = adminUrl;
+        //   return response;
+        // }
+        console.log('➡️ [Login] Regular user → Stay on User FE');
+
+        // const token = authService.getAccessToken?.() || localStorage.getItem('accessToken');
+        // const payload = token ? authService.decodeToken(token) : null;
+        // const roles = payload?.roles || payload?.role ? payload.role : [];
+
+        // if (roles.includes('Admin')) {
+        //   window.location.href = `http://localhost:5174/admin?token=${encodeURIComponent(token)}`;
+        //   return response;
+        // }
       }
       return response;
     } catch (error) {

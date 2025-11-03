@@ -51,10 +51,16 @@ const handleSubmit = async (e) => {
     const response = await login(formData);
 
     if (response && response.success) {
-      // ✅ Chuyển sang dashboard nếu thành công
-      navigate('/dashboard');
+      const user = response.data.user;
+      // Redirect đến Admin UI custom
+      if (user.role === 'Admin') {
+        // Giả sử Admin UI của bạn chạy trên port 5005
+        // window.location.href = 'http://localhost:5005'; // Redirect đến Admin UI
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } else {
-      // ❌ Hiển thị lỗi, sau 5 giây tự ẩn
       setError(response?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
       setTimeout(() => setError(''), 5000);
     }
@@ -149,7 +155,7 @@ const handleSubmit = async (e) => {
                     Ghi nhớ đăng nhập
                   </label>
                 </div>
-                
+
                 <Link
                   to="/forgot-password"
                   className={styles.forgotLink}

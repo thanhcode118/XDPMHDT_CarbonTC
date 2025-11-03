@@ -2,7 +2,8 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5183/api';
+const API_BASE_URL = 'http://localhost:5001/api';
+// const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -23,7 +24,7 @@ const processQueue = (error, token = null) => {
       prom.resolve(token);
     }
   });
-  
+
   failedQueue = [];
 };
 
@@ -81,13 +82,14 @@ axiosInstance.interceptors.response.use(
         }
 
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-            refreshToken
-          });
+          const response = await axiosInstance.post('/auth/refresh-token', { refreshToken });
+          // const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+          //   refreshToken
+          // });
 
           if (response.data.success) {
             const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-            
+
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('refreshToken', newRefreshToken);
 
@@ -95,7 +97,7 @@ axiosInstance.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
             processQueue(null, accessToken);
-            
+
             return axiosInstance(originalRequest);
           }
         } catch (err) {

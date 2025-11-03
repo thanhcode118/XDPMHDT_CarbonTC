@@ -7,14 +7,14 @@ const authService = {
   register: async (userData) => {
     try {
       const response = await axiosInstance.post('/auth/register', userData);
-      
+
       if (response.data.success) {
         const { accessToken, refreshToken, user } = response.data.data;
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(user));
       }
-      
+
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Registration failed' };
@@ -25,16 +25,18 @@ const authService = {
   login: async (credentials) => {
     try {
       const response = await axiosInstance.post('/auth/login', credentials);
-      
+
       if (response.data.success) {
         const { accessToken, refreshToken, user } = response.data.data;
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(user));
+        console.log('User role:', user.role);
       }
-      
+
       return response.data;
     } catch (error) {
+      console.error('❌ Login error:', error);
       throw error.response?.data || { message: 'Login failed' };
     }
   },
@@ -43,7 +45,7 @@ const authService = {
   refreshToken: async () => {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
-      
+
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
@@ -68,7 +70,7 @@ const authService = {
   logout: async () => {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
-      
+
       if (refreshToken) {
         await axiosInstance.post('/auth/logout', { refreshToken });
       }
@@ -134,7 +136,7 @@ const authService = {
   isTokenExpired: (token) => {
     const decoded = authService.decodeToken(token);
     if (!decoded || !decoded.exp) return true;
-    
+
     const currentTime = Date.now() / 1000;
     return decoded.exp < currentTime;
   },
