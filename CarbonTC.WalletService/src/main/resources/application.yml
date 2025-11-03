@@ -1,0 +1,65 @@
+spring:
+  datasource:
+    # Đọc từ biến môi trường
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  security:
+    user:
+      name: admin
+      password: admin
+
+  rabbitmq:
+    # Đọc từ biến môi trường
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2000
+        default-requeue-rejected: false # dòng này để tránh vòng lặp lỗi
+
+server:
+  port: ${SERVER_PORT}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger
+
+vnpay:
+  tmn-code: ${VNPAY_TMN_CODE}
+  hash-secret: ${VNPAY_HASH_SECRET}
+  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  # URL này là URL mà *trình duyệt* của user sẽ gọi về,
+  # nên "localhost:5004" vẫn có thể đúng nếu bạn map cổng 5004
+  return-url: ${VNPAY_RETURN_URL}
+  ipn-url: ${VNPAY_IPN_URL}
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: ${JWT_ISSUER}
+  audience: ${JWT_AUDIENCE}
+
+cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME}
+  api_key: ${CLOUDINARY_API_KEY}
+  api_secret: ${CLOUDINARY_API_SECRET}
+
+wallet-config:
+  admin-user-id: ${ADMIN_USER_ID}
