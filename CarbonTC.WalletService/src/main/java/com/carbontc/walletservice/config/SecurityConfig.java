@@ -25,15 +25,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Cho phép public các endpoint này
                         .requestMatchers(
+                                "/swagger/**",
                                 "/webjars/**",
+                                "/swagger-ui/**",    // Đường dẫn thật (cho redirect)
                                 "/swagger-resources/**",
-                                "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
-                                "/api/wallet/**",
-                                "/api/payments/**",  // Cho phép test VNPay API
-                                "/api/carbon-wallet/**",
-                                "/api/certificates/download/**"
+                                "/api/payments/vnpay-return" // Chỉ VNPAY callback
                         ).permitAll()
                         // Các API khác vẫn cần xác thực
                         .anyRequest().authenticated()
