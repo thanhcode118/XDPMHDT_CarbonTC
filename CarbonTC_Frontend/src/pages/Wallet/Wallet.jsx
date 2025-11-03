@@ -9,14 +9,24 @@ import WithdrawModal from '../../components/WithdrawModal/WithdrawModal';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
 import styles from './Wallet.module.css';
+import { 
+  getMyCarbonWallet,
+  createMyCarbonWallet,
+  getMyEWalletTransactions,
+  createMyEWallet,
+  createDepositPayment,
+  createWithdrawRequest
+} from '../../utils/walletApi.jsx';
 
 const Wallet = () => {
   const { sidebarActive, toggleSidebar } = useSidebar();
   const { showNotification } = useNotification();
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [carbonWallet, setCarbonWallet] = useState(null);
+  const [transactions, setTransactions] = useState([]);
 
-  // Sample data
+  // Sample data (giữ nguyên UI cho stat card)
   const walletStats = [
     {
       type: '1',
@@ -52,40 +62,7 @@ const Wallet = () => {
     }
   ];
 
-  const transactions = [
-    {
-      id: 1,
-      type: 'income',
-      title: 'Nhận tín chỉ từ hành trình',
-      date: '15/05/2023',
-      amount: 15,
-      icon: 'bi-arrow-down-circle'
-    },
-    {
-      id: 2,
-      type: 'expense',
-      title: 'Bán tín chỉ',
-      date: '14/05/2023',
-      amount: 20,
-      icon: 'bi-arrow-up-circle'
-    },
-    {
-      id: 3,
-      type: 'income',
-      title: 'Nhận tín chỉ từ hành trình',
-      date: '12/05/2023',
-      amount: 9,
-      icon: 'bi-arrow-down-circle'
-    },
-    {
-      id: 4,
-      type: 'income',
-      title: 'Nhận tín chỉ từ hành trình',
-      date: '10/05/2023',
-      amount: 6,
-      icon: 'bi-arrow-down-circle'
-    }
-  ];
+  // chart transactions will still render from static chartData
 
   const chartData = {
     labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'],
@@ -110,23 +87,107 @@ const Wallet = () => {
   };
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const loadData = async () => {
+      try {
+        // Ensure fiat e-wallet exists (idempotent on BE)
+        try {
+          await createMyEWallet('VND');
+        } catch (_) {
+          // ignore if already exists or BE rejects duplicate
+        }
+
+        // Load carbon wallet
+        const walletRes = await getMyCarbonWallet();
+        if (walletRes?.success && walletRes?.data) {
+          setCarbonWallet(walletRes.data);
+        } else {
+          // try create if not exists
+          const createRes = await createMyCarbonWallet();
+          if (createRes?.success && createRes?.data) {
+            setCarbonWallet(createRes.data);
+            showNotification('Đã tạo ví carbon cho bạn', 'success');
+          } else {
+            showNotification(walletRes?.message || 'Không thể tải ví carbon', 'error');
+          }
+        }
+
+        // Load e-wallet transactions (map to UI)
+        const txRes = await getMyEWalletTransactions();
+        if (txRes?.success && Array.isArray(txRes?.data)) {
+          const mapped = txRes.data.slice(0, 10).map((t) => ({
+            id: t.id,
+            type: t.amount >= 0 ? 'income' : 'expense',
+            title: t.description || (t.type || 'Giao dịch'),
+            date: new Date(t.createdAt).toLocaleDateString('vi-VN'),
+            amount: Math.abs(t.amount),
+            icon: t.amount >= 0 ? 'bi-arrow-down-circle' : 'bi-arrow-up-circle'
+          }));
+          setTransactions(mapped);
+        }
+      } catch (e) {
+        showNotification('Không thể tải dữ liệu ví. Vui lòng đăng nhập hoặc kiểm tra server.', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [showNotification]);
 
   const handleWithdraw = () => {
     setShowWithdrawModal(true);
   };
 
   const handleDeposit = () => {
-    showNotification('Tính năng nạp thêm sẽ sớm có sẵn!', 'info');
+    const amountStr = prompt('Nhập số tiền cần nạp (VND), tối thiểu 10,000');
+    if (!amountStr) return;
+    const amount = Number(amountStr);
+    if (Number.isNaN(amount) || amount < 10000) {
+      showNotification('Số tiền không hợp lệ (>= 10,000)', 'error');
+      return;
+    }
+    createDepositPayment(amount)
+      .then((res) => {
+        if (res?.success) {
+          showNotification(res?.message || 'Tạo yêu cầu nạp tiền thành công', 'success');
+          // If data is a redirect URL (e.g., VNPay), open it
+          if (typeof res?.data === 'string' && res.data.startsWith('http')) {
+            window.location.href = res.data;
+          }
+        } else {
+          showNotification(res?.message || 'Không thể tạo yêu cầu nạp tiền', 'error');
+        }
+      })
+      .catch(() => showNotification('Lỗi kết nối khi tạo yêu cầu nạp tiền', 'error'));
   };
 
   const handleWithdrawConfirm = (withdrawData) => {
-    console.log('Withdraw data:', withdrawData);
-    showNotification('Yêu cầu rút tiền đã được gửi thành công!', 'success');
+    // Only support bank at this stage, per API requirement
+    if (withdrawData.method && withdrawData.method !== 'bank') {
+      showNotification('Hiện chỉ hỗ trợ rút tiền qua ngân hàng', 'info');
+      return;
+    }
+
+    // Map modal fields to API payload: amount in money, bank account/name
+    const userId = localStorage.getItem('userId') || 'current-user';
+    const amount = Number(withdrawData.amount);
+    const bankAccountNumber = withdrawData.bankAccount;
+    const bankName = withdrawData.bankName;
+
+    if (!amount || amount < 10000) {
+      showNotification('Số tiền rút tối thiểu 10,000 VND', 'error');
+      return;
+    }
+
+    createWithdrawRequest({ userId, amount, bankAccountNumber, bankName })
+      .then((res) => {
+        if (res?.success) {
+          showNotification('Gửi yêu cầu rút tiền thành công', 'success');
+          setShowWithdrawModal(false);
+        } else {
+          showNotification(res?.message || 'Gửi yêu cầu rút tiền thất bại', 'error');
+        }
+      })
+      .catch(() => showNotification('Lỗi kết nối khi gửi yêu cầu rút tiền', 'error'));
   };
 
   const handleCloseWithdrawModal = () => {
@@ -163,8 +224,8 @@ const Wallet = () => {
         
         {/* Wallet Card */}
         <WalletCard
-          balance={125}
-          value={1875000}
+          balance={carbonWallet?.balance ?? 0}
+          value={(carbonWallet?.balance ?? 0) * 15000}
           onWithdraw={handleWithdraw}
           onDeposit={handleDeposit}
         />
@@ -232,7 +293,7 @@ const Wallet = () => {
         show={showWithdrawModal}
         onClose={handleCloseWithdrawModal}
         onConfirm={handleWithdrawConfirm}
-        availableBalance={125}
+        availableBalance={carbonWallet?.balance ?? 0}
       />
     </div>
   );
