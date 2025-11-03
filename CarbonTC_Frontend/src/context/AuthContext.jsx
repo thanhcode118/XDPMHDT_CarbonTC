@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 
 export const AuthContext = createContext(null);
@@ -7,6 +8,7 @@ export const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Initialize authentication on mount
   useEffect(() => {
@@ -95,33 +97,19 @@ export const AuthProvider = ({ children }) => {
         const payload = accessToken ? authService.decodeToken(accessToken) : null;
         const role = payload?.role;
 
-      if (role === 'Admin') {
-        // Không cần redirect bằng window.location vì đã merge Admin UI
-        console.log('👑 [Login] Admin user detected - Redirecting to admin dashboard');
-        return {
-          ...response,
-          isAdmin: true,
-          redirectTo: '/admin/dashboard'
-        };
-      }
+        const normalizedRole = (role || userData.role || '').toLowerCase();
+        if (normalizedRole === 'admin') {
+          setTimeout(() => {
+            navigate('/admin/dashboard');
+          }, 100);
 
-        // if (role === 'Admin') {
-        //   const userJson = encodeURIComponent(JSON.stringify(userData));
-        //   const adminUrl = `/admin/dashboard?token=${accessToken}&refreshToken=${refreshToken}&user=${userJson}`;
-        //   console.log('🔗 [Login] Redirecting to admin URL:', adminUrl);
-        //   window.location.href = adminUrl;
-        //   return response;
-        // }
-        console.log('➡️ [Login] Regular user → Stay on User FE');
-
-        // const token = authService.getAccessToken?.() || localStorage.getItem('accessToken');
-        // const payload = token ? authService.decodeToken(token) : null;
-        // const roles = payload?.roles || payload?.role ? payload.role : [];
-
-        // if (roles.includes('Admin')) {
-        //   window.location.href = `http://localhost:5174/admin?token=${encodeURIComponent(token)}`;
-        //   return response;
-        // }
+          return {
+            ...response,
+            isAdmin: true,
+            handled: true
+          }
+        }
+        console.log('👤 [Login] Regular user → Return to Login.jsx');
       }
       return response;
     } catch (error) {

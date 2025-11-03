@@ -31,10 +31,11 @@ export const AuthCallback: React.FC = () => {
           }, 2000);
           return;
         }
-        let user: User;
+        let user: any;
         try {
           const decodedUser = decodeURIComponent(userParam as string);
           user = JSON.parse(decodedUser);
+          console.log('AuthCallback parsed user:',user)
         } catch (parseError) {
           console.error(
             '❌ [AuthCallback] Error parsing user data:',
@@ -48,7 +49,9 @@ export const AuthCallback: React.FC = () => {
           return;
         }
 
-        if (user.role !== 'ADMIN') {
+        const roleValue = user.role || user.roleName || user.roleType;
+        const userRole = (roleValue || '').toString().trim().toUpperCase();
+        if (userRole !== 'ADMIN') {
           console.error('❌ [AuthCallback] User is not Admin:', user.role);
           setErrorMessage('Access denied. Admin role required.');
           setStatus('error');
@@ -67,11 +70,29 @@ export const AuthCallback: React.FC = () => {
           avatarUrl: user.avatarUrl,
           status: user.status || 'ACTIVE',
         });
+
         setStatus('success');
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const storeState = useAuthStore.getState();
+
+        if (!storeState.isAuthenticated || !storeState.user) {
+          setErrorMessage('Authentication state error. Please try again.');
+          setStatus('error');
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+          return;
+        }
+
         setTimeout(() => {
-          window.history.replaceState({}, '', '/admin');
-          navigate('/admin/dashboard', { replace: true });
-        }, 500);
+          window.location.href = '/admin/dashboard';
+        }, 100);
+        // setTimeout(() => {
+        //   window.history.replaceState({}, '', '/admin');
+        //   navigate('/admin/dashboard', { replace: true });
+        // }, 3000);
       } catch (error) {
         console.error('❌ [AuthCallback] Error during authentication:', error);
         setErrorMessage(

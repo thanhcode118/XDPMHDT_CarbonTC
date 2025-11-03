@@ -1,8 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-import { ROUTES, toRelative } from '../../common/constants';
-import { AuthCallback, RedirectToLogin } from '../components/auth';
+// import { ROUTES, toRelative } from '../../common/constants';
+import { AuthCallback } from '../components/auth';
 import LayoutDashboard from '../components/layouts/layoutDashboard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PrivateRoute from '../routes/PrivateRoute';
@@ -21,17 +21,10 @@ const NotFound = lazy(() => import('../pages/cms/NotFound'));
 
 function AppRouter() {
   return (
-    // <BrowserRouter>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          {/* Redirect root to dashboard */}
-          {/* <Route path={ROUTES.ADMIN.BASE} element={<RedirectToLogin />} /> */}
-          {/* <Route index element={<RedirectToLogin />} /> */}
-
-          {/* Auth callback route */}
           <Route path="/auth/callback" element={<AuthCallback />} />
 
-          {/* Protected routes with Layout */}
           <Route
             element={
               <PrivateRoute>
@@ -39,10 +32,23 @@ function AppRouter() {
               </PrivateRoute>
             }
           >
-            {/* <Route path="/admin/dashboard" element={<Dashboard />} /> */}
-            <Route index element={<Navigate to={toRelative(ROUTES.ADMIN.DASHBOARD)} replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
 
-            {/* <Route path={toRelative(ROUTES.ADMIN.DASHBOARD)} element={<Dashboard />} /> */}
+            {/* Admin pages - use relative paths (hardcoded) */}
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            {/* <Route path="users/:id" element={<Users />} /> */}
+            <Route path="listing-and-orders" element={<ListingsAndOrders />} />
+            <Route path="disputes" element={<Disputes />} />
+            {/* <Route path="disputes/:id" element={<Disputes />} /> */}
+            <Route path="reports" element={<Report />} />
+            <Route path="certificates" element={<Certificates />} />
+            {/* <Route path="certificates/:id" element={<Certificates />} /> */}
+            <Route path="wallet" element={<Wallet />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="profile" element={<Profile />} />
+            {/* <Route index element={<Navigate to={toRelative(ROUTES.ADMIN.DASHBOARD)} replace />} />
+
             <Route path={toRelative(ROUTES.ADMIN.USERS)} element={<Users />} />
             <Route
               path={toRelative(ROUTES.ADMIN.LISTING_AND_ORDERS)}
@@ -56,7 +62,7 @@ function AppRouter() {
             />
             <Route path={toRelative(ROUTES.ADMIN.WALLET)} element={<Wallet />} />
             <Route path={toRelative(ROUTES.ADMIN.SETTINGS)} element={<Settings />} />
-            <Route path={toRelative(ROUTES.ADMIN.PROFILE)} element={<Profile />} />
+            <Route path={toRelative(ROUTES.ADMIN.PROFILE)} element={<Profile />} /> */}
           </Route>
 
           {/* 404 - Not Found */}

@@ -52,12 +52,26 @@ const handleSubmit = async (e) => {
 
     if (response && response.success) {
       const user = response.data.user;
-      // Redirect đến Admin UI custom
-      if (user.role === 'Admin') {
-        // Giả sử Admin UI của bạn chạy trên port 5005
-        // window.location.href = 'http://localhost:5005'; // Redirect đến Admin UI
-        navigate('/admin');
+      // const userRole = (user.role || '').toLowerCase();
+      console.log('📱 [Login.jsx] Login response:', response);
+      const userRole = user.roleName || user.roleType || user.Role || user.RoleType;
+
+      if (userRole === 'Admin') {
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        const normalizedUser = {
+          ...user,
+          role: 'ADMIN'
+        };
+
+        const userJson = encodeURIComponent(JSON.stringify(normalizedUser));
+        window.location.href = `/admin/auth/callback?token=${accessToken}&refreshToken=${refreshToken}&user=${userJson}`;
+        console.log('✅ [Login.jsx] Admin login - AuthContext will handle navigation');
+        // navigate('/admin/dashboard');
+        // return;
       } else {
+        console.log('👤 [Login.jsx] Regular user - Navigate to /dashboard');
         navigate('/dashboard');
       }
     } else {
@@ -65,7 +79,6 @@ const handleSubmit = async (e) => {
       setTimeout(() => setError(''), 5000);
     }
   } catch (err) {
-    // ❌ Hiển thị lỗi, sau 5 giây tự ẩn
     setError(err.message || 'Email hoặc mật khẩu không đúng.');
     setTimeout(() => setError(''), 5000);
   } finally {

@@ -31,7 +31,7 @@ const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(user));
-        console.log('User role:', user.role);
+        console.log('User role:', user.roleName);
       }
 
       return response.data;

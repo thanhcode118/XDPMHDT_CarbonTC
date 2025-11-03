@@ -1,8 +1,7 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-// import { Navigate } from 'react-router-dom';
-
 import { useAuthStore } from '../store';
+
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
@@ -12,12 +11,94 @@ function PrivateRoute({ children }: PrivateRouteProps) {
   const user = useAuthStore((state) => state.user);
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const [isChecking, setIsChecking] = useState(true);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const verify = () => {
+      console.log('🔐 [PrivateRoute] Checking auth...');
+      console.log('🔐 [PrivateRoute] isAuthenticated:', isAuthenticated);
+      console.log('🔐 [PrivateRoute] user:', user);
+
       const isAuth = checkAuth();
-      console.log('PrivateRoute - isAuth:', isAuth);
+      console.log('🔐 [PrivateRoute] checkAuth result:', isAuth);
+
+      if (!isAuth) {
+        const token = localStorage.getItem('admin-auth-storage');
+        if (token) {
+          try {
+            const parsed = JSON.parse(token);
+            console.log('Parsed storage:', parsed);
+          } catch (error) {
+            console.error('Failed to parse storage:', error)
+          }
+        }
+      }
       setIsChecking(false);
+
+      // // ✅ CHECK LOCALSTORAGE
+      // const accessToken = localStorage.getItem('accessToken');
+      // const refreshToken = localStorage.getItem('refreshToken');
+      // const userStr = localStorage.getItem('user');
+
+      // console.log('');
+      // console.log('📦 [Step 1] LocalStorage Check:');
+      // console.log('   - accessToken:', accessToken ? '✅ EXISTS' : '❌ MISSING');
+      // console.log('   - refreshToken:', refreshToken ? '✅ EXISTS' : '❌ MISSING');
+      // console.log('   - user string:', userStr ? '✅ EXISTS' : '❌ MISSING');
+
+      // if (accessToken) {
+      //   console.log('   - Token preview:', accessToken.substring(0, 50) + '...');
+      // }
+
+      // if (!accessToken || !userStr) {
+      //   console.log('');
+      //   console.log('❌ [PrivateRoute] No auth data → Redirect to /login');
+      //   console.log('═══════════════════════════════════════════════════');
+      //   setIsAuthenticated(false);
+      //   setIsChecking(false);
+      //   return;
+      // }
+
+      // // Parse user
+      // try {
+      //   const parsedUser = JSON.parse(userStr);
+      //   console.log('');
+      //   console.log('👤 [Step 2] User Data:');
+      //   console.log('   - Email:', parsedUser.email);
+      //   console.log('   - Role:', parsedUser.role);
+      //   console.log('   - Role Type:', typeof parsedUser.role);
+      //   console.log('   - Full user:', parsedUser);
+
+      //   setUser(parsedUser);
+      //   setIsAuthenticated(true);
+
+      //   // Check role
+      //   const userRole = (parsedUser.role || '').toLowerCase();
+      //   console.log('');
+      //   console.log('🔍 [Step 3] Role Verification:');
+      //   console.log('   - Original role:', parsedUser.role);
+      //   console.log('   - Normalized role:', userRole);
+      //   console.log('   - Is admin?', userRole === 'admin');
+
+      //   if (userRole !== 'admin') {
+      //     console.log('');
+      //     console.log('❌ [PrivateRoute] NOT ADMIN → Redirect to /dashboard');
+      //     console.log('═══════════════════════════════════════════════════');
+      //   } else {
+      //     console.log('');
+      //     console.log('✅ [PrivateRoute] ADMIN ACCESS GRANTED!');
+      //     console.log('═══════════════════════════════════════════════════');
+      //   }
+      // } catch (error) {
+      //   console.log('');
+      //   console.log('❌ [PrivateRoute] Failed to parse user:', error);
+      //   console.log('   - User string:', userStr);
+      //   console.log('═══════════════════════════════════════════════════');
+      //   setIsAuthenticated(false);
+      // }
+
+      // setIsChecking(false);
     };
     verify();
   }, [isAuthenticated, user, checkAuth]);
@@ -41,15 +122,8 @@ function PrivateRoute({ children }: PrivateRouteProps) {
       </Box>
     );
   }
-  // const isAuthenticated = true;
-  // const user = {
-  //   id: '1',
-  //   email: 'admin@test.com',
-  //   fullName: 'Admin',
-  //   role: 'ADMIN' as const,
-  //   status: 'ACTIVE' as const,
-  // };
 
+  // No auth → Redirect to login
   if (!isAuthenticated || !user) {
     setTimeout(() => {
       window.location.href = '/login';
@@ -76,15 +150,14 @@ function PrivateRoute({ children }: PrivateRouteProps) {
         </Typography>
       </Box>
     );
-    // Redirect về Auth Service login page
-    // window.location.href = 'http://localhost:3000/login'; // Auth Service URL
-    // return <Navigate to="/" replace />;
   }
 
-  if ((user.role || '').toLowerCase() !== 'admin') {
+  // Check admin role
+  const userRole = (user.role || '').toLowerCase();
+  if (userRole !== 'admin') {
     setTimeout(() => {
       window.location.href = '/dashboard';
-    }, 1000);
+    }, 3000);
 
     return (
       <Box
@@ -105,11 +178,10 @@ function PrivateRoute({ children }: PrivateRouteProps) {
           Admin role required to access this area
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Redirecting...
+          Redirecting to user dashboard...
         </Typography>
       </Box>
     );
-    // return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
