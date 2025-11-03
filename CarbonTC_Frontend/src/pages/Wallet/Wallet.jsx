@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Topbar from '../../components/Topbar/Topbar';
 import WalletCard from '../../components/WalletCard/WalletCard';
+import MoneyWalletCard from '../../components/WalletCard/MoneyWalletCard';
 import StatCard from '../../components/StatCard/StatCard';
 import WalletChart from '../../components/WalletChart/WalletChart';
 import TransactionItem from '../../components/TransactionItem/TransactionItem';
@@ -15,16 +16,19 @@ import {
   getMyEWalletTransactions,
   createMyEWallet,
   createDepositPayment,
-  createWithdrawRequest
+  createWithdrawRequest,
+  getMyEWallet
 } from '../../utils/walletApi.jsx';
 
 const Wallet = () => {
   const { sidebarActive, toggleSidebar } = useSidebar();
   const { showNotification } = useNotification();
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawMode, setWithdrawMode] = useState('money'); // 'money' | 'credit'
   const [loading, setLoading] = useState(true);
   const [carbonWallet, setCarbonWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [eWallet, setEWallet] = useState(null);
 
   // Sample data (giữ nguyên UI cho stat card)
   const walletStats = [
@@ -89,29 +93,40 @@ const Wallet = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Ensure fiat e-wallet exists (idempotent on BE)
-        try {
-          await createMyEWallet('VND');
-        } catch (_) {
-          // ignore if already exists or BE rejects duplicate
-        }
+        // 1) Try GET both wallets in parallel
+        const [ewRes, cwRes] = await Promise.allSettled([
+          getMyEWallet(),
+          getMyCarbonWallet()
+        ]);
 
-        // Load carbon wallet
-        const walletRes = await getMyCarbonWallet();
-        if (walletRes?.success && walletRes?.data) {
-          setCarbonWallet(walletRes.data);
+        // Handle fiat e-wallet
+        if (ewRes.status === 'fulfilled' && ewRes.value?.success && ewRes.value?.data) {
+          setEWallet(ewRes.value.data);
         } else {
-          // try create if not exists
-          const createRes = await createMyCarbonWallet();
-          if (createRes?.success && createRes?.data) {
-            setCarbonWallet(createRes.data);
-            showNotification('Đã tạo ví carbon cho bạn', 'success');
-          } else {
-            showNotification(walletRes?.message || 'Không thể tải ví carbon', 'error');
-          }
+          // If not found (404/400), create and set
+          try {
+            const created = await createMyEWallet('VND');
+            if (created?.success && created?.data) {
+              setEWallet(created.data);
+              showNotification('Đã tạo ví tiền cho bạn', 'success');
+            }
+          } catch (_) { /* ignore */ }
         }
 
-        // Load e-wallet transactions (map to UI)
+        // Handle carbon wallet
+        if (cwRes.status === 'fulfilled' && cwRes.value?.success && cwRes.value?.data) {
+          setCarbonWallet(cwRes.value.data);
+        } else {
+          try {
+            const created = await createMyCarbonWallet();
+            if (created?.success && created?.data) {
+              setCarbonWallet(created.data);
+              showNotification('Đã tạo ví carbon cho bạn', 'success');
+            }
+          } catch (_) { /* ignore */ }
+        }
+
+        // 2) Load e-wallet transactions (map to UI)
         const txRes = await getMyEWalletTransactions();
         if (txRes?.success && Array.isArray(txRes?.data)) {
           const mapped = txRes.data.slice(0, 10).map((t) => ({
@@ -133,7 +148,8 @@ const Wallet = () => {
     loadData();
   }, [showNotification]);
 
-  const handleWithdraw = () => {
+  const handleWithdraw = (mode) => {
+    setWithdrawMode(mode);
     setShowWithdrawModal(true);
   };
 
@@ -222,12 +238,19 @@ const Wallet = () => {
       <div className={styles.mainContent}>
         <Topbar title="Ví carbon" />
         
-        {/* Wallet Card */}
+        {/* Fiat Wallet Card */}
+        <MoneyWalletCard
+          value={eWallet?.balance ?? 0}
+          onWithdraw={() => handleWithdraw('money')}
+          onDeposit={handleDeposit}
+        />
+
+        {/* Carbon Wallet Card */}
         <WalletCard
           balance={carbonWallet?.balance ?? 0}
-          value={(carbonWallet?.balance ?? 0) * 15000}
-          onWithdraw={handleWithdraw}
-          onDeposit={handleDeposit}
+          value={eWallet?.balance ?? ((carbonWallet?.balance ?? 0) * 15000)}
+          onWithdraw={() => handleWithdraw('credit')}
+          onDeposit={() => {}}
         />
         
         {/* Stats Grid */}
@@ -293,7 +316,8 @@ const Wallet = () => {
         show={showWithdrawModal}
         onClose={handleCloseWithdrawModal}
         onConfirm={handleWithdrawConfirm}
-        availableBalance={carbonWallet?.balance ?? 0}
+        availableBalance={withdrawMode === 'money' ? (eWallet?.balance ?? 0) : (carbonWallet?.balance ?? 0)}
+        mode={withdrawMode}
       />
     </div>
   );
