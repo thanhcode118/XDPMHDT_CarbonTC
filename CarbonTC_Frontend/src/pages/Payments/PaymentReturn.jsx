@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styles from './PaymentReturn.module.css';
-import { vnpayReturn } from '../../utils/walletApi.jsx';
+import { getMyEWallet } from '../../utils/walletApi.jsx';
 import { useNotification } from '../../hooks/useNotification.jsx';
 
 const PaymentReturn = () => {
@@ -19,21 +19,19 @@ const PaymentReturn = () => {
   }, []);
 
   useEffect(() => {
-    const run = async () => {
+    // FE chỉ đọc query params do BE redirect về
+    const isSuccess = String(allParams.success || '').toLowerCase() === 'true' || allParams.vnp_ResponseCode === '00';
+    setSuccess(isSuccess);
+    setMessage(isSuccess ? 'Thanh toán thành công' : 'Thanh toán thất bại');
+    showNotification(isSuccess ? 'Thanh toán thành công' : 'Thanh toán thất bại', isSuccess ? 'success' : 'error');
+
+    // Gọi lại ví tiền để refetch số dư mới nhất
+    (async () => {
       try {
-        const res = await vnpayReturn(allParams);
-        setSuccess(Boolean(res?.success));
-        setMessage(res?.message || res?.data || 'Hoàn tất xử lý thanh toán');
-        showNotification(res?.message || 'Kết quả thanh toán đã được cập nhật', res?.success ? 'success' : 'error');
-      } catch (e) {
-        setSuccess(false);
-        setMessage('Không thể xác thực kết quả thanh toán');
-        showNotification('Không thể xác thực kết quả thanh toán', 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
-    run();
+        await getMyEWallet();
+      } catch (_) { /* ignore */ }
+      setLoading(false);
+    })();
   }, [allParams, showNotification]);
 
   return (
