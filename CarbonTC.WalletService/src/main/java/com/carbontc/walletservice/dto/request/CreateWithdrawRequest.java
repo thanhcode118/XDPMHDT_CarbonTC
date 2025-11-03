@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class CreateWithdrawRequest {
 
     @NotNull(message = "User ID không được để trống")
-    private Long userId; // Tạm thời, sau này sẽ lấy từ JWT token
+    private String userId; // Tạm thời, sau này sẽ lấy từ JWT token
 
     @NotNull(message = "Số tiền không được để trống")
     @DecimalMin(value = "10000.0", message = "Số tiền rút tối thiểu là 10,000")

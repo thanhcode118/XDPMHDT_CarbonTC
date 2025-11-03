@@ -14,7 +14,7 @@ public class WithdrawRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long requestId;
 
-    private Long userId;
+    private String userId;
 
     private BigDecimal amount;
 
@@ -42,20 +42,20 @@ public class WithdrawRequest {
 
     private String bankName;
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
     public BigDecimal getAmount() {
         return amount;
     }
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getBankAccountNumber() {

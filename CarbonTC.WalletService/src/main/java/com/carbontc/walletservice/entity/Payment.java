@@ -14,7 +14,8 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
-    private Long transactionId;
+    @Column(name = "transaction_id", nullable = false, unique = true)
+    private String transactionId;
 
     public Long getPaymentId() {
         return paymentId;
@@ -24,11 +25,11 @@ public class Payment {
         this.paymentId = paymentId;
     }
 
-    public Long getTransactionId() {
+    public String getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(Long transactionId) {
+    public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 
