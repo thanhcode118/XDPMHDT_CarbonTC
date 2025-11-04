@@ -1,6 +1,8 @@
 package com.carbontc.walletservice.controller;
 
+import com.carbontc.walletservice.dto.response.CertificateResponse;
 import com.carbontc.walletservice.exception.BusinessException;
+import com.carbontc.walletservice.payload.ApiResponse;
 import com.carbontc.walletservice.service.CertificateService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +40,12 @@ public class CertificateController {
             headers.add("Error-Message", "Lỗi khi tải file từ nơi lưu trữ.");
             return new ResponseEntity<>(null, headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Operation(summary = "Lấy chứng chỉ")
+    @GetMapping("/certificate/{transactionId}")
+    public ResponseEntity<ApiResponse<CertificateResponse>> getCertificate(@PathVariable String transactionId) throws BusinessException {
+            CertificateResponse result = certificateService.getCertificateByTransactionId(transactionId);
+            return ResponseEntity.ok(ApiResponse.success("Lấy chứng chỉ thành công", result));
     }
 }

@@ -1,5 +1,6 @@
 package com.carbontc.walletservice.service.Impl;
 
+import com.carbontc.walletservice.dto.response.CertificateResponse;
 import com.carbontc.walletservice.entity.Certificate;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.CertificateRepository;
@@ -122,6 +123,22 @@ public class CertificateServiceImpl implements CertificateService {
             log.error("Lỗi khi tải file từ Cloudinary cho hash {}: {}", uniqueHash, e.getMessage(), e);
             throw new BusinessException("Không thể tải file chứng nhận. Vui lòng thử lại sau.");
         }
+    }
+
+    @Override
+    public CertificateResponse getCertificateByTransactionId(String transactionId) throws BusinessException {
+
+        Certificate certificate = certificateRepository.findByTransactionId(transactionId)
+                .orElseThrow(() -> new BusinessException(" Không tìm thấy chứng chỉ giao dịch"));
+
+
+        CertificateResponse certificateResponse = new CertificateResponse(
+                certificate.getTransactionId(),
+                certificate.getCertificateUrl(),
+                certificate.getUniqueHash()
+        );
+
+        return certificateResponse;
     }
 
     private byte[] generatePdfBytes(Certificate cert, String transactionId, String buyerUserId,

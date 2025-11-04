@@ -1,5 +1,6 @@
 package com.carbontc.walletservice.service;
 
+import com.carbontc.walletservice.dto.response.CertificateResponse;
 import com.carbontc.walletservice.entity.Certificate;
 import com.carbontc.walletservice.exception.BusinessException;
 import org.springframework.http.ResponseEntity;
@@ -17,4 +18,6 @@ public interface CertificateService {
      * @throws BusinessException Nếu không tìm thấy chứng nhận hoặc lỗi tải file.
      */
     ResponseEntity<byte[]> downloadCertificateByHash(String uniqueHash) throws BusinessException, IOException;
+
+    CertificateResponse getCertificateByTransactionId(String transactionId) throws BusinessException;
 }

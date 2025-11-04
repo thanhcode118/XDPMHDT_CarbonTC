@@ -10,4 +10,5 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     Optional<Certificate> findByUniqueHash(String uniqueHash);
 
     Optional<Certificate> findByTransactionId(String transactionId);
+
 }
