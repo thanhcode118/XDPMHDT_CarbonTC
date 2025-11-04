@@ -11,14 +11,17 @@ import com.carbontc.walletservice.repository.WithdrawRequestRepository;
 import com.carbontc.walletservice.service.EWalletService;
 import com.carbontc.walletservice.service.WithdrawRequestService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WithdrawRequestServiceImpl implements WithdrawRequestService {
@@ -41,13 +44,26 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
             throw new BusinessException("Số dư của quý khách không đủ thực hiện giao dịch");
         }
 
+        eWallet = eWalletRepository.save(eWallet);
+
+        log.info("Test log ewallet {}", eWallet);
+        System.out.println(eWallet + "test Log ewallet");
+
+
         WithdrawRequest withdrawRequest = new WithdrawRequest();
         withdrawRequest.setUserId(request.getUserId());
+        withdrawRequest.setWallet(eWallet);
         withdrawRequest.setAmount(request.getAmount());
         withdrawRequest.setBankAccountNumber(request.getBankAccountNumber());
         withdrawRequest.setBankName(request.getBankName());
         withdrawRequest.setStatus(WithdrawStatus.PENDING); // Trạng thái chờ duyệt
         withdrawRequest.setRequestedAt(LocalDateTime.now());
+
+        // Thiết lập quan hệ 2 chiều
+        if (eWallet.getWithdrawRequests() == null) {
+            eWallet.setWithdrawRequests(new ArrayList<>());
+        }
+        eWallet.getWithdrawRequests().add(withdrawRequest);
 
         WithdrawRequest saved = withdrawRequestRepository.save(withdrawRequest);
         try {
@@ -60,6 +76,7 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
     @Override
     @Transactional
     public WithdrawRequestResponse approveRequest(Long requestId) throws BusinessException {
+
         WithdrawRequest request = withdrawRequestRepository.findById(requestId)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy yêu cầu rút tiền."));
 
@@ -67,11 +84,10 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
             throw new BusinessException("Yêu cầu này đã được xử lý trước đó.");
         }
 
-        request.setStatus(WithdrawStatus.REJECTED);
+        eWalletService.withdraw(request.getWallet().getWalletId(), request.getAmount());
+        request.setStatus(WithdrawStatus.APPROVED);
         request.setProcessedAt(LocalDateTime.now());
         WithdrawRequest updatedRequest = withdrawRequestRepository.save(request);
-        eWalletService.withdraw(request.getWallet().getWalletId(), request.getAmount());
-
         return mapToRespone(updatedRequest);
     }
 
@@ -105,6 +121,13 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
 
     //HEPLER MAPPER
     public WithdrawRequestResponse mapToRespone(WithdrawRequest withdrawRequest){
-        return modelMapper.map(withdrawRequest, WithdrawRequestResponse.class);
+        WithdrawRequestResponse response = modelMapper.map(withdrawRequest, WithdrawRequestResponse.class);
+
+        // Fix null pointer bằng cách map manually
+        if (withdrawRequest.getWallet() != null) {
+            response.setWalletId(withdrawRequest.getWallet().getWalletId());
+        }
+
+        return response;
     }
 }

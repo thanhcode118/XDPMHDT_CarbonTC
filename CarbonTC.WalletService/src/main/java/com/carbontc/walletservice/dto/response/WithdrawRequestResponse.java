@@ -18,6 +18,8 @@ public class WithdrawRequestResponse {
 
         private String userId;
 
+        private Long walletId;
+
         private BigDecimal amount;
 
         private String status;

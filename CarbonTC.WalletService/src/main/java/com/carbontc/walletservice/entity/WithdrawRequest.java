@@ -102,8 +102,8 @@ public class WithdrawRequest {
 
     private LocalDateTime processedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "wallet_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id", nullable = false)
     private EWallet wallet;
 
 

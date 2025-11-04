@@ -33,6 +33,9 @@ public class WithdrawRequestController {
             @Valid @RequestBody CreateWithdrawRequest request) throws BusinessException {
 
         String userId = authencationUtil.getAuthenticatedUserId();
+
+        request.setUserId(userId);
+
         WithdrawRequestResponse response = withdrawRequestService.createRequest(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
