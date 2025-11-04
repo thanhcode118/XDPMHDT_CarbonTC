@@ -22,7 +22,9 @@ const PORT = process.env.PORT || 5005;
 
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+  origin: process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+  : '*',
   credentials: true
 }));
 
@@ -99,7 +101,16 @@ const startServer = async () => {
     logger.info('MongoDB connected successfully');
 
     // await connectRabbitMQ();
-    logger.info('RabbitMQ connected successfully');
+    if (process.env.RABBITMQ_URL) {
+      try {
+        await connectRabbitMQ();
+        logger.info('RabbitMQ connected successfully');
+      } catch (err) {
+        logger.warn('RabbitMQ connection failed — continuing without RabbitMQ:', err);
+        // Nếu bạn muốn fail-fast thay vì continue, uncomment dòng dưới:
+        // throw err;
+      }
+    }
 
     app.listen(PORT, () => {
       logger.info(`Admin Service running on port ${PORT}`);

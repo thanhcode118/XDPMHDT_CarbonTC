@@ -29,17 +29,22 @@ services:
       - carbon-network
     depends_on:
       - mongo
+      - rabbitmq
     environment:
       - MONGODB_URI=mongodb://mongo:27017/admin_service
       - RABBITMQ_URL=amqp://rabbitmq:5672
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - MARKETPLACE_SERVICE_URL=http://marketplace-service:5003
+      - PAYMENT_SERVICE_URL=http://payment-service:5004
+      # - ADMIN_SERVICE_URL=http://admin-backend:5005
 
-  admin-frontend:
-    build: ./admin-frontend
-    container_name: carbon_admin_frontend
-    ports:
-      - "3000:80"
-    networks:
-      - carbon-network
+  # admin-frontend:
+  #   build: ./admin-frontend
+  #   container_name: carbon_admin_frontend
+  #   ports:
+  #     - "5005:80"
+  #   networks:
+  #     - carbon-network
     # depends_on:
     #   - api-gateway
 
