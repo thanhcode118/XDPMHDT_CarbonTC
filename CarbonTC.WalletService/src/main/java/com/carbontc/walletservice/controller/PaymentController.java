@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
 
@@ -45,22 +47,44 @@ public class PaymentController {
     }
 
     @GetMapping("/vnpay-return")
-    public ResponseEntity<ApiResponse<String>> vnpayReturn(@RequestParam Map<String, String> allParams) {
+    public RedirectView vnpayReturn(@RequestParam Map<String, String> allParams) {
+
+        // 1. URL của trang Frontend (FE) bạn vừa cung cấp
+        String feReturnUrl = "http://localhost:5173/payment/return";
+
+        String vnp_TxnRef = allParams.get("vnp_TxnRef");
+        String vnp_ResponseCode = allParams.get("vnp_ResponseCode");
+
         try {
+            // 2. Xử lý logic backend (xác thực chữ ký, cộng tiền vào ví)
             Map<String, String> result = paymentService.handleVNPayCallback(allParams);
+            vnp_ResponseCode = result.get("RspCode");
 
-            String rspCode = result.get("RspCode");
-            String message = result.get("Message");
+            // Xây dựng URL redirect về FE
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(feReturnUrl)
+                    .queryParam("vnp_TxnRef", vnp_TxnRef)
+                    .queryParam("vnp_ResponseCode", vnp_ResponseCode);
 
-            if ("00".equals(rspCode)) {
-                return ResponseEntity.ok(ApiResponse.success("Giao dịch thành công và đã cập nhật số dư!", null));
+            if ("00".equals(vnp_ResponseCode)) {
+                // 3a. Thành công
+                urlBuilder.queryParam("success", "true");
             } else {
-                return ResponseEntity.badRequest().body(ApiResponse.fail("Giao dịch thất bại.", message));
+                // 3b. Thất bại (từ VNPAY)
+                urlBuilder.queryParam("success", "false")
+                        .queryParam("message", result.get("Message"));
             }
+
+            return new RedirectView(urlBuilder.toUriString());
+
         } catch (Exception e) {
-            return ResponseEntity
-                    .internalServerError()
-                    .body(ApiResponse.fail("Có lỗi xảy ra trong quá trình xử lý kết quả.", e.getMessage()));
+
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(feReturnUrl)
+                    .queryParam("success", "false")
+                    .queryParam("vnp_TxnRef", vnp_TxnRef)
+                    .queryParam("vnp_ResponseCode", "99") // Mã lỗi hệ thống
+                    .queryParam("message", "He_thong_dang_ban_vui_long_thu_lai_sau");
+
+            return new RedirectView(urlBuilder.toUriString());
         }
     }
 
