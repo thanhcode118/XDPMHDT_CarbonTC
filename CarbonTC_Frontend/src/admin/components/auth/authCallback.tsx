@@ -35,12 +35,7 @@ export const AuthCallback: React.FC = () => {
         try {
           const decodedUser = decodeURIComponent(userParam as string);
           user = JSON.parse(decodedUser);
-          console.log('AuthCallback parsed user:',user)
         } catch (parseError) {
-          console.error(
-            '❌ [AuthCallback] Error parsing user data:',
-            parseError,
-          );
           setErrorMessage('Invalid user data. Please login again.');
           setStatus('error');
           setTimeout(() => {
@@ -52,7 +47,6 @@ export const AuthCallback: React.FC = () => {
         const roleValue = user.role || user.roleName || user.roleType;
         const userRole = (roleValue || '').toString().trim().toUpperCase();
         if (userRole !== 'ADMIN') {
-          console.error('❌ [AuthCallback] User is not Admin:', user.role);
           setErrorMessage('Access denied. Admin role required.');
           setStatus('error');
 
@@ -88,13 +82,8 @@ export const AuthCallback: React.FC = () => {
 
         setTimeout(() => {
           window.location.href = '/admin/dashboard';
-        }, 100);
-        // setTimeout(() => {
-        //   window.history.replaceState({}, '', '/admin');
-        //   navigate('/admin/dashboard', { replace: true });
-        // }, 3000);
+        }, 1000);
       } catch (error) {
-        console.error('❌ [AuthCallback] Error during authentication:', error);
         setErrorMessage(
           'An unexpected error occurred. Please try again later.',
         );

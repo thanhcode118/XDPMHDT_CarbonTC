@@ -4,7 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import AOS from 'aos';
 
 // Import layout & pages
-import AppRouter from '../src/admin/routes/AppRoutes.tsx';
+// import AppRouter from '../src/admin/routes/AppRoutes.tsx';
 
 import Layout from './components/layout/Layout.jsx';
 import HomePage from './pages/HomePage.jsx';
@@ -83,7 +83,7 @@ function App() {
           element={<SettingsTabs showNotification={showNotification} />}
         />
 
-        <Route path="/admin/*" element={<AppRouter />} />
+        {/* <Route path="/admin/*" element={<AppRouter />} /> */}
       </Routes>
     </>
   );
