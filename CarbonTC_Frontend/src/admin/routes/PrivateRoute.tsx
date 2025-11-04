@@ -11,15 +11,9 @@ function PrivateRoute({ children }: PrivateRouteProps) {
   const user = useAuthStore((state) => state.user);
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const [isChecking, setIsChecking] = useState(true);
-  // const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const verify = () => {
-      console.log('🔐 [PrivateRoute] Checking auth...');
-      console.log('🔐 [PrivateRoute] isAuthenticated:', isAuthenticated);
-      console.log('🔐 [PrivateRoute] user:', user);
-
       const isAuth = checkAuth();
       console.log('🔐 [PrivateRoute] checkAuth result:', isAuth);
 
@@ -35,70 +29,6 @@ function PrivateRoute({ children }: PrivateRouteProps) {
         }
       }
       setIsChecking(false);
-
-      // // ✅ CHECK LOCALSTORAGE
-      // const accessToken = localStorage.getItem('accessToken');
-      // const refreshToken = localStorage.getItem('refreshToken');
-      // const userStr = localStorage.getItem('user');
-
-      // console.log('');
-      // console.log('📦 [Step 1] LocalStorage Check:');
-      // console.log('   - accessToken:', accessToken ? '✅ EXISTS' : '❌ MISSING');
-      // console.log('   - refreshToken:', refreshToken ? '✅ EXISTS' : '❌ MISSING');
-      // console.log('   - user string:', userStr ? '✅ EXISTS' : '❌ MISSING');
-
-      // if (accessToken) {
-      //   console.log('   - Token preview:', accessToken.substring(0, 50) + '...');
-      // }
-
-      // if (!accessToken || !userStr) {
-      //   console.log('');
-      //   console.log('❌ [PrivateRoute] No auth data → Redirect to /login');
-      //   console.log('═══════════════════════════════════════════════════');
-      //   setIsAuthenticated(false);
-      //   setIsChecking(false);
-      //   return;
-      // }
-
-      // // Parse user
-      // try {
-      //   const parsedUser = JSON.parse(userStr);
-      //   console.log('');
-      //   console.log('👤 [Step 2] User Data:');
-      //   console.log('   - Email:', parsedUser.email);
-      //   console.log('   - Role:', parsedUser.role);
-      //   console.log('   - Role Type:', typeof parsedUser.role);
-      //   console.log('   - Full user:', parsedUser);
-
-      //   setUser(parsedUser);
-      //   setIsAuthenticated(true);
-
-      //   // Check role
-      //   const userRole = (parsedUser.role || '').toLowerCase();
-      //   console.log('');
-      //   console.log('🔍 [Step 3] Role Verification:');
-      //   console.log('   - Original role:', parsedUser.role);
-      //   console.log('   - Normalized role:', userRole);
-      //   console.log('   - Is admin?', userRole === 'admin');
-
-      //   if (userRole !== 'admin') {
-      //     console.log('');
-      //     console.log('❌ [PrivateRoute] NOT ADMIN → Redirect to /dashboard');
-      //     console.log('═══════════════════════════════════════════════════');
-      //   } else {
-      //     console.log('');
-      //     console.log('✅ [PrivateRoute] ADMIN ACCESS GRANTED!');
-      //     console.log('═══════════════════════════════════════════════════');
-      //   }
-      // } catch (error) {
-      //   console.log('');
-      //   console.log('❌ [PrivateRoute] Failed to parse user:', error);
-      //   console.log('   - User string:', userStr);
-      //   console.log('═══════════════════════════════════════════════════');
-      //   setIsAuthenticated(false);
-      // }
-
-      // setIsChecking(false);
     };
     verify();
   }, [isAuthenticated, user, checkAuth]);

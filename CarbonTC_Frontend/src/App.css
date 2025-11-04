@@ -40,3 +40,22 @@
 .read-the-docs {
   color: #888;
 }
+/* 
+.admin-root #root {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+}
+
+.admin-root input:-webkit-autofill,
+.admin-root input:-webkit-autofill:hover,
+.admin-root input:-webkit-autofill:focus,
+.admin-root input:-webkit-autofill:active {
+  transition:
+    background-color 5000s ease-in-out 0s,
+    color 5000s ease-in-out 0s;
+  transition-delay:
+    background-color 5000s,
+    color 5000s;
+} */

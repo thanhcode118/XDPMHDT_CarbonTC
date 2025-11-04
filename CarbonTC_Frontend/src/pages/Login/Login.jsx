@@ -52,8 +52,6 @@ const handleSubmit = async (e) => {
 
     if (response && response.success) {
       const user = response.data.user;
-      // const userRole = (user.role || '').toLowerCase();
-      console.log('📱 [Login.jsx] Login response:', response);
       const userRole = user.roleName || user.roleType || user.Role || user.RoleType;
 
       if (userRole === 'Admin') {
@@ -67,11 +65,7 @@ const handleSubmit = async (e) => {
 
         const userJson = encodeURIComponent(JSON.stringify(normalizedUser));
         window.location.href = `/admin/auth/callback?token=${accessToken}&refreshToken=${refreshToken}&user=${userJson}`;
-        console.log('✅ [Login.jsx] Admin login - AuthContext will handle navigation');
-        // navigate('/admin/dashboard');
-        // return;
       } else {
-        console.log('👤 [Login.jsx] Regular user - Navigate to /dashboard');
         navigate('/dashboard');
       }
     } else {

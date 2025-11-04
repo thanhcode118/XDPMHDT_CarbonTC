@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import '../App.css';
+import '../index.css';
 // import { ROUTES, toRelative } from '../../common/constants';
 import { AuthCallback } from '../components/auth';
 import LayoutDashboard from '../components/layouts/layoutDashboard';
@@ -21,6 +23,7 @@ const NotFound = lazy(() => import('../pages/cms/NotFound'));
 
 function AppRouter() {
   return (
+    <div className='admin-root'>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/auth/callback" element={<AuthCallback />} />
@@ -69,7 +72,7 @@ function AppRouter() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    // </BrowserRouter>
+    </div>
   );
 }
 

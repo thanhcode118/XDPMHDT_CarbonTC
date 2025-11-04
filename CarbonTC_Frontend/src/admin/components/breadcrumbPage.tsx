@@ -4,7 +4,10 @@ import React, { useCallback, useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { gray, primaryTextColor, secondaryTextColor } from '../../common/color';
-import { DEFAULT_ROUTE_LABELS, ROUTES } from '../../common/constants';
+import { BASE_PATH, DEFAULT_ROUTE_LABELS, ROUTES } from '../../common/constants';
+
+import '../App.css';
+import '../index.css';
 
 interface BreadcrumbItem {
   label: string;
@@ -40,9 +43,18 @@ const BreadcrumbPage: React.FC<BreadcrumbPageProps> = ({
   );
 
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
-    const pathSegments = location.pathname
+    let pathSegments = location.pathname
       .split('/')
       .filter((segment) => segment && segment.trim());
+
+    if (BASE_PATH) {
+      const baseSegments = BASE_PATH.split('/').filter(Boolean);
+      const hasBasePath = baseSegments.every((seg: string, i: string | number) => pathSegments[i] === seg);
+
+      if (hasBasePath) {
+        pathSegments = pathSegments.slice(baseSegments.length);
+      }
+    }
 
     if (pathSegments.length === 0) {
       return [{ label: routeLabels.dashboard || 'Dashboard', isLast: true }];
@@ -59,8 +71,11 @@ const BreadcrumbPage: React.FC<BreadcrumbPageProps> = ({
     }
 
     pathSegments.forEach((segment, index) => {
-      const path = '/' + pathSegments.slice(0, index + 1).join('/');
       const isLast = index === pathSegments.length - 1;
+
+      // Build full path including BASE_PATH
+      const relativePath = pathSegments.slice(0, index + 1).join('/');
+      const fullPath = BASE_PATH ? `${BASE_PATH}/${relativePath}` : `/${relativePath}`;
 
       let label =
         routeLabels[segment] ||
@@ -81,7 +96,7 @@ const BreadcrumbPage: React.FC<BreadcrumbPageProps> = ({
 
       breadcrumbItems.push({
         label,
-        path: isLast ? undefined : path,
+        path: isLast ? undefined : fullPath,
         isLast,
       });
     });

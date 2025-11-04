@@ -84,12 +84,10 @@ export const AuthProvider = ({ children }) => {
 
   // Login
   const login = async (credentials) => {
-    console.log('🔐 [Login] Starting login...');
     try {
       const response = await authService.login(credentials);
       if (response.success) {
         const userData = response.data.user;
-        console.log('✅ [Login] Successful:', userData);
         setUser(userData);
 
         const accessToken = localStorage.getItem('accessToken');
@@ -109,11 +107,9 @@ export const AuthProvider = ({ children }) => {
             handled: true
           }
         }
-        console.log('👤 [Login] Regular user → Return to Login.jsx');
       }
       return response;
     } catch (error) {
-      console.error('❌ [Login] Failed:', error);
       throw error;
     }
   };

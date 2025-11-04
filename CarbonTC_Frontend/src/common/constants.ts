@@ -1,6 +1,6 @@
 export const BASE_PATH = import.meta.env.VITE_ADMIN_BASE_PATH ?? '';
 
-export const DRAWER_WIDTH = 240;
+export const DRAWER_WIDTH = 250;
 export const HEIGHT_HEADER_SIDE_BAR = 70;
 
 export const DEFAULT_PAGE_SIZE = 10;
