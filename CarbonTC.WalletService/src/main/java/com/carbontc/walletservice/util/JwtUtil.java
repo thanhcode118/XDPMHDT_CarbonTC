@@ -40,28 +40,28 @@ public class JwtUtil {
     public boolean validateToken(String token){
         try {
             Claims claims = extractAllClaims(token);
-            return !claims.getExpiration().before(new Date());
-        }catch (Exception e){
+            boolean notExpired = !claims.getExpiration().before(new Date());
+            System.out.println("[JwtUtil] Token expiration: " + claims.getExpiration());
+            System.out.println("[JwtUtil] Token valid (not expired): " + notExpired);
+            return notExpired;
+        } catch (Exception e) {
+            System.out.println("[JwtUtil] ❌ Validation error: " + e.getMessage());
             return false;
         }
     }
 
-    /**
-     * Lấy UserID từ token.
-     * Tên claim này lấy từ .NET: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-     */
     public String extractUserId(String token) {
         final Claims claims = extractAllClaims(token);
-        return claims.get("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", String.class);
+        String userId = claims.get("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", String.class);
+        System.out.println("[JwtUtil] Extracted UserId: " + userId);
+        return userId;
     }
 
-    /**
-     * Lấy Role (quyền) từ token.
-     * Tên claim này lấy từ .NET: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-     */
     public String extractRole(String token) {
         final Claims claims = extractAllClaims(token);
-        return claims.get("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", String.class);
+        String role = claims.get("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", String.class);
+        System.out.println("[JwtUtil] Extracted Role: " + role);
+        return role;
     }
 
 

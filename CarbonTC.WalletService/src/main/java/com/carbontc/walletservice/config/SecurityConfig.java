@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -33,7 +33,7 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/api/payments/vnpay-return" // Chỉ VNPAY callback
                         ).permitAll()
-                        // Các API khác vẫn cần xác thực
+                        .requestMatchers("/api/admin/**").hasRole("Admin")                        // Các API khác vẫn cần xác thực
                         .anyRequest().authenticated()
                 ).sessionManagement(sessionManagement ->sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
