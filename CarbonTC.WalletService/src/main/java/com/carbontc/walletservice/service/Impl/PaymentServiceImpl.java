@@ -33,7 +33,7 @@ public class PaymentServiceImpl implements PaymentService {
         Long walletId = eWallet.getWalletId();
 
         TransactionLog log = new TransactionLog();
-        log.setWalletId(eWallet.getWalletId());
+        log.setWallet(eWallet);
         log.setAmount(amount);
         log.setType("DEPOSIT");
         log.setStatus("PENDING");
@@ -90,7 +90,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         String vnp_ResponseCode = params.get("vnp_ResponseCode");
         if ("00".equals(vnp_ResponseCode)) {
-            EWallet eWallet = eWalletRepository.findById(log.getWalletId())
+            EWallet eWallet = eWalletRepository.findById(log.getWallet().getWalletId())
                     .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
             eWallet.setBalance(eWallet.getBalance().add(log.getAmount()));
             eWalletRepository.save(eWallet);

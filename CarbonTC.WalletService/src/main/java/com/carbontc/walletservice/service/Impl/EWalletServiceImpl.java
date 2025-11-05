@@ -63,7 +63,7 @@ public class EWalletServiceImpl implements EWalletService {
 
         EWallet eWalletSaved = eWalletRepository.save(eWallet);
         TransactionLog log = new TransactionLog();
-        log.setWalletId(walletId);
+        log.setWallet(eWalletSaved);
         log.setAmount(amount);
         log.setType("DEPOSIT");
         log.setStatus("SUCCESS");
@@ -96,7 +96,7 @@ public class EWalletServiceImpl implements EWalletService {
         EWallet eWalletSaved = eWalletRepository.save(eWallet);
 
         TransactionLog log = new TransactionLog();
-        log.setWalletId(walletId);
+        log.setWallet(eWalletSaved);
         log.setAmount(amount);
         log.setType("WITHDRAW");
         log.setStatus("SUCCESS");
