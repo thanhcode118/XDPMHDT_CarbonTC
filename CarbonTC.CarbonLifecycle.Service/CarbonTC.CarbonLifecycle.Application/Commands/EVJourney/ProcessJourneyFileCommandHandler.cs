@@ -28,8 +28,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<ProcessJourneyFileCommandHandler> _logger;
-        // Optional: Inject IFileStorageService if you want to save the original file
-        // private readonly IFileStorageService _fileStorageService;
+        private readonly IFileStorageService _fileStorageService;
 
         public ProcessJourneyFileCommandHandler(
             IEVJourneyRepository journeyRepository,
@@ -37,8 +36,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             IJourneyBatchRepository batchRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ILogger<ProcessJourneyFileCommandHandler> logger
-            /* Optional: IFileStorageService fileStorageService */)
+            ILogger<ProcessJourneyFileCommandHandler> logger,
+            IFileStorageService fileStorageService)
         {
             _journeyRepository = journeyRepository;
             _standardRepository = standardRepository;
@@ -46,7 +45,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
-            // _fileStorageService = fileStorageService;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<FileUploadResultDto> Handle(ProcessJourneyFileCommand request, CancellationToken cancellationToken)
@@ -56,21 +55,21 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             var parsedRecords = new List<EvJourneyUploadDto>();
             string? storedFilePath = null; // Optional
 
-            // Optional: Save the original file first
-            // try
-            // {
-            //     request.FileStream.Position = 0; // Reset stream position before saving
-            //     storedFilePath = await _fileStorageService.SaveFileAsync(request.FileName, request.FileStream, request.UserId, request.ContentType);
-            //     result.StoredFilePath = storedFilePath;
-            //     request.FileStream.Position = 0; // Reset stream position again before parsing
-            // }
-            // catch(Exception ex)
-            // {
-            //      _logger.LogError(ex, "Failed to save uploaded file {FileName} for user {UserId}", request.FileName, request.UserId);
-            //      // Decide if this failure should stop the whole process or just be logged
-            //      result.Errors.Add($"Error saving original file: {ex.Message}");
-            //      // Optionally return result here if saving is critical
-            // }
+            //Optional: Save the original file first
+             try
+            {
+                request.FileStream.Position = 0; // Reset stream position before saving
+                storedFilePath = await _fileStorageService.SaveFileAsync(request.FileName, request.FileStream, request.UserId, request.ContentType);
+                result.StoredFilePath = storedFilePath;
+                request.FileStream.Position = 0; // Reset stream position again before parsing
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save uploaded file {FileName} for user {UserId}", request.FileName, request.UserId);
+                // Decide if this failure should stop the whole process or just be logged
+                result.Errors.Add($"Error saving original file: {ex.Message}");
+                // Optionally return result here if saving is critical
+            }
 
 
             // --- 1. Parse File ---

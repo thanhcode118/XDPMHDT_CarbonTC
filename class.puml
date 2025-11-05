@@ -1,0 +1,94 @@
+@startuml Carbon Lifecycle Domain Model
+
+abstract class BaseEntity {
+    + CreatedAt: DateTime
+    + LastModifiedAt: DateTime?
+}
+
+class CarbonCredit {
+    + Id: Guid
+    + JourneyBatchId: Guid
+    + UserId: string
+    + AmountKgCO2e: decimal
+    + IssueDate: DateTime
+    + ExpiryDate: DateTime?
+    + Status: CarbonCreditStatus
+    + TransactionHash: string
+    + VerificationRequestId: Guid?
+}
+
+class EVJourney {
+    + Id: Guid
+    + JourneyBatchId: Guid
+    + UserId: string
+    + StartTime: DateTime
+    + EndTime: DateTime
+    + DistanceKm: decimal
+    + CO2EstimateKg: decimal
+    + VehicleType: string
+    + Origin: string
+    + Destination: string
+    + Status: JourneyStatus
+}
+
+class JourneyBatch {
+    + Id: Guid
+    + UserId: string
+    + CreationTime: DateTime
+    + VerificationTime: DateTime?
+    + Status: JourneyBatchStatus
+    + TotalDistanceKm: decimal
+    + TotalCO2SavedKg: decimal
+    + NumberOfJourneys: int
+}
+
+class VerificationRequest {
+    + Id: Guid
+    + JourneyBatchId: Guid
+    + RequestorId: string
+    + VerifierId: string
+    + RequestDate: DateTime
+    + VerificationDate: DateTime?
+    + Status: VerificationRequestStatus
+    + Notes: string
+    + CvaStandardId: Guid?
+}
+
+class CVAStandard {
+    + Id: Guid
+    + StandardName: string
+    + VehicleType: string
+    + ConversionRate: decimal
+    + MinDistanceRequirement: decimal
+    + EffectiveDate: DateTime
+    + EndDate: DateTime?
+    + IsActive: bool
+}
+
+class AuditReport {
+    + Id: Guid
+    + EntityType: string
+    + EntityId: Guid
+    + Action: string
+    + ChangedBy: string
+    + ChangeDate: DateTime
+    + OriginalValues: string
+    + NewValues: string
+}
+
+' Inheritance relationships
+BaseEntity <|-- CarbonCredit
+BaseEntity <|-- EVJourney
+BaseEntity <|-- JourneyBatch
+BaseEntity <|-- VerificationRequest
+BaseEntity <|-- CVAStandard
+BaseEntity <|-- AuditReport
+
+' Associations
+JourneyBatch "1" *-- "*" EVJourney
+JourneyBatch "1" *-- "*" CarbonCredit
+JourneyBatch "1" *-- "*" VerificationRequest
+VerificationRequest "1" *-- "*" CarbonCredit
+CVAStandard "1" *-- "*" VerificationRequest
+
+@enduml

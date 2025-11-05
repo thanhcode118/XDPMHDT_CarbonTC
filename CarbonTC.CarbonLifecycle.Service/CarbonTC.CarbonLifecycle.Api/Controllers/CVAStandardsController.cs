@@ -1,6 +1,5 @@
-﻿// File: CarbonTC.CarbonLifecycle.Api/Controllers/CVAStandardsController.cs
-using CarbonTC.CarbonLifecycle.Application.Commands.CVAStandard; // Add/Update Commands
-using CarbonTC.CarbonLifecycle.Application.Queries.CVAStandard; // Get Query
+﻿using CarbonTC.CarbonLifecycle.Application.Commands.CVAStandard; 
+using CarbonTC.CarbonLifecycle.Application.Queries.CVAStandard; 
 using CarbonTC.CarbonLifecycle.Application.Common;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using MediatR;
@@ -24,7 +23,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             _logger = logger;
         }
 
-        // --- Endpoint MỚI: Get All Standards (with filter) ---
+        // --- Endpoint: Get All Standards (with filter) ---
         [HttpGet]
         [AllowAnonymous] // Cho phép xem public? Hoặc [Authorize(Roles = "Admin, CVA, EVOwner")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<CvaStandardDto>>), 200)]
@@ -37,7 +36,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             return Ok(ApiResponse<IEnumerable<CvaStandardDto>>.SuccessResponse(result, $"Found {result.Count()} standards."));
         }
 
-        // --- Endpoint MỚI: Add New Standard ---
+        // --- Endpoint: Add New Standard ---
         [HttpPost]
         [Authorize(Roles = "Admin")] // Chỉ Admin được thêm?
         [ProducesResponseType(typeof(ApiResponse<CvaStandardDto>), 201)] // Created
@@ -64,7 +63,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             // Lỗi validation (ArgumentException) hoặc lỗi khác sẽ được middleware xử lý
         }
 
-        // --- Endpoint MỚI: Update Standard ---
+        // --- Endpoint: Update Standard ---
         [HttpPut("{id}")] // Dùng ID trên route
         [Authorize(Roles = "Admin")] // Chỉ Admin được sửa?
         [ProducesResponseType(typeof(ApiResponse<CvaStandardDto>), 200)]
@@ -94,7 +93,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             // Lỗi validation hoặc lỗi khác sẽ được middleware xử lý
         }
 
-        // --- Endpoint MỚI: Get Standard By ID (Cần thiết cho CreatedAtAction) ---
+        // --- Endpoint: Get Standard By ID (Cần thiết cho CreatedAtAction) ---
         [HttpGet("{id}")]
         [AllowAnonymous] // Hoặc phân quyền tương tự GetAll
         [ProducesResponseType(typeof(ApiResponse<CvaStandardDto>), 200)]
@@ -102,18 +101,21 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 500)]
         public async Task<IActionResult> GetStandardById(Guid id)
         {
-            // TODO: Tạo Query và Handler cho GetCVAStandardByIdQuery nếu chưa có
             _logger.LogInformation("Fetching CVA standard details for ID: {StandardId}", id);
-            // Giả sử đã tạo GetCVAStandardByIdQuery
-            // var query = new GetCVAStandardByIdQuery(id);
-            // var result = await Mediator.Send(query);
-            // if (result == null) return NotFound(...);
-            // return Ok(ApiResponse<CvaStandardDto>.SuccessResponse(result));
 
-            // Tạm thời trả về NotFound
-            await Task.CompletedTask; // Giả lập async
-            _logger.LogWarning("GetCVAStandardById endpoint not fully implemented yet.");
-            return NotFound(ApiResponse<object>.FailureResponse("Endpoint to get standard by ID not implemented."));
+            
+            var query = new GetCVAStandardByIdQuery(id); 
+            var result = await Mediator.Send(query);
+
+            if (result == null)
+            {
+                _logger.LogWarning("CVA Standard not found for ID: {StandardId}", id);
+                return NotFound(ApiResponse<object>.FailureResponse($"CVA standard with ID {id} not found."));
+            }
+
+            return Ok(ApiResponse<CvaStandardDto>.SuccessResponse(result, "CVA standard retrieved successfully."));
         }
+
+
     }
 }
