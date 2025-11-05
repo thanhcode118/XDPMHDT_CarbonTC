@@ -14,6 +14,9 @@ import disputeRoutes from './routes/disputeRoutes';
 import reportRoutes from './routes/reportRoutes';
 import adminActionRoutes from './routes/adminActionRoutes';
 import configRoutes from './routes/configRoutes';
+import userRoutes from './routes/userRoutes';
+import transactionRoutes from './routes/transactionRoutes';
+import withdrawalRoutes from './routes/withdrawalRoutes';
 
 dotenv.config();
 
@@ -40,7 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 
 /**
  * @swagger
- * /health:
+ * /api/health:
  *   get:
  *     summary: Health check endpoint
  *     description: Check if the Admin Service is running
@@ -65,7 +68,7 @@ app.use(express.urlencoded({ extended: true }));
  *                   example: 2025-01-15T10:30:00.000Z
  */
 
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'UP',
     service: 'Admin Service',
@@ -91,6 +94,9 @@ app.use('/api/admin/disputes', disputeRoutes);
 app.use('/api/admin/reports', reportRoutes);
 app.use('/api/admin/actions', adminActionRoutes);
 app.use('/api/admin/configs', configRoutes);
+app.use('/api/admin/users', userRoutes);
+app.use('/api/admin/transactions', transactionRoutes);
+app.use('/api/admin/withdrawals', withdrawalRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
