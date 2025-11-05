@@ -4,10 +4,6 @@ import disputeService from '../services/disputeService';
 import ApiResponseHelper from '../utils/apiResponse';
 import { asyncHandler } from '../middlewares/errorHandler';
 
-/**
- * Dispute Controller
- * Handles HTTP requests for dispute management
- */
 class DisputeController {
 
   /**
@@ -18,10 +14,17 @@ class DisputeController {
   createDispute = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { transactionId, reason, description } = req.body;
     const raisedBy = req.user!.userId;
+    
+    // Extract auth token from request header
+    const authHeader = req.headers.authorization;
+    const authToken = authHeader?.startsWith('Bearer ') 
+      ? authHeader.split(' ')[1] 
+      : undefined;
 
     const dispute = await disputeService.createDispute(
       { transactionId, reason, description },
-      raisedBy
+      raisedBy,
+      authToken
     );
 
     return ApiResponseHelper.created(

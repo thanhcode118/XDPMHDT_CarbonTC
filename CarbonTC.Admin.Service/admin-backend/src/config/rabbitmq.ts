@@ -15,7 +15,9 @@ export const QUEUES = {
   USER_STATUS_UPDATE: 'admin.user.status.update',
   TRANSACTION_DISPUTE: 'admin.transaction.dispute',
   PAYMENT_APPROVE: 'admin.payment.approve',
-  LISTING_MODERATE: 'admin.listing.moderate'
+  LISTING_MODERATE: 'admin.listing.moderate',
+  // Queue for Marketplace Service to listen
+  MARKETPLACE_DISPUTES: 'marketplace.disputes'
 };
 
 export const ROUTING_KEYS = {
@@ -23,6 +25,7 @@ export const ROUTING_KEYS = {
   USER_UNBLOCKED: 'user.unblocked',
   DISPUTE_CREATED: 'dispute.created',
   DISPUTE_RESOLVED: 'dispute.resolved',
+  DISPUTE_STATUS_UPDATED: 'dispute.status.updated',
   WITHDRAWAL_APPROVED: 'withdrawal.approved',
   WITHDRAWAL_REJECTED: 'withdrawal.rejected',
   LISTING_DELISTED: 'listing.delisted',
@@ -42,17 +45,21 @@ export const connectRabbitMQ = async (): Promise<void> => {
     logger.info('RabbitMQ connected successfully');
 
     // Declare exchanges
-  await ch.assertExchange(EXCHANGES.ADMIN_EVENTS, 'topic', { durable: true });
-  await ch.assertExchange(EXCHANGES.USER_EVENTS, 'topic', { durable: true });
-  await ch.assertExchange(EXCHANGES.TRANSACTION_EVENTS, 'topic', { durable: true });
-  await ch.assertExchange(EXCHANGES.DISPUTE_EVENTS, 'topic', { durable: true });
+    await ch.assertExchange(EXCHANGES.ADMIN_EVENTS, 'topic', { durable: true });
+    await ch.assertExchange(EXCHANGES.USER_EVENTS, 'topic', { durable: true });
+    await ch.assertExchange(EXCHANGES.TRANSACTION_EVENTS, 'topic', { durable: true });
+    await ch.assertExchange(EXCHANGES.DISPUTE_EVENTS, 'topic', { durable: true });
 
     // Declare queues
-  await ch.assertQueue(QUEUES.USER_STATUS_UPDATE, { durable: true });
-  await ch.assertQueue(QUEUES.TRANSACTION_DISPUTE, { durable: true });
-  await ch.assertQueue(QUEUES.PAYMENT_APPROVE, { durable: true });
-  await ch.assertQueue(QUEUES.LISTING_MODERATE, { durable: true });
+    await ch.assertQueue(QUEUES.USER_STATUS_UPDATE, { durable: true });
+    await ch.assertQueue(QUEUES.TRANSACTION_DISPUTE, { durable: true });
+    await ch.assertQueue(QUEUES.PAYMENT_APPROVE, { durable: true });
+    await ch.assertQueue(QUEUES.LISTING_MODERATE, { durable: true });
+    
+    // Queue for Marketplace Service to consume dispute events
+    await ch.assertQueue(QUEUES.MARKETPLACE_DISPUTES, { durable: true });
 
+    // Bind queues to exchanges
     await ch.bindQueue(
       QUEUES.USER_STATUS_UPDATE,
       EXCHANGES.ADMIN_EVENTS,
@@ -65,6 +72,13 @@ export const connectRabbitMQ = async (): Promise<void> => {
       'dispute.*'
     );
 
+    // Bind marketplace.disputes queue to receive all dispute events
+    await ch.bindQueue(
+      QUEUES.MARKETPLACE_DISPUTES,
+      EXCHANGES.DISPUTE_EVENTS,
+      'dispute.*'  // Will receive dispute.created, dispute.resolved, dispute.status.updated
+    );
+
     conn.on('error', (error: any) => {
       logger.error('RabbitMQ connection error:', error);
     });
@@ -74,6 +88,7 @@ export const connectRabbitMQ = async (): Promise<void> => {
     });
 
     logger.info('RabbitMQ exchanges and queues configured');
+    logger.info(`Queue '${QUEUES.MARKETPLACE_DISPUTES}' bound to exchange '${EXCHANGES.DISPUTE_EVENTS}' with pattern 'dispute.*'`);
 
   } catch (error) {
     logger.error('Failed to connect to RabbitMQ:', error);
@@ -94,7 +109,7 @@ export const publishMessage = async (
   message: any
 ): Promise<void> => {
   try {
-  const ch = getChannel();
+    const ch = getChannel();
     const messageBuffer = Buffer.from(JSON.stringify(message));
     
     ch.publish(exchange, routingKey, messageBuffer, {
@@ -103,7 +118,11 @@ export const publishMessage = async (
       timestamp: Date.now()
     });
 
-    logger.info(`Message published to ${exchange} with routing key ${routingKey}`);
+    logger.info(`Message published to ${exchange} with routing key ${routingKey}`, {
+      exchange,
+      routingKey,
+      messagePreview: JSON.stringify(message).substring(0, 100)
+    });
   } catch (error) {
     logger.error('Failed to publish message:', error);
     throw error;
