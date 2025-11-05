@@ -6,8 +6,9 @@ namespace Domain.Events.Listing
     public record ListingCreatedDomainEvent(
         Guid ListingId,
         Guid CreditId,
-        Guid OwnerId,
-        ListingType Type,
-        decimal PricePerUnit
+        decimal Quantity,
+        Guid? OwnerId,
+        ListingType? Type,
+        decimal? PricePerUnit
     ) : DomainEvent;
 }

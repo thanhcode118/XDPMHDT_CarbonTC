@@ -33,11 +33,11 @@ namespace Infrastructure
         }
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            await DispatchDomainEventsAsync();
+            await DispatchDomainEventsAsync(cancellationToken);
             return await base.SaveChangesAsync(cancellationToken);
         }
 
-        private async Task DispatchDomainEventsAsync()
+        private async Task DispatchDomainEventsAsync(CancellationToken cancellationToken = default)
         {
             var domainEntities = ChangeTracker
                 .Entries<BaseEntity>()
@@ -53,7 +53,7 @@ namespace Infrastructure
 
             foreach (var domainEvent in domainEvents)
             {
-                await _domainEventService.PublishAsync(domainEvent);
+                await _domainEventService.PublishAsync(domainEvent, cancellationToken);
             }
         }
     }

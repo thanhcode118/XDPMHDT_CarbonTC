@@ -1,8 +1,9 @@
 ﻿using Domain.Common;
 using Domain.Enum;
-using Domain.Events.Listing;
 using Domain.Events.AuctionBid;
+using Domain.Events.Listing;
 using Domain.Exceptions;
+using Domain.ValueObject;
 
 namespace Domain.Entities
 {
@@ -59,7 +60,11 @@ namespace Domain.Entities
             if (pricePerUnit <= 0)
                 throw new DomainException("Price per unit must be greater than zero");
 
-            return new Listing(creditId, ownerId, ListingType.FixedPrice, pricePerUnit, quantity);
+            var listing = new Listing(creditId, ownerId, ListingType.FixedPrice, pricePerUnit, quantity);
+
+            listing.AddDomainEvent(new ListingCreatedDomainEvent(listing.Id, creditId, quantity, ownerId, ListingType.FixedPrice, pricePerUnit));
+
+            return listing;
         }
 
         public static Listing CreateAuctionListing(
@@ -76,7 +81,7 @@ namespace Domain.Entities
             if (minimumBid <= 0)
                 throw new DomainException("Minimum bid must be greater than zero");
 
-            return new Listing(
+            var listing = new Listing(
                 creditId,
                 ownerId,
                 ListingType.Auction,
@@ -84,7 +89,24 @@ namespace Domain.Entities
                 quantity,
                 minimumBid,
                 auctionEndTime);
+
+            listing.AddDomainEvent(new ListingCreatedDomainEvent(listing.Id, creditId, quantity, ownerId, ListingType.Auction, null)); 
+            return listing;
         }
+
+        public void AddPriceSuggestion(decimal suggestedPrice, double confidenceScore, PriceSuggestionReasoning reasoning)
+        {
+            if (suggestedPrice <= 0)
+                throw new DomainException("Suggested price must be greater than zero");
+
+            if (confidenceScore < 0 || confidenceScore > 1)
+                throw new DomainException("Confidence score must be between 0 and 1");
+
+            var reasoningJson = System.Text.Json.JsonSerializer.Serialize(reasoning);
+
+            PriceSuggestion.Create(Id, suggestedPrice, confidenceScore, reasoning);
+        }
+
 
         public void UpdatePrice(decimal newPrice)
         {

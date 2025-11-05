@@ -36,7 +36,8 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
             int vintage;
             float quantity;
 
-            if (request.CreditId == null)
+            // chung 111
+            if (request.CreditId != null)
             {
                 var creditToSell = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.CreditId.Value);
                 quantity = (float)creditToSell.AvailableAmount;

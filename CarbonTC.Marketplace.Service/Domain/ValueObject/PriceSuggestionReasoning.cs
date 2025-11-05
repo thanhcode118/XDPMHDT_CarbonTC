@@ -28,6 +28,9 @@ namespace Domain.ValueObject
             if (priceVolatility < 0)
                 throw new DomainException("Price volatility cannot be negative");
 
+            if (string.IsNullOrWhiteSpace(marketTrend))
+                throw new DomainException("Market trend cannot be null or empty");
+
             AverageMarketPrice = averageMarketPrice;
             MedianMarketPrice = medianMarketPrice;
             RecentTransactionCount = recentTransactionCount;

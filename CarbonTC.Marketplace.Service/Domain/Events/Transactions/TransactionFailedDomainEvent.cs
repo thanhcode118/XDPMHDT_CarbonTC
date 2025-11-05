@@ -4,6 +4,9 @@ namespace Domain.Events.Transactions
 {
     public record TransactionFailedDomainEvent(
         Guid TransactionId,
-        string Reason
+        Guid BuyerId,
+        Guid ListingId,
+        string Reason,
+        decimal TotalAmount
     ) : DomainEvent;
 }

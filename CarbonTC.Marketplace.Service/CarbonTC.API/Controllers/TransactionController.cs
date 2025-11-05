@@ -1,9 +1,12 @@
 ﻿using Application.Common.DTOs;
 using Application.Common.Features.Transactions.Queries.GetAllTransactions;
 using Application.Common.Features.Transactions.Queries.GetDashboardSummary;
+using Application.Common.Features.Transactions.Queries.GetDashboardWalletSummary;
+using Application.Common.Features.Transactions.Queries.GetWalletChartData;
 using Application.Common.Interfaces;
 using CarbonTC.API.Common;
 using Domain.Entities;
+using Domain.Enum;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -134,5 +137,31 @@ namespace CarbonTC.API.Controllers
             }
             return Unauthorized();
         }
+
+        [Authorize]
+        [HttpGet("wallet-summary")]
+        public async Task<IActionResult> GetWalletSummary(CancellationToken cancellationToken = default)
+        {
+            var transactionSummary = await _mediator.Send(new GetDashboardWalletSummaryQuery(), cancellationToken);
+            if (transactionSummary.IsSuccess)
+            {
+                return Ok(ApiResponse<DashboardWalletSummaryDto>.SuccessResponse(transactionSummary.Value));
+            }
+            return Unauthorized();
+        }
+
+        [Authorize]
+        [HttpGet("/api/transactions/summary/chart")]
+        public async Task<IActionResult> GetWalletSummary([FromQuery]ChartPeriod period, CancellationToken cancellationToken = default)
+        {
+            var transactionSummary = await _mediator.Send(new GetWalletChartDataQuery(period), cancellationToken);
+            if (transactionSummary.IsSuccess)
+            {
+                return Ok(ApiResponse<ChartDataResponseDto>.SuccessResponse(transactionSummary.Value));
+            }
+            return Unauthorized();
+        }
+
+
     }
 }

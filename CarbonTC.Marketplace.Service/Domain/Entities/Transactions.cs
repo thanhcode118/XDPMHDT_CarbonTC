@@ -89,7 +89,7 @@ namespace Domain.Entities
             FailureReason = reason;
             CompletedAt = DateTime.UtcNow;
 
-            AddDomainEvent(new TransactionFailedDomainEvent(Id, reason));
+            AddDomainEvent(new TransactionFailedDomainEvent(Id, BuyerId, ListingId, reason, TotalAmount));
         }
 
         public void Refund(string reason)

@@ -15,9 +15,11 @@ namespace Application.Common.Features.Listings.EventHandlers
 
         public async Task Handle(BalanceDeductedDomainEvent notification, CancellationToken cancellationToken)
         {
-            await _balanceService.CommitPurchaseAsync(
-                notification.BuyerId,
-                notification.TotalPrice);
+            // chung 111
+
+            //await _balanceService.CommitPurchaseAsync(
+            //    notification.BuyerId,
+            //    notification.TotalPrice);
         }
     }
 }
