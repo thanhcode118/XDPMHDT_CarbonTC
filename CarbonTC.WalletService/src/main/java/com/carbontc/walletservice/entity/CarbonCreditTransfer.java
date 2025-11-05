@@ -3,12 +3,14 @@ package com.carbontc.walletservice.entity;
 
 import com.carbontc.walletservice.entity.status.TransferType;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "carbon_credit_transfers")
+@Data
 public class CarbonCreditTransfer {
 
     @Id
@@ -23,58 +25,6 @@ public class CarbonCreditTransfer {
     @JoinColumn(name = "to_wallet_id")
     private CarbonWallets toWallet;
 
-    public Long getTransferId() {
-        return transferId;
-    }
-
-    public CarbonWallets getFromWallet() {
-        return fromWallet;
-    }
-
-    public void setFromWallet(CarbonWallets fromWallet) {
-        this.fromWallet = fromWallet;
-    }
-
-    public CarbonWallets getToWallet() {
-        return toWallet;
-    }
-
-    public void setToWalletId(CarbonWallets toWalletId) {
-        this.toWallet = toWalletId;
-    }
-
-    public void setTransferId(Long transferId) {
-        this.transferId = transferId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public void setToWallet(CarbonWallets toWallet) {
-        this.toWallet = toWallet;
-    }
-
-    public String getReferenceId() {
-        return referenceId;
-    }
-
-    public void setReferenceId(String referenceId) {
-        this.referenceId = referenceId;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     private BigDecimal amount;
 
     @Column(name = "transfer_type", nullable = false, length = 20)
@@ -84,11 +34,4 @@ public class CarbonCreditTransfer {
 
     private LocalDateTime createdAt;
 
-    public TransferType getTransferType() {
-        return transferType;
-    }
-
-    public void setTransferType(TransferType transferType) {
-        this.transferType = transferType;
-    }
 }

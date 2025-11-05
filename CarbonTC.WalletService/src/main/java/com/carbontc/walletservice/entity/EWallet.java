@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "e_wallets")
+@Data
 public class EWallet {
 
     @Id
@@ -21,65 +24,9 @@ public class EWallet {
 
     private BigDecimal balance;
 
-    public Long getWalletId() {
-        return walletId;
-    }
-
-    public void setWalletId(Long walletId) {
-        this.walletId = walletId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     private String currency;
 
     private LocalDateTime updatedAt;
-
-    public List<Payment> getPayments() {
-        return payments;
-    }
-
-    public void setPayments(List<Payment> payments) {
-        this.payments = payments;
-    }
-
-    public List<WithdrawRequest> getWithdrawRequests() {
-        return withdrawRequests;
-    }
-
-    public void setWithdrawRequests(List<WithdrawRequest> withdrawRequests) {
-        this.withdrawRequests = withdrawRequests;
-    }
 
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
     private List<Payment> payments;
@@ -87,4 +34,7 @@ public class EWallet {
     // 1 ví có thể có nhiều yêu cầu rút tiền
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
     private List<WithdrawRequest> withdrawRequests;
+
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+    private List<TransactionLog> transactionLogs;
 }

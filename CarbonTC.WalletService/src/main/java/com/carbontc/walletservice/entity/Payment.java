@@ -1,6 +1,7 @@
 package com.carbontc.walletservice.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "payments")
+@Data
 public class Payment {
 
     @Id
@@ -16,62 +18,6 @@ public class Payment {
 
     @Column(name = "transaction_id", nullable = false, unique = true)
     private String transactionId;
-
-    public Long getPaymentId() {
-        return paymentId;
-    }
-
-    public void setPaymentId(Long paymentId) {
-        this.paymentId = paymentId;
-    }
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public String getPaymentStatus() {
-        return paymentStatus;
-    }
-
-    public void setPaymentStatus(String paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
-
-    public LocalDateTime getPaidAt() {
-        return paidAt;
-    }
-
-    public void setPaidAt(LocalDateTime paidAt) {
-        this.paidAt = paidAt;
-    }
-
-    public String getPaymentGatewayRef() {
-        return paymentGatewayRef;
-    }
-
-    public void setPaymentGatewayRef(String paymentGatewayRef) {
-        this.paymentGatewayRef = paymentGatewayRef;
-    }
 
     private String method; // E-Wallet, Banking, CreditCard
 
@@ -83,27 +29,8 @@ public class Payment {
 
     private String paymentGatewayRef;
 
-    public EWallet getWallet() {
-        return wallet;
-    }
-
-    public void setWallet(EWallet wallet) {
-        this.wallet = wallet;
-    }
-
-    public TransactionFee getTransactionFee() {
-        return transactionFee;
-    }
-
-    public void setTransactionFee(TransactionFee transactionFee) {
-        this.transactionFee = transactionFee;
-    }
-
     @ManyToOne
     @JoinColumn(name = "wallet_id")
     private EWallet wallet;
-
-    @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL)
-    private TransactionFee transactionFee;
 
 }
