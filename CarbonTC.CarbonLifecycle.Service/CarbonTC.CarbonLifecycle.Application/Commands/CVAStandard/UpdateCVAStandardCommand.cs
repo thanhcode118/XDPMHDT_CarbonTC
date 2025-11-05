@@ -1,5 +1,4 @@
-﻿// File: CarbonTC.CarbonLifecycle.Application/Commands/CVAStandard/UpdateCVAStandardCommand.cs
-using MediatR;
+﻿using MediatR;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using System;
 

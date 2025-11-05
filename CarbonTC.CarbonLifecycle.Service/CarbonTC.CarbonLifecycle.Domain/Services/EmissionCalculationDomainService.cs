@@ -19,6 +19,8 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
 
         public async Task<CO2Amount> CalculateCO2ReductionAsync(EVJourney journey, CVAStandard standard)
         {
+            // [Fix CS0272 cho EVJourney.CO2EstimateKg]
+
             if (journey == null) throw new ArgumentNullException(nameof(journey));
             if (standard == null) throw new ArgumentNullException(nameof(standard));
 
@@ -31,18 +33,18 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             // Kiểm tra điều kiện sử dụng Value Objects
             if (journeyDistance.Value < minDistanceRequirement.Value) // So sánh giá trị đã chuẩn hóa
             {
+                // Cập nhật Entity EVJourney với CO2 Estimate = 0 - SỬ DỤNG BEHAVIOR METHOD
+                journey.UpdateCO2Estimate(0m);
                 return CO2Amount.FromKg(0);
             }
 
             // Lấy ConversionRate từ CVAStandard (decimal)
-            // Giả định ConversionRate là kg CO2e tiết kiệm được trên mỗi km EV di chuyển
             var savedCO2PerKm = (double)standard.ConversionRate;
 
             var co2ReductionKg = journeyDistance.ToKilometers().Value * savedCO2PerKm;
 
-            // Cập nhật lại thuộc tính CO2EstimateKg của Entity EVJourney
-            // (Lưu ý: Entity EVJourney KHÔNG CÓ setter riêng cho Value Object, nên chúng ta gán lại giá trị primitive)
-            journey.CO2EstimateKg = (decimal)co2ReductionKg; // Gán lại giá trị decimal vào Entity
+            // Cập nhật lại thuộc tính CO2EstimateKg của Entity EVJourney - SỬ DỤNG BEHAVIOR METHOD
+            journey.UpdateCO2Estimate((decimal)co2ReductionKg);
 
             return CO2Amount.FromKg(co2ReductionKg);
         }
@@ -50,31 +52,23 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
         public async Task<(CO2Amount totalCO2, CreditAmount totalCredits)> CalculateBatchCarbonCreditsAsync(
             JourneyBatch batch, CVAStandard standard)
         {
+            // [Fix CS0272 cho JourneyBatch.TotalCO2SavedKg, NumberOfJourneys, TotalDistanceKm]
+
             if (batch == null) throw new ArgumentNullException(nameof(batch));
             if (standard == null) throw new ArgumentNullException(nameof(standard));
 
+            // Tính tổng CO2 đã tiết kiệm
             CO2Amount totalCO2Saved = CO2Amount.FromKg(0);
             foreach (var journey in batch.EVJourneys)
             {
-                // Sử dụng CO2EstimateKg đã được tính và lưu trong EVJourney Entity
                 totalCO2Saved = totalCO2Saved.Add(CO2Amount.FromKg((double)journey.CO2EstimateKg));
             }
 
-            // Quy đổi thành tín chỉ carbon
-            // Giả định standard.ConversionRate là hệ số quy đổi từ kg CO2e sang 1 tín chỉ
-            if ((double)standard.ConversionRate <= 0)
-            {
-                throw new InvalidOperationException("CVA Standard must have a positive conversion rate for carbon credits.");
-            }
-
+            // Quy đổi thành tín chỉ carbon: Giả định 1 Credit = 1 kg CO2e đã tiết kiệm
             var totalCO2InKg = totalCO2Saved.ToKg().Value;
-            var creditAmountValue = (int)Math.Floor(totalCO2InKg / (double)standard.ConversionRate);
+            var creditAmountValue = (int)Math.Floor(totalCO2InKg);
             var totalCredits = CreditAmount.FromInt(creditAmountValue);
 
-            // Cập nhật lại các trường primitive trong Entity JourneyBatch
-            batch.TotalCO2SavedKg = (decimal)totalCO2Saved.ToKg().Value;
-            batch.NumberOfJourneys = batch.EVJourneys.Count;
-            batch.TotalDistanceKm = (decimal)batch.EVJourneys.Sum(j => (double)j.DistanceKm); // Tính lại tổng khoảng cách
 
             return (totalCO2Saved, totalCredits);
         }

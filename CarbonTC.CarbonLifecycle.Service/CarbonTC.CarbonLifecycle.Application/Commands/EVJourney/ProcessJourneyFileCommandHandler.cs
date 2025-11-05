@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using CarbonTC.CarbonLifecycle.Application.Abstractions.Storage; 
+using CarbonTC.CarbonLifecycle.Application.Abstractions.Storage;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
@@ -56,7 +56,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             string? storedFilePath = null; // Optional
 
             //Optional: Save the original file first
-             try
+            try
             {
                 request.FileStream.Position = 0; // Reset stream position before saving
                 storedFilePath = await _fileStorageService.SaveFileAsync(request.FileName, request.FileStream, request.UserId, request.ContentType);
@@ -96,12 +96,6 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             {
                 _logger.LogError(ex, "Failed to parse journey file {FileName}", request.FileName);
                 result.Errors.Add($"Error parsing file: {ex.Message}");
-                // In case of parsing failure, we cannot continue, return immediately
-                // Note: Consider returning BadRequestException or similar custom exception
-                // for the controller to catch and return 400.
-                // For simplicity here, we return the result DTO with errors. The controller
-                // might need adjustment to handle this specific case as a 400 Bad Request.
-                // Throwing ArgumentException which the controller catches is a good approach.
                 throw new ArgumentException($"Error parsing file '{request.FileName}': {ex.Message}", ex);
             }
 
@@ -145,47 +139,32 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
                     batchToUse = await _batchRepository.GetPendingBatchByOwnerIdAsync(request.UserId);
                     if (batchToUse == null)
                     {
-                        batchToUse = new CarbonTC.CarbonLifecycle.Domain.Entities.JourneyBatch
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = request.UserId,
-                            CreationTime = DateTime.UtcNow,
-                            Status = JourneyBatchStatus.Pending,
-                            TotalDistanceKm = 0, // Will accumulate below
-                            TotalCO2SavedKg = 0, // Will accumulate below
-                            NumberOfJourneys = 0, // Will accumulate below
-                            EVJourneys = new List<CarbonTC.CarbonLifecycle.Domain.Entities.EVJourney>()
-                        };
+                        // SỬ DỤNG FACTORY METHOD MỚI
+                        batchToUse = CarbonTC.CarbonLifecycle.Domain.Entities.JourneyBatch.Create(request.UserId);
+                        // Không cần AddJourneySummary ngay, nó sẽ được gọi ở bước dưới
                         await _batchRepository.AddAsync(batchToUse); // Add new batch to context
                     }
-                    else
-                    {
-                        // Mark existing batch for update (EF Core tracks changes)
-                        // No explicit UpdateAsync call needed here if using the same context instance
-                    }
+                    // else: Mark existing batch for update (EF Core tracks changes)
                 }
 
-                // Create EVJourney Entity
-                var journeyEntity = new CarbonTC.CarbonLifecycle.Domain.Entities.EVJourney
-                {
-                    Id = Guid.NewGuid(),
-                    JourneyBatchId = batchToUse.Id, // Assign Batch ID
-                    UserId = request.UserId,
-                    StartTime = record.StartTime,
-                    EndTime = record.EndTime,
-                    DistanceKm = record.DistanceKm,
-                    VehicleType = record.VehicleModel,
-                    CO2EstimateKg = co2Saved,
-                    Status = JourneyStatus.Pending,
-                    Origin = record.Origin ?? "N/A", // Handle optional fields
-                    Destination = record.Destination ?? "N/A"
-                };
+                // Cập nhật batch totals - SỬ DỤNG DOMAIN BEHAVIOR METHOD
+                // Thao tác này sẽ tự động cập nhật LastModifiedAt và các trường private set;
+                batchToUse.AddJourneySummary(record.DistanceKm, co2Saved);
 
-                // Accumulate batch totals
-                batchToUse.TotalDistanceKm += journeyEntity.DistanceKm;
-                batchToUse.TotalCO2SavedKg += journeyEntity.CO2EstimateKg;
-                batchToUse.NumberOfJourneys += 1;
-                batchToUse.LastModifiedAt = DateTime.UtcNow; // Update batch modification time
+
+                // Create EVJourney Entity - SỬ DỤNG FACTORY METHOD MỚI
+                var journeyEntity = CarbonTC.CarbonLifecycle.Domain.Entities.EVJourney.Create(
+                    journeyBatchId: batchToUse.Id,
+                    userId: request.UserId,
+                    distanceKm: record.DistanceKm,
+                    startTime: record.StartTime,
+                    endTime: record.EndTime,
+                    vehicleType: record.VehicleModel,
+                    co2EstimateKg: co2Saved,
+                    origin: record.Origin ?? "N/A",
+                    destination: record.Destination ?? "N/A"
+                );
+
 
                 validJourneysToSave.Add(journeyEntity);
             }
@@ -203,8 +182,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
                         await _journeyRepository.AddAsync(journey);
                     }
 
-                    // If we modified an existing batch, EF Core tracks it. If we added a new one, it's already added.
-                    // SaveChanges will handle both adding journeys and adding/updating the batch.
+                    // SaveChanges will handle adding journeys and updating the batch (thông qua tracking)
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
                     _logger.LogInformation("Successfully saved {Count} journeys from file {FileName} for user {UserId}",
                         validJourneysToSave.Count, request.FileName, request.UserId);
@@ -213,10 +191,6 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
                 {
                     _logger.LogError(ex, "Failed to save journeys from file {FileName} to database for user {UserId}", request.FileName, request.UserId);
                     result.Errors.Add($"Database error occurred while saving journeys: {ex.Message}");
-                    // Depending on requirements, you might want to adjust SuccessfulRecords count here
-                    // or clear validJourneysToSave list if the transaction failed.
-                    // For simplicity, we report the DB error but keep the count of initially valid records.
-                    // Throwing here will result in a 500 error from the controller.
                     throw; // Re-throw to indicate a server error
                 }
             }

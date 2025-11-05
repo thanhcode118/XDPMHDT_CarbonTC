@@ -1,5 +1,4 @@
-﻿// File: CarbonTC.CarbonLifecycle.Application/Commands/CVAStandard/UpdateCVAStandardCommandHandler.cs
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +8,8 @@ using System.Text.Json;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using CarbonTC.CarbonLifecycle.Application.Commands.AuditReport;
-using CarbonTC.CarbonLifecycle.Domain.Entities; // Cần entity CVAStandard
+using System.Collections.Generic;
+using CarbonTC.CarbonLifecycle.Domain.Entities;
 
 namespace CarbonTC.CarbonLifecycle.Application.Commands.CVAStandard
 {
@@ -37,50 +37,51 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CVAStandard
 
         public async Task<CvaStandardDto> Handle(UpdateCVAStandardCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Attempting to update CVA Standard ID: {StandardId}", request.StandardId);
+            _logger.LogInformation("Attempting to update CVA Standard with ID: {StandardId}", request.StandardId);
 
+            // 1. Tìm Entity
             var standard = await _standardRepository.GetByIdAsync(request.StandardId);
+
             if (standard == null)
             {
                 _logger.LogWarning("CVA Standard not found for update: {StandardId}", request.StandardId);
+                // Dùng KeyNotFoundException để Controller trả về 404
                 throw new KeyNotFoundException($"CVA Standard with ID {request.StandardId} not found.");
             }
 
-            // Chụp lại giá trị cũ để ghi audit
-            var originalValuesJson = JsonSerializer.Serialize(_mapper.Map<CvaStandardDto>(standard)); // Map sang DTO để chỉ lấy các trường cần thiết
+            // 2. Lưu trữ giá trị cũ cho Audit Log
+            // Map Entity hiện tại (trước khi update) sang DTO để có OldValuesJson
+            var oldValuesDto = _mapper.Map<CVAStandardUpdateDto>(standard);
 
-            // Áp dụng các thay đổi từ DTO vào entity
-            // Sử dụng ?? để chỉ cập nhật nếu giá trị trong DTO không null
-            standard.StandardName = request.UpdateData.StandardName ?? standard.StandardName;
-            standard.VehicleType = request.UpdateData.VehicleType ?? standard.VehicleType;
-            standard.ConversionRate = request.UpdateData.ConversionRate ?? standard.ConversionRate;
-            standard.MinDistanceRequirement = request.UpdateData.MinDistanceRequirement ?? standard.MinDistanceRequirement;
-            standard.EffectiveDate = request.UpdateData.EffectiveDate ?? standard.EffectiveDate;
-            standard.EndDate = request.UpdateData.EndDate; // Cho phép set null
-            standard.IsActive = request.UpdateData.IsActive ?? standard.IsActive;
-            standard.LastModifiedAt = DateTime.UtcNow; // Cập nhật thời gian sửa đổi
+            // 3. Cập nhật Entity - SỬ DỤNG METHOD TRONG DOMAIN ENTITY
+            standard.UpdateDetails(
+                request.UpdateData.StandardName,
+                request.UpdateData.VehicleType,
+                request.UpdateData.ConversionRate,
+                request.UpdateData.MinDistanceRequirement,
+                request.UpdateData.EffectiveDate,
+                request.UpdateData.EndDate,
+                request.UpdateData.IsActive
+            );
 
-            // Repository UpdateAsync chỉ đánh dấu là Modified, không cần gọi
-            // await _standardRepository.UpdateAsync(standard); // Không cần thiết nếu context theo dõi thay đổi
-
+            // 4. Lưu thay đổi
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully updated CVA Standard ID: {StandardId}", standard.Id);
 
-            // Ghi Audit Log
-            var newValuesJson = JsonSerializer.Serialize(request.UpdateData); // Log những gì được gửi lên để update
+            // 5. Ghi Audit Log
             var auditCommand = new CreateAuditReportCommand(new AuditReportCreateDto
             {
-                EntityType = nameof(Domain.Entities.CVAStandard),
+                EntityType = nameof(CVAStandard),
                 EntityId = standard.Id,
                 Action = "Updated",
-                OriginalValuesJson = originalValuesJson,
-                NewValuesJson = newValuesJson
+                OriginalValuesJson = JsonSerializer.Serialize(oldValuesDto),
+                NewValuesJson = JsonSerializer.Serialize(request.UpdateData)
             });
             _ = _mediator.Send(auditCommand, cancellationToken);
 
-
-            return _mapper.Map<CvaStandardDto>(standard); // Trả về entity đã cập nhật
+            // 6. Trả về DTO
+            return _mapper.Map<CvaStandardDto>(standard);
         }
     }
 }

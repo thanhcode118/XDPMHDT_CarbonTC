@@ -8,14 +8,13 @@ namespace CarbonTC.CarbonLifecycle.Domain.Repositories
 {
     public interface IJourneyBatchRepository
     {
-        Task<JourneyBatch?> GetByIdAsync(Guid id); // Sửa: Thêm ? (nullable)
+        Task<JourneyBatch?> GetByIdAsync(Guid id);
         Task<IEnumerable<JourneyBatch>> GetByUserIdAsync(string userId);
         Task AddAsync(JourneyBatch journeyBatch);
-        Task UpdateAsync(JourneyBatch journeyBatch); // Đổi: Bỏ Task (giống trên)
+        Task UpdateAsync(JourneyBatch journeyBatch);
         Task DeleteAsync(Guid id);
-        Task<JourneyBatch?> GetByIdWithDetailsAsync(Guid id); // Sửa: Thêm ?
+        Task<JourneyBatch?> GetByIdWithDetailsAsync(Guid id);
 
-        // --- BỔ SUNG CÁC HÀM SAU ---
 
         // Lấy 1 lô cụ thể, đảm bảo đúng chủ sở hữu
         Task<JourneyBatch?> GetByIdAndOwnerAsync(Guid batchId, string ownerId);

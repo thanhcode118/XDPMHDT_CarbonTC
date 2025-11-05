@@ -1,6 +1,5 @@
-﻿// File: CarbonTC.CarbonLifecycle.Application/Commands/CVAStandard/AddCVAStandardCommand.cs
-using MediatR;
-using CarbonTC.CarbonLifecycle.Application.DTOs; // Cần DTOs CvaStandardDto và CVAStandardCreateDto
+﻿using MediatR;
+using CarbonTC.CarbonLifecycle.Application.DTOs;
 
 namespace CarbonTC.CarbonLifecycle.Application.Commands.CVAStandard
 {

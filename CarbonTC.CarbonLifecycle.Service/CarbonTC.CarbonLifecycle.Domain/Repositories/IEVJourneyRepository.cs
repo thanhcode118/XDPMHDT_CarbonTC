@@ -7,13 +7,11 @@ namespace CarbonTC.CarbonLifecycle.Domain.Repositories
 {
     public interface IEVJourneyRepository
     {
-        Task<EVJourney?> GetByIdAsync(Guid id); // Sửa: Thêm ? (nullable)
+        Task<EVJourney?> GetByIdAsync(Guid id); 
         Task<IEnumerable<EVJourney>> GetByBatchIdAsync(Guid journeyBatchId);
         Task AddAsync(EVJourney journey);
-        Task UpdateAsync(EVJourney journey); // Đổi: Bỏ Task, EF Core dùng hàm sync
+        Task UpdateAsync(EVJourney journey); 
         Task DeleteAsync(Guid id);
-
-        // --- BỔ SUNG CÁC HÀM SAU ---
 
         // Lấy tất cả hành trình của 1 người dùng
         Task<IEnumerable<EVJourney>> GetByOwnerIdAsync(string ownerId);

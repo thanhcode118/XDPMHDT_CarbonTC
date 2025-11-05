@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-// File: CarbonTC.CarbonLifecycle.Domain/Repositories/ICVAStandardRepository.cs
-// ... (using statements)
-using CarbonTC.CarbonLifecycle.Domain.Entities; // Cần entity
+using CarbonTC.CarbonLifecycle.Domain.Entities;
 
 public interface ICVAStandardRepository
 {
-    Task<CVAStandard?> GetByIdAsync(Guid id); // Thêm ?
+    Task<CVAStandard?> GetByIdAsync(Guid id);
     Task<IEnumerable<CVAStandard>> GetAllActiveStandardsAsync();
-    Task<CVAStandard?> GetActiveStandardByVehicleTypeAsync(string vehicleType); // Thêm ?
+    Task<CVAStandard?> GetActiveStandardByVehicleTypeAsync(string vehicleType);
     Task AddAsync(CVAStandard standard);
-    Task UpdateAsync(CVAStandard standard); // Sửa thành Task
+    Task UpdateAsync(CVAStandard standard);
     Task DeleteAsync(Guid id);
 
     // --- BỔ SUNG ---

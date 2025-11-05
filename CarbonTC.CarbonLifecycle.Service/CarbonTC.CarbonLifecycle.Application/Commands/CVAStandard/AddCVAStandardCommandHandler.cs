@@ -1,5 +1,4 @@
-﻿// File: CarbonTC.CarbonLifecycle.Application/Commands/CVAStandard/AddCVAStandardCommandHandler.cs
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +6,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
-using CarbonTC.CarbonLifecycle.Domain.Entities; // Cần entity CVAStandard
+using CarbonTC.CarbonLifecycle.Domain.Entities;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using CarbonTC.CarbonLifecycle.Application.Commands.AuditReport;
 
@@ -39,12 +38,16 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CVAStandard
         {
             _logger.LogInformation("Attempting to add new CVA Standard: {StandardName}", request.StandardData.StandardName);
 
-            // Kiểm tra trùng lặp (ví dụ theo StandardName hoặc VehicleType + EffectiveDate) nếu cần
-            // var existing = await _standardRepository.GetByNameAsync(request.StandardData.StandardName);
-            // if (existing != null) { throw new InvalidOperationException(...); }
-
-            var standard = _mapper.Map<Domain.Entities.CVAStandard>(request.StandardData);
-            standard.Id = Guid.NewGuid(); // Đảm bảo ID mới
+            // 1. Tạo Entity - SỬ DỤNG FACTORY METHOD
+            var standard = CarbonTC.CarbonLifecycle.Domain.Entities.CVAStandard.Create(
+                request.StandardData.StandardName,
+                request.StandardData.VehicleType,
+                request.StandardData.ConversionRate,
+                request.StandardData.MinDistanceRequirement,
+                request.StandardData.EffectiveDate,
+                request.StandardData.EndDate,
+                request.StandardData.IsActive
+            );
 
             await _standardRepository.AddAsync(standard);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

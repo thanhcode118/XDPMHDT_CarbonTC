@@ -1,5 +1,4 @@
-﻿// File: CarbonTC.CarbonLifecycle.Application/Commands/AuditReport/CreateAuditReportCommand.cs
-using MediatR;
+﻿using MediatR;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using System;
 

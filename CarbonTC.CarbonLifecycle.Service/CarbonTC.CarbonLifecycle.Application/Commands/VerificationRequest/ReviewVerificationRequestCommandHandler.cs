@@ -1,20 +1,19 @@
-﻿// File: CarbonTC.CarbonLifecycle.Application/Commands/VerificationRequest/ReviewVerificationRequestCommandHandler.cs
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using System.Text.Json; // For audit logging serialization
+using System.Text.Json;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Domain.Services;
-using CarbonTC.CarbonLifecycle.Domain.ValueObjects; // For AuditFindings
+using CarbonTC.CarbonLifecycle.Domain.ValueObjects;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
-using CarbonTC.CarbonLifecycle.Application.Services; // For IIdentityService
-using CarbonTC.CarbonLifecycle.Application.Abstractions.Services; // For IWalletService (nếu dùng API call)
-using CarbonTC.CarbonLifecycle.Application.Commands.AuditReport; // For CreateAuditReportCommand
-using CarbonTC.CarbonLifecycle.Domain.Entities; // For explicit entity usage
+using CarbonTC.CarbonLifecycle.Application.Services;
+using CarbonTC.CarbonLifecycle.Application.Abstractions.Services;
+using CarbonTC.CarbonLifecycle.Application.Commands.AuditReport;
+using CarbonTC.CarbonLifecycle.Domain.Entities;
 
 namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
 {

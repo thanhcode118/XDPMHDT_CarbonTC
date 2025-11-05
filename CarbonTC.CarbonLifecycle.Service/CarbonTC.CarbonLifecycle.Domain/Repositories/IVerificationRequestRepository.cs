@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-// File: CarbonTC.CarbonLifecycle.Domain/Repositories/IVerificationRequestRepository.cs
-// ... (using statements)
-using CarbonTC.CarbonLifecycle.Domain.Entities; // Cần entity
+using CarbonTC.CarbonLifecycle.Domain.Entities;
 
 public interface IVerificationRequestRepository
 {
-    Task<VerificationRequest?> GetByIdAsync(Guid id); // Thêm ? để rõ ràng nullable
+    Task<VerificationRequest?> GetByIdAsync(Guid id);
     Task<IEnumerable<VerificationRequest>> GetByJourneyBatchIdAsync(Guid journeyBatchId);
     Task AddAsync(VerificationRequest request);
-    Task UpdateAsync(VerificationRequest request); // Sửa thành Task để nhất quán (dù EF Update là sync)
+    Task UpdateAsync(VerificationRequest request);
     Task DeleteAsync(Guid id);
 
-    // --- BỔ SUNG ---
     /// <summary>
     /// Lấy tất cả các yêu cầu đang chờ xử lý (Pending).
     /// Cân nhắc thay thế bằng phương thức có phân trang.

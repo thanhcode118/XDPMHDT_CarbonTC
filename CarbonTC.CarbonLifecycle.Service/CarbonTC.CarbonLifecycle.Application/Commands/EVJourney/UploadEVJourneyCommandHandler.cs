@@ -6,7 +6,10 @@ using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CarbonTC.CarbonLifecycle.Application.Services; 
+using CarbonTC.CarbonLifecycle.Application.Services;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
 {
@@ -14,7 +17,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
     {
         private readonly IEVJourneyRepository _journeyRepository;
         private readonly ICVAStandardRepository _standardRepository;
-        private readonly IJourneyBatchRepository _batchRepository; 
+        private readonly IJourneyBatchRepository _batchRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IIdentityService _identityService;
@@ -23,14 +26,14 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
         public UploadEVJourneyCommandHandler(
             IEVJourneyRepository journeyRepository,
             ICVAStandardRepository standardRepository,
-            IJourneyBatchRepository batchRepository, 
+            IJourneyBatchRepository batchRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IIdentityService identityService)
         {
             _journeyRepository = journeyRepository;
             _standardRepository = standardRepository;
-            _batchRepository = batchRepository; 
+            _batchRepository = batchRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _identityService = identityService;
@@ -41,7 +44,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             var ownerId = _identityService.GetUserId();
             if (string.IsNullOrEmpty(ownerId))
             {
-                throw new Exception("User is not authenticated."); // Cần Exception chi tiết hơn
+                throw new Exception("User is not authenticated.");
             }
 
             // 1. Lấy tiêu chuẩn tính toán
@@ -54,7 +57,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             }
 
             // 2. Tính toán CO2
-            decimal co2Saved = (decimal)request.JourneyData.DistanceKm * standard.ConversionRate;
+            decimal co2Saved = request.JourneyData.DistanceKm * standard.ConversionRate;
 
             // --- BẮT ĐẦU LOGIC TÌM HOẶC TẠO BATCH ---
             CarbonTC.CarbonLifecycle.Domain.Entities.JourneyBatch batchToUse;
@@ -66,60 +69,42 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             {
                 // 3a. Sử dụng lô hiện có
                 batchToUse = existingPendingBatch;
-                batchToUse.TotalDistanceKm += request.JourneyData.DistanceKm;
-                batchToUse.TotalCO2SavedKg += co2Saved;
-                batchToUse.NumberOfJourneys += 1;
-                batchToUse.LastModifiedAt = DateTime.UtcNow; // Cập nhật thời gian sửa đổi lô
-                // Đánh dấu lô này là đã sửa đổi (Repository sẽ làm việc này khi gọi Update)
-                await _batchRepository.UpdateAsync(batchToUse); // Chỉ đánh dấu thay đổi trong context
+                // Gọi phương thức Domain để cập nhật tổng
+                batchToUse.AddJourneySummary(request.JourneyData.DistanceKm, co2Saved);
+                await _batchRepository.UpdateAsync(batchToUse);
             }
             else
             {
-                // 3b. Tạo lô mới nếu không tìm thấy
-                batchToUse = new CarbonTC.CarbonLifecycle.Domain.Entities.JourneyBatch
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = ownerId,
-                    CreationTime = DateTime.UtcNow,
-                    Status = JourneyBatchStatus.Pending,
-                    TotalDistanceKm = request.JourneyData.DistanceKm,
-                    TotalCO2SavedKg = co2Saved,
-                    NumberOfJourneys = 1,
-                    EVJourneys = new List<CarbonTC.CarbonLifecycle.Domain.Entities.EVJourney>() // Khởi tạo danh sách nếu cần
-                };
-                // Thêm lô mới vào context
-                await _batchRepository.AddAsync(batchToUse); // Chỉ thêm vào context
+                // 3b. Tạo lô mới - SỬ DỤNG FACTORY METHOD
+                batchToUse = CarbonTC.CarbonLifecycle.Domain.Entities.JourneyBatch.Create(ownerId);
+
+                // Cập nhật thông tin ban đầu thông qua AddJourneySummary
+                batchToUse.AddJourneySummary(request.JourneyData.DistanceKm, co2Saved);
+
+                await _batchRepository.AddAsync(batchToUse);
             }
             // --- KẾT THÚC LOGIC TÌM HOẶC TẠO BATCH ---
 
-            // 4. Tạo Entity EVJourney và gán JourneyBatchId
-            var journey = new CarbonTC.CarbonLifecycle.Domain.Entities.EVJourney
-            {
-                Id = Guid.NewGuid(),
-                JourneyBatchId = batchToUse.Id, 
-                UserId = ownerId,
-                StartTime = request.JourneyData.StartTime,
-                EndTime = request.JourneyData.EndTime,
-                DistanceKm = request.JourneyData.DistanceKm,
-                VehicleType = request.JourneyData.VehicleModel,
-                CO2EstimateKg = co2Saved,
-                Status = JourneyStatus.Pending, // Enum từ file EVJourney.cs
-                Origin = "N/A", // Bạn có thể thêm vào DTO
-                Destination = "N/A"
-            };
+            // 4. Tạo Entity EVJourney - SỬ DỤNG FACTORY METHOD
+            var journey = CarbonTC.CarbonLifecycle.Domain.Entities.EVJourney.Create(
+                journeyBatchId: batchToUse.Id,
+                userId: ownerId,
+                distanceKm: request.JourneyData.DistanceKm,
+                startTime: request.JourneyData.StartTime,
+                endTime: request.JourneyData.EndTime,
+                vehicleType: request.JourneyData.VehicleModel,
+                co2EstimateKg: co2Saved,
+                origin: request.JourneyData.Origin ?? "N/A",
+                destination: request.JourneyData.Destination ?? "N/A"
+            );
 
             // 5. Thêm hành trình vào context
-            await _journeyRepository.AddAsync(journey); // Chỉ thêm vào context
+            await _journeyRepository.AddAsync(journey);
 
-            // 6. Lưu tất cả thay đổi (hành trình mới + lô mới/cập nhật) vào DB
+            // 6. Lưu tất cả thay đổi
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // 7. Map kết quả và trả về (vẫn trả về DTO của hành trình)
-            return _mapper.Map<EvJourneyResponseDto>(journey);
-
-            await _journeyRepository.AddAsync(journey);
-            await _unitOfWork.SaveChangesAsync(cancellationToken); // Dùng IUnitOfWork
-
+            // 7. Map kết quả và trả về
             return _mapper.Map<EvJourneyResponseDto>(journey);
         }
     }

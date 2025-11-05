@@ -45,34 +45,14 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 throw new InvalidOperationException($"JourneyBatch with ID {journeyBatchId} not found.");
             }
 
-            if (batch.Status != JourneyBatchStatus.Pending && batch.Status != JourneyBatchStatus.Rejected)
-            {
-                throw new InvalidOperationException("Only pending or rejected batches can be submitted for verification.");
-            }
+            // Cập nhật trạng thái của JourneyBatch Entity - SỬ DỤNG DOMAIN BEHAVIOR
+            batch.MarkAsSubmitted();
+            await _journeyBatchRepository.UpdateAsync(batch);
 
-            if (!batch.EVJourneys.Any())
-            {
-                throw new InvalidOperationException("Cannot submit an empty batch for verification.");
-            }
-
-            // Tạo VerificationRequest Entity mới
-            var newRequest = new VerificationRequest
-            {
-                Id = Guid.NewGuid(),
-                JourneyBatchId = journeyBatchId,
-                RequestorId = requestorId,
-                RequestDate = DateTime.UtcNow,
-                Status = VerificationRequestStatus.Pending,
-                Notes = notes,
-                CreatedAt = DateTime.UtcNow,
-            };
+            // Tạo VerificationRequest Entity mới - SỬ DỤNG FACTORY METHOD
+            var newRequest = VerificationRequest.Create(journeyBatchId, requestorId, notes);
 
             await _verificationRequestRepository.AddAsync(newRequest);
-
-            // Cập nhật trạng thái của JourneyBatch Entity
-            batch.Status = JourneyBatchStatus.SubmittedForVerification;
-            batch.LastModifiedAt = DateTime.UtcNow;
-            await _journeyBatchRepository.UpdateAsync(batch);
 
             // Phát Domain Event
             await _eventDispatcher.Dispatch(new JourneyBatchSubmittedForVerificationEvent(batch.Id, requestorId));
@@ -94,11 +74,6 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 throw new InvalidOperationException($"VerificationRequest with ID {verificationRequestId} not found.");
             }
 
-            if (verificationRequest.Status != VerificationRequestStatus.Pending)
-            {
-                throw new InvalidOperationException("Cannot approve a request that is not pending.");
-            }
-
             var batch = await _journeyBatchRepository.GetByIdWithDetailsAsync(verificationRequest.JourneyBatchId);
             if (batch == null)
             {
@@ -110,42 +85,33 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 throw new ArgumentNullException(nameof(cvaStandard), "CVA Standard is required for credit generation.");
             }
 
-            // Cập nhật VerificationRequest Entity
-            verificationRequest.VerifierId = verifierId;
-            verificationRequest.VerificationDate = DateTime.UtcNow;
-            verificationRequest.Status = VerificationRequestStatus.Approved;
-            verificationRequest.Notes = approvalNotes ?? verificationRequest.Notes;
-            verificationRequest.LastModifiedAt = DateTime.UtcNow;
+            // Cập nhật VerificationRequest Entity - SỬ DỤNG DOMAIN BEHAVIOR
+            verificationRequest.MarkAsApproved(verifierId, cvaStandard.Id, approvalNotes);
             await _verificationRequestRepository.UpdateAsync(verificationRequest);
 
-            // Cập nhật JourneyBatch Entity
-            batch.Status = JourneyBatchStatus.Verified;
-            batch.VerificationTime = DateTime.UtcNow;
-            batch.LastModifiedAt = DateTime.UtcNow;
+            // Cập nhật JourneyBatch Entity - SỬ DỤNG DOMAIN BEHAVIOR
+            batch.MarkAsVerified(DateTime.UtcNow);
+            await _journeyBatchRepository.UpdateAsync(batch);
 
             // Tính toán và tạo Carbon Credits
             var (totalCO2, totalCredits) = await _emissionCalculationService.CalculateBatchCarbonCreditsAsync(batch, cvaStandard);
 
             if (totalCredits.Value > 0)
             {
-                var newCarbonCredit = new CarbonCredit
-                {
-                    Id = Guid.NewGuid(),
-                    JourneyBatchId = batch.Id,
-                    UserId = batch.UserId,
-                    AmountKgCO2e = (decimal)totalCO2.ToKg().Value, // Lấy từ kết quả tính toán
-                    IssueDate = DateTime.UtcNow,
-                    Status = CarbonCreditStatus.Issued,
-                    TransactionHash = "pending_wallet_tx", // Sẽ được cập nhật sau
-                    VerificationRequestId = verificationRequestId // Liên kết với request này
-                };
+                // Tạo Carbon Credit - DÙNG FACTORY METHOD CarbonCredit.Issue (Đã sửa ở D2.1)
+                // DÒNG NÀY SẼ ĐƯỢC CẬP NHẬT Ở BƯỚC 10 (FIX BUILD ERROR)
+                var newCarbonCredit = CarbonCredit.Issue(
+                    journeyBatchId: batch.Id,
+                    userId: batch.UserId,
+                    amountKgCO2e: (decimal)totalCO2.ToKg().Value,
+                    verificationRequestId: verificationRequestId
+                );
 
-                // 2. Giờ mới 'AddAsync'
                 await _carbonCreditRepository.AddAsync(newCarbonCredit);
 
-                // Cập nhật trạng thái JourneyBatch
-                batch.Status = JourneyBatchStatus.CreditsIssued;
-                batch.LastModifiedAt = DateTime.UtcNow;
+                // Cập nhật trạng thái JourneyBatch - SỬ DỤNG DOMAIN BEHAVIOR
+                batch.MarkAsCreditsIssued();
+                await _journeyBatchRepository.UpdateAsync(batch);
 
                 // Phát Domain Event CarbonCreditsApproved (Sự kiện nội bộ)
                 await _eventDispatcher.Dispatch(new CarbonCreditsApprovedEvent(
@@ -160,8 +126,6 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 // Nếu không có tín chỉ nào được tạo
                 await _eventDispatcher.Dispatch(new CarbonCreditsRejectedEvent(batch.Id, verifierId, "No eligible carbon credits could be generated from batch."));
             }
-
-            await _journeyBatchRepository.UpdateAsync(batch);
 
             // Phát Domain Event VerificationRequestApproved
             await _eventDispatcher.Dispatch(new VerificationRequestApprovedEvent(verificationRequestId, batch.Id, verifierId));
@@ -179,10 +143,9 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 throw new InvalidOperationException($"VerificationRequest with ID {verificationRequestId} not found.");
             }
 
-            if (verificationRequest.Status != VerificationRequestStatus.Pending)
-            {
-                throw new InvalidOperationException("Cannot reject a request that is not pending.");
-            }
+            // Cập nhật VerificationRequest Entity - SỬ DỤNG DOMAIN BEHAVIOR
+            verificationRequest.MarkAsRejected(verifierId, reason);
+            await _verificationRequestRepository.UpdateAsync(verificationRequest);
 
             var batch = await _journeyBatchRepository.GetByIdAsync(verificationRequest.JourneyBatchId);
             if (batch == null)
@@ -190,17 +153,8 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
                 throw new InvalidOperationException($"Associated JourneyBatch with ID {verificationRequest.JourneyBatchId} not found.");
             }
 
-            // Cập nhật VerificationRequest Entity
-            verificationRequest.VerifierId = verifierId;
-            verificationRequest.VerificationDate = DateTime.UtcNow;
-            verificationRequest.Status = VerificationRequestStatus.Rejected;
-            verificationRequest.Notes = reason ?? verificationRequest.Notes;
-            verificationRequest.LastModifiedAt = DateTime.UtcNow;
-            await _verificationRequestRepository.UpdateAsync(verificationRequest);
-
-            // Cập nhật JourneyBatch Entity
-            batch.Status = JourneyBatchStatus.Rejected;
-            batch.LastModifiedAt = DateTime.UtcNow;
+            // Cập nhật JourneyBatch Entity - SỬ DỤNG DOMAIN BEHAVIOR
+            batch.MarkAsRejected();
             await _journeyBatchRepository.UpdateAsync(batch);
 
             // Phát Domain Event

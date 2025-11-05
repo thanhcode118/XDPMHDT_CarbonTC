@@ -8,7 +8,7 @@ using CarbonTC.CarbonLifecycle.Application.DTOs;
 using CarbonTC.CarbonLifecycle.Application.Services;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
-using CarbonTC.CarbonLifecycle.Domain.Enums; // Dùng Enums
+using CarbonTC.CarbonLifecycle.Domain.Enums;
 using MediatR;
 using System.Threading;
 
@@ -59,21 +59,18 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.JourneyBatch
                 throw new Exception("Only journeys with 'Pending' status can be batched.");
             }
 
-            // 3. Tạo Batch
-            var newBatch = new CarbonTC.CarbonLifecycle.Domain.Entities.JourneyBatch
+            // 3. Tạo Batch - SỬ DỤNG FACTORY METHOD
+            var newBatch = CarbonTC.CarbonLifecycle.Domain.Entities.JourneyBatch.CreateFromJourneys(ownerId, journeys);
+
+            // 4. Cập nhật trạng thái và gán BatchId cho các Journeys (sử dụng Domain Behavior Method)
+            foreach (var journey in journeys)
             {
-                Id = Guid.NewGuid(),
-                UserId = ownerId,
-                CreationTime = DateTime.UtcNow,
-                Status = JourneyBatchStatus.Pending, // Enum bạn đã cung cấp
-                EVJourneys = journeys,
-                TotalDistanceKm = journeys.Sum(j => j.DistanceKm),
-                TotalCO2SavedKg = journeys.Sum(j => j.CO2EstimateKg),
-                NumberOfJourneys = journeys.Count
-            };
+                // AssignToBatch sẽ chuyển trạng thái của Journey từ Pending sang Completed
+                journey.AssignToBatch(newBatch.Id);
+            }
 
             await _batchRepository.AddAsync(newBatch);
-            await _unitOfWork.SaveChangesAsync(cancellationToken); // Dùng IUnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return _mapper.Map<JourneyBatchDto>(newBatch);
         }

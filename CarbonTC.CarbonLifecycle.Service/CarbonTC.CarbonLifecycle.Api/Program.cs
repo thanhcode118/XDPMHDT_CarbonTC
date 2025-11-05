@@ -183,6 +183,23 @@ public class Program
             Log.Information("Application built successfully.");
 
 
+            // === BẮT ĐẦU VÙNG KHỞI TẠO VÀ SEED DATA THỦ CÔNG ===
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<AppDbContext>();
+                    // Gọi hàm khởi tạo dữ liệu
+                    await DbInitializer.Initialize(context);
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while seeding the database.");
+                }
+            }
+
             // ===== KIỂM TRA KẾT NỐI DATABASE =====
             try
             {

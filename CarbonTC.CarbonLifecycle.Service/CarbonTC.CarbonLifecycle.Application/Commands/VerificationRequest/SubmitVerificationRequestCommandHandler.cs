@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CarbonTC.CarbonLifecycle.Application.Services;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
-using CarbonTC.CarbonLifecycle.Domain.Enums; // Dùng Enums
+using CarbonTC.CarbonLifecycle.Domain.Enums;
 using MediatR;
 using System.Threading;
 
@@ -39,7 +39,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
                 throw new Exception("User is not authenticated.");
             }
 
-            // 1. Lấy batch (Dùng hàm đã xác nhận)
+            // 1. Lấy batch 
             var batch = await _batchRepository.GetByIdAndOwnerAsync(request.JourneyBatchId, ownerId);
 
             if (batch == null)
@@ -51,21 +51,16 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
                 throw new Exception("Only 'Pending' batches can be submitted.");
             }
 
-            // 2. Cập nhật trạng thái Batch
-            batch.Status = JourneyBatchStatus.SubmittedForVerification; // Enum bạn cung cấp
-            batch.LastModifiedAt = DateTime.UtcNow;
+            // 2. Cập nhật trạng thái Batch - SỬ DỤNG DOMAIN BEHAVIOR
+            batch.MarkAsSubmitted(); // Thay thế 2 dòng gán Status và LastModifiedAt
             await _batchRepository.UpdateAsync(batch); // Dùng hàm Update của Repo
 
-            // 3. Tạo VerificationRequest
-            var verificationRequest = new CarbonTC.CarbonLifecycle.Domain.Entities.VerificationRequest
-            {
-                Id = Guid.NewGuid(),
-                JourneyBatchId = batch.Id,
-                RequestorId = ownerId,
-                RequestDate = DateTime.UtcNow,
-                Status = VerificationRequestStatus.Pending, // Enum bạn cung cấp
-                Notes = "Submitted by user."
-            };
+            // 3. Tạo VerificationRequest - SỬ DỤNG FACTORY METHOD
+            var verificationRequest = CarbonTC.CarbonLifecycle.Domain.Entities.VerificationRequest.Create(
+                journeyBatchId: batch.Id,
+                requestorId: ownerId,
+                notes: "Submitted by user."
+            );
 
             await _verificationRepository.AddAsync(verificationRequest);
 
