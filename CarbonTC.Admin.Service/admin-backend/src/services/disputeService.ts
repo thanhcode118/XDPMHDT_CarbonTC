@@ -12,12 +12,6 @@ import { publishMessage, EXCHANGES, ROUTING_KEYS } from '../config/rabbitmq';
 import logger from '../utils/logger';
 
 class DisputeService {
-    /**
-     * Tạo tranh chấp mới
-     * - Chỉ check duplicate TransactionId trong DB
-     * - Không validate với Marketplace Service
-     * - Status mặc định = Pending
-     */
     async createDispute(
         data: CreateDisputeDTO, 
         raisedBy: string,
