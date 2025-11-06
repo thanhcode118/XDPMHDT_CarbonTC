@@ -10,95 +10,48 @@ import {
 } from '../types';
 import { publishMessage, EXCHANGES, ROUTING_KEYS } from '../config/rabbitmq';
 import logger from '../utils/logger';
-import { marketplaceClient } from '../utils/clients';
 
 class DisputeService {
-    private async validateTransaction(
-        transactionId: string,
-        raisedBy: string,
-        authToken?: string
-    ): Promise<void> {
-        try {
-            // Check if transaction exists in Marketplace Service
-            const transactionExists = await marketplaceClient.checkTransactionExists(
-                transactionId,
-                authToken
-            );
-
-            if (!transactionExists) {
-                throw new NotFoundError(
-                    `Transaction not found with ID: ${transactionId}`
-                );
-            }
-
-            // Optional: Get transaction details to validate user permission
-            // Uncomment if you need to check if user is buyer or seller
-            /*
-            try {
-                const transaction = await marketplaceClient.getTransactionDetails(
-                    transactionId,
-                    authToken
-                );
-
-                // Check if user is buyer or seller of this transaction
-                if (transaction.buyerId !== raisedBy && transaction.sellerId !== raisedBy) {
-                    throw new ValidationError(
-                        'You are not authorized to create a dispute for this transaction'
-                    );
-                }
-            } catch (error) {
-                logger.warn('Could not validate user permission for transaction', error);
-                // Continue anyway - let it through
-            }
-            */
-
-            logger.info(`Transaction ${transactionId} validated successfully`);
-        } catch (error) {
-            if (error instanceof NotFoundError || error instanceof ValidationError) {
-                throw error;
-            }
-            // If service is down, log warning but allow dispute creation
-            logger.warn(
-                `Could not validate transaction ${transactionId} - Marketplace Service may be unavailable`,
-                error
-            );
-        }
-    }
-
+    /**
+     * Tạo tranh chấp mới
+     * - Chỉ check duplicate TransactionId trong DB
+     * - Không validate với Marketplace Service
+     * - Status mặc định = Pending
+     */
     async createDispute(
         data: CreateDisputeDTO, 
         raisedBy: string,
         authToken?: string
     ): Promise<IDisputeDocument> {
         try {
-            // Validate transaction exists (call Service 3)
-            await this.validateTransaction(data.transactionId, raisedBy, authToken);
-
-            // Check if there's already an active dispute for this transaction
+            // Check nếu đã có dispute cho transaction này
             const existingDispute = await Dispute.findOne({
-                transactionId: data.transactionId,
-                status: { $in: [DisputeStatus.PENDING, DisputeStatus.UNDER_REVIEW] }
+                transactionId: data.transactionId
             });
 
             if (existingDispute) {
                 throw new ConflictError(
-                    'An active dispute already exists for this transaction'
+                    `Tranh chấp đã tồn tại cho giao dịch ${data.transactionId}`
                 );
             }
 
-            // Create the dispute
+            // Tạo dispute mới với các giá trị mặc định
             const dispute = new Dispute({
-                ...data,
+                transactionId: data.transactionId,
                 raisedBy,
-                status: DisputeStatus.PENDING
+                reason: data.reason,
+                description: data.description,
+                status: DisputeStatus.PENDING,
+                resolvedAt: null,
+                resolutionNotes: null
             });
 
             await dispute.save();
             logger.info(
-                `Dispute created with ID: ${dispute.disputeId} by user: ${raisedBy} for transaction: ${data.transactionId}`
+                `Dispute created - ID: ${dispute.disputeId}, User: ${raisedBy}, Transaction: ${data.transactionId}, Status: ${dispute.status}`
             );
 
-            // Publish event to RabbitMQ for Service 3
+            // Publish event đến RabbitMQ
             await this.publishDisputeEvent(dispute, 'created');
 
             return dispute;
@@ -113,7 +66,7 @@ class DisputeService {
             const dispute = await Dispute.findOne({ disputeId });
 
             if (!dispute) {
-                throw new NotFoundError(`Dispute not found with ID: ${disputeId}`);
+                throw new NotFoundError(`Không tìm thấy tranh chấp với ID: ${disputeId}`);
             }
 
             return dispute;
@@ -207,17 +160,27 @@ class DisputeService {
         try {
             const dispute = await this.getDisputeById(disputeId);
             
+            // Không cho phép thay đổi status nếu đã Resolved hoặc Rejected
             if (dispute.status === DisputeStatus.RESOLVED || 
                 dispute.status === DisputeStatus.REJECTED) {
                 throw new ValidationError(
-                    'Cannot update status of a resolved or rejected dispute'
+                    'Không thể thay đổi trạng thái của tranh chấp đã được giải quyết hoặc từ chối'
                 );
             }
 
+            const oldStatus = dispute.status;
             dispute.status = status;
+            
+            // Nếu chuyển sang Resolved hoặc Rejected, cập nhật resolvedAt
+            if (status === DisputeStatus.RESOLVED || status === DisputeStatus.REJECTED) {
+                dispute.resolvedAt = new Date();
+            }
+            
             await dispute.save();
             
-            logger.info(`Dispute ${disputeId} status updated to ${status}`);
+            logger.info(
+                `Dispute ${disputeId} status updated: ${oldStatus} -> ${status}`
+            );
 
             // Publish status update event
             await this.publishDisputeEvent(dispute, 'status_updated');
@@ -238,11 +201,11 @@ class DisputeService {
             const dispute = await this.getDisputeById(disputeId);
             
             if (dispute.status === DisputeStatus.RESOLVED) {
-                throw new ValidationError('Dispute is already resolved');
+                throw new ValidationError('Tranh chấp đã được giải quyết');
             }
 
             if (dispute.status === DisputeStatus.REJECTED) {
-                throw new ValidationError('Dispute is already rejected');
+                throw new ValidationError('Tranh chấp đã bị từ chối');
             }
 
             dispute.status = resolution.status;
@@ -250,7 +213,9 @@ class DisputeService {
             dispute.resolvedAt = new Date();
             await dispute.save();
 
-            logger.info(`Dispute ${disputeId} resolved by ${resolvedBy} with status: ${resolution.status}`);
+            logger.info(
+                `Dispute ${disputeId} resolved by ${resolvedBy} with status: ${resolution.status}`
+            );
             
             // Publish resolved event
             await this.publishDisputeEvent(dispute, 'resolved', resolvedBy);
@@ -268,16 +233,16 @@ class DisputeService {
 
             if (dispute.status !== DisputeStatus.PENDING) {
                 throw new ValidationError(
-                    'Only pending disputes can be deleted'
+                    'Chỉ có thể xóa tranh chấp đang ở trạng thái Pending'
                 );
             }
 
             dispute.status = DisputeStatus.REJECTED;
-            dispute.resolutionNotes = 'Dispute cancelled by user';
+            dispute.resolutionNotes = 'Tranh chấp đã bị hủy bởi người dùng';
             dispute.resolvedAt = new Date();
             await dispute.save();
 
-            logger.info(`Dispute ${disputeId} deleted (soft delete)`);
+            logger.info(`Dispute ${disputeId} deleted (soft delete -> Rejected)`);
         } catch (error) {
             logger.error('Error deleting dispute:', error);
             throw error;
@@ -330,9 +295,6 @@ class DisputeService {
         }
     }
 
-    /**
-     * Publish dispute event to RabbitMQ for other services
-     */
     private async publishDisputeEvent(
         dispute: IDisputeDocument,
         action: 'created' | 'resolved' | 'status_updated',
@@ -359,7 +321,7 @@ class DisputeService {
                     routingKey = ROUTING_KEYS.DISPUTE_RESOLVED;
                     break;
                 case 'status_updated':
-                    routingKey = 'dispute.status.updated';
+                    routingKey = ROUTING_KEYS.DISPUTE_STATUS_UPDATED;
                     break;
                 default:
                     routingKey = ROUTING_KEYS.DISPUTE_CREATED;
@@ -372,7 +334,7 @@ class DisputeService {
             );
         } catch (error) {
             logger.error('Error publishing dispute event:', error);
-            // Don't throw error - dispute is already saved, event publishing failure shouldn't break the flow
+            // Không throw error - dispute đã được lưu, việc publish event fail không nên break flow
         }
     }
 }
