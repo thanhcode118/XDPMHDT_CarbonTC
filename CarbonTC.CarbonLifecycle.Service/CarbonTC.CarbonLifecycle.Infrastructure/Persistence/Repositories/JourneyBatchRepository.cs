@@ -87,7 +87,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 throw new ArgumentException("Owner ID cannot be null or empty", nameof(ownerId));
 
             return await _context.JourneyBatches
-                .Include(jb => jb.EVJourneys)
+                .Include(jb => jb.EVJourneys) // Include journeys để tính TotalCO2SavedKg
+                .Include(jb => jb.CarbonCredits) // Include carbon credits để tính TotalCarbonCredits nếu đã issue
                 .Where(jb => jb.UserId == ownerId)
                 .OrderByDescending(jb => jb.CreationTime)
                 .ToListAsync();

@@ -11,6 +11,7 @@ using System.IO;
 using Microsoft.Extensions.Options;
 using CarbonTC.CarbonLifecycle.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 
 namespace CarbonTC.CarbonLifecycle.Api.Controllers
@@ -83,6 +84,29 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             var result = await Mediator.Send(query);
 
             return Ok(ApiResponse<IEnumerable<EvJourneyResponseDto>>.SuccessResponse(result, $"Found {result.Count()} journeys"));
+        }
+
+        /// <summary>
+        /// Lấy danh sách phương tiện với thống kê tổng hợp của người dùng đang đăng nhập.
+        /// </summary>
+        /// <returns>Danh sách phương tiện với thống kê.</returns>
+        [HttpGet("my-vehicles")]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<VehicleSummaryDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 500)]
+        public async Task<IActionResult> GetMyVehicles()
+        {
+            var ownerId = _identityService.GetUserId();
+            if (string.IsNullOrEmpty(ownerId))
+            {
+                return Unauthorized(ApiResponse<object>.FailureResponse("User not authenticated.", ""));
+            }
+
+            _logger.LogInformation("Getting vehicles for current user: {OwnerId}", ownerId);
+            var query = new GetMyVehiclesQuery(ownerId);
+            var result = await Mediator.Send(query);
+
+            return Ok(ApiResponse<IEnumerable<VehicleSummaryDto>>.SuccessResponse(result, $"Found {result.Count()} vehicles"));
         }
 
 

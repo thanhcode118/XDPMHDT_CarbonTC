@@ -21,10 +21,12 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
         public async Task<VerificationRequest?> GetByIdAsync(Guid id) 
         {
             _logger.LogInformation("Fetching VerificationRequest with Id: {Id}", id);
-            // Include JourneyBatch nếu cần truy cập thông tin batch liên quan
+            // Include JourneyBatch, CvaStandard, và CarbonCredits để có đầy đủ thông tin
             return await _context.VerificationRequests
                 .Include(vr => vr.JourneyBatch)
+                    .ThenInclude(jb => jb.EVJourneys) // Include journeys để tính carbon credits
                 .Include(vr => vr.CvaStandard) 
+                .Include(vr => vr.CarbonCredits) // Include carbon credits đã được issue
                 .FirstOrDefaultAsync(vr => vr.Id == id);
         }
 

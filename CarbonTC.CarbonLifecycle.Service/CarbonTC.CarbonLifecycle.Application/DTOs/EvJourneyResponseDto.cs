@@ -15,5 +15,10 @@ namespace CarbonTC.CarbonLifecycle.Application.DTOs
         public DateTime EndTime { get; set; }
         public decimal CalculatedCarbonCredits { get; set; } 
         public string Status { get; set; }
+        
+        // Thông tin xe điện
+        public string VehicleType { get; set; } // Loại/model xe điện
+        public string Origin { get; set; } // Điểm xuất phát
+        public string Destination { get; set; } // Điểm đích
     }
 }
