@@ -16,6 +16,7 @@ import Reports from './pages/Reports/Reports.jsx';
 import SettingsTabs from './pages/Settings/Settings.jsx';
 import Login from './pages/Login/Login.jsx'; // ✅ Trang Login
 import Register from './pages/Register/Register.jsx'; // ✅ Trang Login
+import PaymentReturn from './pages/Payments/PaymentReturn.jsx';
 
 // --- IMPORT PRIVATE ROUTE ---
 import PrivateRoute from './components/PrivateRoute.jsx';
@@ -89,6 +90,11 @@ function App() {
           <Route
             path="/dashboard/settings"
             element={<SettingsTabs showNotification={showNotification} />}
+          />
+
+          <Route 
+            path='/payment/return' 
+            element={<PaymentReturn />} 
           />
         </Routes>
     </>

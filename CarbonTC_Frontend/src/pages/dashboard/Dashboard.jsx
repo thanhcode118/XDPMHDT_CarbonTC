@@ -1,90 +1,66 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Topbar from '../../components/Topbar/Topbar';
 import AISuggestion from '../../components/AISuggestion/AISuggestion';
 import StatCard from '../../components/StatCard/StatCard';
 import styles from './Dashboard.module.css';
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-
-// Đăng ký các thành phần của Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
-
-// Dữ liệu và tùy chọn cho biểu đồ
-const chartData = {
-  labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'],
-  datasets: [
-    {
-      label: 'Tín chỉ kiếm được',
-      data: [12, 19, 8, 15, 22, 18, 25],
-      borderColor: '#667eea',
-      backgroundColor: 'rgba(102, 126, 234, 0.1)',
-      tension: 0.4,
-      fill: true,
-    },
-    {
-      label: 'Tín chỉ đã bán',
-      data: [5, 10, 3, 8, 12, 7, 15],
-      borderColor: '#f093fb',
-      backgroundColor: 'rgba(240, 147, 251, 0.1)',
-      tension: 0.4,
-      fill: true,
-    },
-  ],
-};
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: {
-        color: '#b8bcc8',
-        font: { family: 'Inter' },
-      },
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: { color: 'rgba(255, 255, 255, 0.05)' },
-      ticks: { color: '#b8bcc8' },
-    },
-    x: {
-      grid: { color: 'rgba(255, 255, 255, 0.05)' },
-      ticks: { color: '#b8bcc8' },
-    },
-  },
-};
+import WalletChart from '../../components/WalletChart/WalletChart';
+import { getTransactionChartData, getSuggestedPrice } from '../../services/listingService'; 
+import { useNavigate } from 'react-router-dom';
 
 
 const Dashboard = () => {
   const [sidebarActive, setSidebarActive] = useState(false);
+  const navigate = useNavigate();
+
+  const [chartPeriod, setChartPeriod] = useState(0); // 0 = Tuần (default)
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const [chartLoading, setChartLoading] = useState(true);
+
+  const [bannerSuggestedPrice, setBannerSuggestedPrice] = useState(null);
+  const [isBannerSuggestionLoading, setIsBannerSuggestionLoading] = useState(true);
+
 
   const toggleSidebar = () => {
     setSidebarActive(!sidebarActive);
   };
+
+  useEffect(() => {
+    const fetchChart = async () => {
+      setChartLoading(true);
+      try {
+        const response = await getTransactionChartData(chartPeriod);
+        if (response.data && response.data.success) {
+          setChartData(response.data.data); // API trả về chính xác format
+        } else {
+          console.error("Không thể tải dữ liệu biểu đồ");
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải biểu đồ:", err);
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    fetchChart();
+  }, [chartPeriod]);
+
+  useEffect(() => {
+    const fetchAiSuggestion = async () => {
+        setIsBannerSuggestionLoading(true);
+        try {
+            const response = await getSuggestedPrice(); // Gọi API giá chung
+            if (response.data && response.data.success) {
+                setBannerSuggestedPrice(response.data.data);
+            } 
+        } catch (err) {
+            console.error("Lỗi tải giá gợi ý AI:", err);
+        } finally {
+            setIsBannerSuggestionLoading(false);
+        }
+    };
+    fetchAiSuggestion();
+  }, []);
 
   const statsData = [
     {
@@ -168,6 +144,20 @@ const Dashboard = () => {
     }
   ];
 
+  const getAiSuggestionContent = () => {
+    if (isBannerSuggestionLoading) return "Đang tải gợi ý từ AI...";
+    if (bannerSuggestedPrice) {
+      const formattedPrice = Math.round(bannerSuggestedPrice).toLocaleString();
+      return `Dựa trên dữ liệu thị trường hiện tại, chúng tôi đề xuất bạn niêm yết tín chỉ của mình với giá <strong>${formattedPrice} VNĐ/tín chỉ</strong> để tối đa hóa lợi nhuận.`;
+    }
+    return "Không có gợi ý nào từ AI.";
+  };
+
+  const handleApplySuggestion = useCallback(() => {
+    // Chuyển người dùng đến trang Thị trường, (Marketplace.js sẽ xử lý việc chọn tab 'sell')
+    navigate('/marketplace', { state: { defaultTab: 'sell' } });
+  }, [navigate]);
+
   return (
     <div className={styles.app}>
       <button className={styles.mobileToggle} onClick={toggleSidebar}>
@@ -184,9 +174,9 @@ const Dashboard = () => {
         
         <AISuggestion
           title="Gợi ý từ AI"
-          content="Dựa trên dữ liệu thị trường hiện tại, giá tín chỉ carbon đang tăng 5% so với tuần trước. Chúng tôi đề xuất bạn niêm yết tín chỉ của mình với giá <strong>15.000 VNĐ/tín chỉ</strong> để tối đa hóa lợi nhuận."
-          actionText="Áp dụng gợi ý"
-          onAction={() => console.log('AI action clicked')}
+          content={getAiSuggestionContent()} 
+          actionText="Niêm yết theo gợi ý" // <-- Đổi text
+          onAction={handleApplySuggestion}  // <-- Dùng handler mới
         />
         
         {/* Stats Grid */}
@@ -210,15 +200,36 @@ const Dashboard = () => {
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Biểu đồ tín chỉ carbon</h3>
                 <div className={styles.btnGroup} role="group">
-                  <button type="button" className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${styles.active}`}>Tuần</button>
-                  <button type="button" className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}>Tháng</button>
-                  <button type="button" className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}>Năm</button>
+                  <button 
+                    type="button" 
+                    className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 0 ? styles.active : ''}`}
+                    onClick={() => setChartPeriod(0)}
+                  >
+                    Tuần
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 1 ? styles.active : ''}`}
+                    onClick={() => setChartPeriod(1)}
+                  >
+                    Tháng
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 2 ? styles.active : ''}`}
+                    onClick={() => setChartPeriod(2)}
+                  >
+                    Năm
+                  </button>
                 </div>
               </div>
               <div className={styles.cardBody}>
                 <div className={styles.chartContainer}>
-                  <Line options={chartOptions} data={chartData} />
-                  <canvas id="carbonChart"></canvas>
+                  {chartLoading ? (
+                    <p style={{ textAlign: 'center', padding: '50px' }}>Đang tải biểu đồ...</p>
+                  ) : (
+                    <WalletChart data={chartData} height="300px" />
+                  )}
                 </div>
               </div>
             </div>
