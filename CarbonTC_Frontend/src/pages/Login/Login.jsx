@@ -51,15 +51,28 @@ const handleSubmit = async (e) => {
     const response = await login(formData);
 
     if (response && response.success) {
-      // ✅ Chuyển sang dashboard nếu thành công
-      navigate('/dashboard');
+      const user = response.data.user;
+      const userRole = user.roleName || user.roleType || user.Role || user.RoleType;
+
+      if (userRole === 'Admin') {
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        const normalizedUser = {
+          ...user,
+          role: 'ADMIN'
+        };
+
+        const userJson = encodeURIComponent(JSON.stringify(normalizedUser));
+        window.location.href = `/admin/auth/callback?token=${accessToken}&refreshToken=${refreshToken}&user=${userJson}`;
+      } else {
+        navigate('/dashboard');
+      }
     } else {
-      // ❌ Hiển thị lỗi, sau 5 giây tự ẩn
       setError(response?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
       setTimeout(() => setError(''), 5000);
     }
   } catch (err) {
-    // ❌ Hiển thị lỗi, sau 5 giây tự ẩn
     setError(err.message || 'Email hoặc mật khẩu không đúng.');
     setTimeout(() => setError(''), 5000);
   } finally {
@@ -149,7 +162,7 @@ const handleSubmit = async (e) => {
                     Ghi nhớ đăng nhập
                   </label>
                 </div>
-                
+
                 <Link
                   to="/forgot-password"
                   className={styles.forgotLink}

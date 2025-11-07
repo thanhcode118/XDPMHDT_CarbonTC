@@ -1,0 +1,95 @@
+.formSection {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 25px;
+}
+
+.formTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.formLabel {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+  display: block;
+}
+
+.formControl {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 15px;
+  color: var(--text-primary);
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.formControl:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--ev-owner-color);
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.formControl::placeholder {
+  color: var(--text-secondary);
+}
+
+.textSecondary {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.formCheck {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.formCheckInput {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.formCheckInput:checked {
+  background-color: var(--ev-owner-color);
+  border-color: var(--ev-owner-color);
+}
+
+.formCheckLabel {
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btnCustom {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}

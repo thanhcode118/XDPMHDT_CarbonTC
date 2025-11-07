@@ -1,0 +1,66 @@
+/* Kế thừa style từ Tabs.module.css để đảm bảo giao diện */
+.tripsTabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+  overflow-x: auto; /* Cho phép cuộn ngang nếu có nhiều tab */
+}
+
+/* Thêm class này để có thể tùy chỉnh riêng nếu cần sau này */
+.tripsTabsContainer {
+  /* Có thể thêm các style đặc trưng cho TripsTabs ở đây nếu muốn */
+  background: var(--card-bg); /* Ví dụ: Thêm nền giống Card */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px; /* Bo góc giống Card */
+  padding: 0 10px; /* Thêm padding nhỏ */
+  border-bottom: none; /* Bỏ border-bottom mặc định nếu đã có border bao ngoài */
+}
+
+
+.tripsTab {
+  padding: 15px 20px; /* Tăng padding một chút */
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  white-space: nowrap; /* Ngăn text xuống dòng */
+  font-weight: 500;
+  border-bottom: 2px solid transparent; /* Đường gạch dưới khi active */
+}
+
+.tripsTab:hover {
+  color: var(--text-primary);
+}
+
+.tripsTab.active {
+  color: var(--text-primary);
+  /* Sử dụng biến màu chủ đạo đã định nghĩa */
+  border-bottom-color: var(--ev-owner-color);
+}
+
+/* Responsive adjustments (có thể copy từ Tabs.module.css nếu cần) */
+@media (max-width: 768px) {
+  .tripsTabsContainer {
+      padding: 0 5px;
+      border-radius: 12px;
+  }
+  .tripsTab {
+    padding: 12px 15px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .tripsTabsContainer {
+    margin-bottom: 15px; /* Giảm margin bottom trên mobile */
+    padding: 0;
+    border-radius: 12px;
+  }
+  .tripsTab {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    flex: 1; /* Cho các tab tự căn đều */
+    text-align: center;
+  }
+}
