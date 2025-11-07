@@ -7,11 +7,7 @@ function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -46,21 +42,12 @@ function Navbar() {
             <li className={styles.navItem}>
               <Link className={styles.navLink} to="#contact">Liên hệ</Link>
             </li>
-            <li className={`${styles.navItem} ${styles.dropdown}`}>
-              <Link className={`${styles.navLink} ${styles.userDropdown} ${styles.dropdownToggle}`} 
-                 to="#" 
-                 id="userDropdown" 
-                 role="button" 
-                 data-bs-toggle="dropdown">
+
+            <li className={styles.navItem}>
+              <Link className={`${styles.navLink} ${styles.userDropdown}`} to="/login">
                 <i className={`bi bi-person-circle ${styles.userIcon}`}></i>
                 Đăng nhập
               </Link>
-              <ul className={`${styles.dropdownMenu} dropdown-menu`}>
-                <li><Link className={styles.dropdownItem} to="/dashboard">Chủ xe điện</Link></li>
-                <li><Link className={styles.dropdownItem} to="login-buyer.html">Người mua tín chỉ</Link></li>
-                <li><Link className={styles.dropdownItem} to="login-verifier.html">Tổ chức xác minh</Link></li>
-                <li><Link className={styles.dropdownItem} to="login-admin.html">Quản trị viên</Link></li>
-              </ul>
             </li>
           </ul>
         </div>
