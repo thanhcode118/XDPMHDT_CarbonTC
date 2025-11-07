@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 
 export const AuthContext = createContext(null);
@@ -7,6 +8,7 @@ export const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Initialize authentication on mount
   useEffect(() => {
@@ -82,16 +84,32 @@ export const AuthProvider = ({ children }) => {
 
   // Login
   const login = async (credentials) => {
-    console.log('🔐 [Login] Starting login...');
     try {
       const response = await authService.login(credentials);
       if (response.success) {
-        console.log('✅ [Login] Successful:', response.data.user);
-        setUser(response.data.user);
+        const userData = response.data.user;
+        setUser(userData);
+
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        const payload = accessToken ? authService.decodeToken(accessToken) : null;
+        const role = payload?.role;
+
+        const normalizedRole = (role || userData.role || '').toLowerCase();
+        if (normalizedRole === 'admin') {
+          setTimeout(() => {
+            navigate('/admin/dashboard');
+          }, 100);
+
+          return {
+            ...response,
+            isAdmin: true,
+            handled: true
+          }
+        }
       }
       return response;
     } catch (error) {
-      console.error('❌ [Login] Failed:', error);
       throw error;
     }
   };
