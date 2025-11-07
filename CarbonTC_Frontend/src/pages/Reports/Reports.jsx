@@ -9,13 +9,18 @@ import WalletChart from '../../components/WalletChart/WalletChart';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
 import styles from './Reports.module.css';
+import { getTransactionChartData } from '../../services/listingService';
 
 const Reports = () => {
   const { sidebarActive, toggleSidebar } = useSidebar();
   const { showNotification } = useNotification();
-  const [activePeriod, setActivePeriod] = useState('month');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [chartPeriod, setChartPeriod] = useState(0); 
+  
+  const [carbonChartData, setCarbonChartData] = useState({ labels: [], datasets: [] });
+  const [chartLoading, setChartLoading] = useState(true);
 
   // Sample data
   const reportStats = [
@@ -61,70 +66,19 @@ const Reports = () => {
     { date: '08/05/2023', type: 'Bán', credits: 10, value: 150000, co2Reduced: 25, status: 'Đang xử lý' }
   ];
 
-  const getChartData = (period) => {
-    const dataConfig = {
-      week: {
-        labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-        data1: [3, 5, 2, 4, 6, 3, 5],
-        data2: [2, 3, 1, 3, 4, 2, 3]
-      },
-      month: {
-        labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
-        data1: [15, 22, 18, 25],
-        data2: [10, 15, 12, 20]
-      },
-      quarter: {
-        labels: ['Tháng 1', 'Tháng 2', 'Tháng 3'],
-        data1: [45, 65, 68],
-        data2: [32, 47, 52]
-      },
-      year: {
-        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-        data1: [178, 195, 210, 225],
-        data2: [131, 145, 155, 165]
-      }
-    };
+  const co2ChartMockData = {
+  labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+  datasets: [
+    {
+      label: 'CO₂ giảm (kg)',
+      data: [45, 65, 68, 80], // Data giả
+      backgroundColor: 'rgba(79, 172, 254, 0.7)',
+      borderColor: 'rgba(79, 172, 254, 1)',
+      borderWidth: 1
+    }
+  ]
+};
 
-    const config = dataConfig[period] || dataConfig.month;
-
-    return {
-      carbonChart: {
-        labels: config.labels,
-        datasets: [
-          {
-            label: 'Tín chỉ kiếm được',
-            data: config.data1,
-            borderColor: '#667eea',
-            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-            tension: 0.4,
-            fill: true
-          },
-          {
-            label: 'Tín chỉ đã bán',
-            data: config.data2,
-            borderColor: '#f093fb',
-            backgroundColor: 'rgba(240, 147, 251, 0.1)',
-            tension: 0.4,
-            fill: true
-          }
-        ]
-      },
-      co2Chart: {
-        labels: config.labels,
-        datasets: [
-          {
-            label: 'CO₂ giảm (kg)',
-            data: config.data1.map(d => d * 2.5),
-            backgroundColor: 'rgba(79, 172, 254, 0.7)',
-            borderColor: 'rgba(79, 172, 254, 1)',
-            borderWidth: 1
-          }
-        ]
-      }
-    };
-  };
-
-  const [chartData, setChartData] = useState(getChartData('month'));
 
   useEffect(() => {
     // Simulate API call
@@ -134,12 +88,26 @@ const Reports = () => {
   }, []);
 
   useEffect(() => {
-    setChartData(getChartData(activePeriod));
-  }, [activePeriod]);
+    const fetchChart = async () => {
+      setChartLoading(true);
+      try {
+        const response = await getTransactionChartData(chartPeriod);
+        if (response.data && response.data.success) {
+          setCarbonChartData(response.data.data); // API trả về chính xác format
+        } else {
+          console.error("Không thể tải dữ liệu biểu đồ");
+          showNotification('Không thể tải dữ liệu biểu đồ', 'error');
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải biểu đồ:", err);
+        showNotification(err.message || 'Lỗi tải biểu đồ', 'error');
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    fetchChart();
+  }, [chartPeriod, showNotification]);
 
-  const handlePeriodChange = (period) => {
-    setActivePeriod(period);
-  };
 
   const handleGenerateReport = (reportData) => {
     console.log('Generating report:', reportData);
@@ -206,19 +174,36 @@ const Reports = () => {
         <div className={styles.card} data-aos="fade-up" data-aos-delay="500">
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Biểu đồ tín chỉ carbon</h3>
-            <button 
-              className={`${styles.btnCustom} ${styles.btnPrimaryCustom} ${styles.btnSm}`}
-              onClick={() => setShowGenerateModal(true)}
-            >
-              <i className="bi bi-download me-1"></i>Tạo báo cáo
-            </button>
+              <div className={styles.btnGroup} role="group">
+              <button 
+                type="button" 
+                className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 0 ? styles.active : ''}`}
+                onClick={() => setChartPeriod(0)}
+              >
+                Tuần
+              </button>
+              <button 
+                type="button" 
+                className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 1 ? styles.active : ''}`}
+                onClick={() => setChartPeriod(1)}
+              >
+                Tháng
+              </button>
+              <button 
+                type="button" 
+                className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 2 ? styles.active : ''}`}
+                onClick={() => setChartPeriod(2)}
+              >
+                Năm
+              </button>
+            </div>
           </div>
           <div className={styles.cardBody}>
-            <PeriodSelector
-              activePeriod={activePeriod}
-              onPeriodChange={handlePeriodChange}
-            />
-            <WalletChart data={chartData.carbonChart} />
+            {chartLoading ? (
+              <p style={{ textAlign: 'center', padding: '50px' }}>Đang tải biểu đồ...</p>
+            ) : (
+              <WalletChart data={carbonChartData} />
+            )}
           </div>
         </div>
         
@@ -228,7 +213,7 @@ const Reports = () => {
             <h3 className={styles.cardTitle}>Biểu đồ giảm phát thải CO₂</h3>
           </div>
           <div className={styles.cardBody}>
-            <WalletChart data={chartData.co2Chart} />
+            <WalletChart data={co2ChartMockData} />
           </div>
         </div>
         

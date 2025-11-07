@@ -5,7 +5,8 @@ const WithdrawModal = ({
   show, 
   onClose, 
   onConfirm,
-  availableBalance = 0 
+  availableBalance = 0,
+  mode = 'credit' // 'credit' | 'money'
 }) => {
   const [formData, setFormData] = useState({
     amount: '',
@@ -54,10 +55,14 @@ const WithdrawModal = ({
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.amount || formData.amount < 1) {
-      newErrors.amount = 'Vui lòng nhập số lượng tín chỉ hợp lệ';
+    if (!formData.amount || formData.amount < (mode === 'money' ? 10000 : 1)) {
+      newErrors.amount = mode === 'money'
+        ? 'Vui lòng nhập số tiền hợp lệ (>= 10,000 VNĐ)'
+        : 'Vui lòng nhập số lượng tín chỉ hợp lệ';
     } else if (formData.amount > availableBalance) {
-      newErrors.amount = `Số lượng không được vượt quá ${availableBalance} tín chỉ`;
+      newErrors.amount = mode === 'money'
+        ? `Số tiền không được vượt quá ${availableBalance.toLocaleString('vi-VN')} VNĐ`
+        : `Số lượng không được vượt quá ${availableBalance} tín chỉ`;
     }
 
     if (!formData.method) {
@@ -135,15 +140,15 @@ const WithdrawModal = ({
           <div className={styles.modalBody}>
             <div className={styles.formGroup}>
               <label htmlFor="withdrawAmount" className={styles.formLabel}>
-                Số lượng tín chỉ
+                {mode === 'money' ? 'Số tiền rút (VNĐ)' : 'Số lượng tín chỉ'}
               </label>
               <input 
                 type="number" 
                 className={`${styles.formControl} ${errors.amount ? styles.error : ''}`}
                 id="withdrawAmount" 
                 name="amount"
-                placeholder="Nhập số lượng tín chỉ" 
-                min="1" 
+                placeholder={mode === 'money' ? 'Nhập số tiền (VNĐ)' : 'Nhập số lượng tín chỉ'} 
+                min={mode === 'money' ? 10000 : 1}
                 max={availableBalance}
                 value={formData.amount}
                 onChange={handleInputChange}
@@ -153,7 +158,9 @@ const WithdrawModal = ({
                 <div className={styles.errorMessage}>{errors.amount}</div>
               )}
               <small className={styles.helperText}>
-                Bạn có {availableBalance} tín chỉ khả dụng
+                {mode === 'money' 
+                  ? `Bạn có ${Number(availableBalance).toLocaleString('vi-VN')} VNĐ khả dụng`
+                  : `Bạn có ${availableBalance} tín chỉ khả dụng`}
               </small>
             </div>
 
