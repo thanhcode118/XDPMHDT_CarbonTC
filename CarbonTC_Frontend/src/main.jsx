@@ -1,8 +1,9 @@
 // src/main.jsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App.jsx';
+import AppRouter from '../src/admin/routes/AppRoutes.tsx';
 import { AppProvider } from './context/AppContext';
 import { AuthProvider } from './context/AuthContext.jsx';
 
@@ -16,9 +17,20 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AppProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <Routes>
+          {/* ✅ Admin routes - NO AuthProvider */}
+          <Route path="/admin/*" element={<AppRouter />} />
+
+          {/* ✅ User routes - WITH AuthProvider */}
+          <Route
+            path="/*"
+            element={
+              <AuthProvider>
+                <App />
+              </AuthProvider>
+            }
+          />
+        </Routes>
       </AppProvider>
     </BrowserRouter>
   </StrictMode>

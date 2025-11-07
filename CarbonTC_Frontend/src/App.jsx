@@ -4,6 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import AOS from 'aos';
 
 // Import layout & pages
+// import AppRouter from '../src/admin/routes/AppRoutes.tsx';
+
 import Layout from './components/layout/Layout.jsx';
 import HomePage from './pages/HomePage.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
@@ -47,7 +49,7 @@ function App() {
 
         {/* ✅ Trang Đăng nhập */}
         <Route path="/login" element={<Login />} />
-        
+
         {/* ✅ Trang Đăng ký */}
         <Route path="/register" element={<Register />} />
 
@@ -91,7 +93,7 @@ function App() {
             path="/dashboard/settings"
             element={<SettingsTabs showNotification={showNotification} />}
           />
-
+          {/* <Route path="/admin/*" element={<AppRouter />} /> */}
           <Route 
             path='/payment/return' 
             element={<PaymentReturn />} 
