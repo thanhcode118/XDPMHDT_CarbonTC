@@ -41,7 +41,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.JourneyBatch
             var ownerId = _identityService.GetUserId();
             if (string.IsNullOrEmpty(ownerId))
             {
-                throw new Exception("User is not authenticated.");
+                throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
             // 1. Lấy hành trình (Dùng hàm đã xác nhận)
@@ -52,11 +52,11 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.JourneyBatch
             // 2. Kiểm tra nghiệp vụ
             if (journeys.Count != request.BatchData.JourneyIds.Count)
             {
-                throw new Exception("Some journeys not found or do not belong to user.");
+                throw new KeyNotFoundException("Some journeys not found or do not belong to user.");
             }
             if (journeys.Any(j => j.Status != JourneyStatus.Pending))
             {
-                throw new Exception("Only journeys with 'Pending' status can be batched.");
+                throw new InvalidOperationException("Only journeys with 'Pending' status can be batched.");
             }
 
             // 3. Tạo Batch - SỬ DỤNG FACTORY METHOD

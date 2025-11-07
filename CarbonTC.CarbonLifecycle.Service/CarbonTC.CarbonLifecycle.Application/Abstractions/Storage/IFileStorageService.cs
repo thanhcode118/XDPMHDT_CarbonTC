@@ -12,7 +12,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Abstractions.Storage
 {
     public interface IFileStorageService
     {
-        Task<string> SaveFileAsync(string fileName, Stream content, string userId, string contentType = null);
+        Task<string> SaveFileAsync(string fileName, Stream content, string userId, string? contentType = null);
 
         Task<Stream> GetFileAsync(string filePath);
 
@@ -27,13 +27,13 @@ namespace CarbonTC.CarbonLifecycle.Application.Abstractions.Storage
 
     public class FileMetadata
     {
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
+        public string FileName { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
         public long FileSizeBytes { get; set; }
-        public string ContentType { get; set; }
+        public string ContentType { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? LastModifiedAt { get; set; }
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
     }
 }
 

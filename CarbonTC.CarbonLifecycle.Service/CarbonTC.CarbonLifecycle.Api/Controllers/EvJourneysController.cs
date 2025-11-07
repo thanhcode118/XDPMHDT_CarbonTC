@@ -35,14 +35,30 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
         /// ...
         [HttpPost("upload")]
         [ProducesResponseType(typeof(ApiResponse<EvJourneyResponseDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         [ProducesResponseType(typeof(ApiResponse<object>), 500)]
         public async Task<IActionResult> UploadJourney([FromBody] EvJourneyUploadDto uploadDto)
         {
             _logger.LogInformation("Attempting to upload new EV journey");
-            var command = new UploadEVJourneyCommand(uploadDto);
-            var result = await Mediator.Send(command);
+            try
+            {
+                var command = new UploadEVJourneyCommand(uploadDto);
+                var result = await Mediator.Send(command);
 
-            return Ok(ApiResponse<EvJourneyResponseDto>.SuccessResponse(result, "Journey uploaded successfully"));
+                return Ok(ApiResponse<EvJourneyResponseDto>.SuccessResponse(result, "Journey uploaded successfully"));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized attempt to upload journey");
+                return Unauthorized(ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Resource not found during journey upload: {Message}", ex.Message);
+                return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+            }
         }
 
         /// <summary>
@@ -100,14 +116,35 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
         /// Gộp nhiều hành trình thành một lô (Batch)
         [HttpPost("batch")]
         [ProducesResponseType(typeof(ApiResponse<JourneyBatchDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         [ProducesResponseType(typeof(ApiResponse<object>), 500)]
         public async Task<IActionResult> CreateBatch([FromBody] JourneyBatchCreateDto batchDto)
         {
             _logger.LogInformation("Attempting to create a new journey batch with {Count} journeys", batchDto.JourneyIds.Count);
-            var command = new CreateJourneyBatchCommand(batchDto);
-            var result = await Mediator.Send(command);
+            try
+            {
+                var command = new CreateJourneyBatchCommand(batchDto);
+                var result = await Mediator.Send(command);
 
-            return Ok(ApiResponse<JourneyBatchDto>.SuccessResponse(result, "Journey batch created successfully"));
+                return Ok(ApiResponse<JourneyBatchDto>.SuccessResponse(result, "Journey batch created successfully"));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized attempt to create batch");
+                return Unauthorized(ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Resource not found during batch creation: {Message}", ex.Message);
+                return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation during batch creation: {Message}", ex.Message);
+                return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+            }
         }
 
         /// Tải lên tệp (CSV hoặc JSON) chứa nhiều hành trình EV.

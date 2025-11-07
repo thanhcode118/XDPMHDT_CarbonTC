@@ -6,7 +6,6 @@ using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using CarbonTC.CarbonLifecycle.Application.Services;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +43,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             var ownerId = _identityService.GetUserId();
             if (string.IsNullOrEmpty(ownerId))
             {
-                throw new Exception("User is not authenticated.");
+                throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
             // 1. Lấy tiêu chuẩn tính toán
@@ -53,7 +52,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
 
             if (standard == null)
             {
-                throw new Exception($"No active CVA standard found for vehicle type '{request.JourneyData.VehicleModel}'.");
+                throw new KeyNotFoundException($"No active CVA standard found for vehicle type '{request.JourneyData.VehicleModel}'.");
             }
 
             // 2. Tính toán CO2

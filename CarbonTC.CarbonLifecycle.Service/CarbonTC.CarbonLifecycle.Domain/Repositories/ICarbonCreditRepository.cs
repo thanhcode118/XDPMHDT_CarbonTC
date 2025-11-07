@@ -7,7 +7,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Repositories
 {
     public interface ICarbonCreditRepository
     {
-        Task<CarbonCredit> GetByIdAsync(Guid id);
+        Task<CarbonCredit?> GetByIdAsync(Guid id);
         Task<IEnumerable<CarbonCredit>> GetByJourneyBatchIdAsync(Guid journeyBatchId);
         Task<IEnumerable<CarbonCredit>> GetByUserIdAsync(string userId);
         Task AddAsync(CarbonCredit carbonCredit);

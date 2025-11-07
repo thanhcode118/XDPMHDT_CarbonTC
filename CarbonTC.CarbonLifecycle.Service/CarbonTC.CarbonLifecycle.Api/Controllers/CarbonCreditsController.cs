@@ -4,6 +4,7 @@ using CarbonTC.CarbonLifecycle.Application.Common;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
 using CarbonTC.CarbonLifecycle.Application.Queries.CVAStandard; 
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -11,6 +12,9 @@ using CarbonTC.CarbonLifecycle.Application.Queries.CarbonCredit;
 
 namespace CarbonTC.CarbonLifecycle.Api.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize] // Yêu cầu đăng nhập
     public class CarbonCreditsController : BaseApiController
     {
         private readonly ILogger<CarbonCreditsController> _logger;

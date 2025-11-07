@@ -16,8 +16,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.BackgroundServices
     {
         private readonly ILogger<RabbitMQConsumerService> _logger;
         private readonly RabbitMQSettings _settings;
-        private IConnection _connection;
-        private IModel _channel;
+        private IConnection? _connection;
+        private IModel? _channel;
 
         public RabbitMQConsumerService(
             IOptions<RabbitMQSettings> settings,

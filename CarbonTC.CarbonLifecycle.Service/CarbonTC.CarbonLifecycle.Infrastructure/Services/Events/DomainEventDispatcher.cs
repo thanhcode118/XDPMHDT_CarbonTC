@@ -48,7 +48,12 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             // 3. Gọi phương thức đó và trả về Task
             try
             {
-                return (Task)specificMethod.Invoke(this, new object[] { domainEvent });
+                var result = specificMethod.Invoke(this, new object[] { domainEvent });
+                if (result is Task task)
+                {
+                    return task;
+                }
+                return Task.FromException(new InvalidOperationException("Dispatch method did not return a Task"));
             }
             catch (Exception ex)
             {

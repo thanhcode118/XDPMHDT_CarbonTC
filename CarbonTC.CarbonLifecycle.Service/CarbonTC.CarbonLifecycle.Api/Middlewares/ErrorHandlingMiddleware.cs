@@ -31,9 +31,14 @@ namespace CarbonTC.CarbonLifecycle.Api.Middlewares
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var code = HttpStatusCode.InternalServerError; // 500
+            var errors = new List<string> { exception.Message };
+            if (exception.StackTrace != null)
+            {
+                errors.Add(exception.StackTrace);
+            }
             var response = ApiResponse<object>.FailureResponse(
                 "An unexpected error occurred. Please try again later.",
-                new List<string> { exception.Message, exception.StackTrace } // Chỉ bao gồm StackTrace ở môi trường Dev
+                errors // Chỉ bao gồm StackTrace ở môi trường Dev
             );
 
             // TODO: Bạn có thể thêm logic để xử lý các loại Exception cụ thể (ví dụ: ValidationException)

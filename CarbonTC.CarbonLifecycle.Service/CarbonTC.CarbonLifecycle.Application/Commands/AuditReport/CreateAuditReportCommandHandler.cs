@@ -19,7 +19,6 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.AuditReport
         private readonly IMapper _mapper;
         private readonly ILogger<CreateAuditReportCommandHandler> _logger;
 
-        // TODO: Tạo IAuditReportRepository và implement trong Infrastructure
         public CreateAuditReportCommandHandler(
             IAuditReportRepository auditReportRepository,
             IUnitOfWork unitOfWork,

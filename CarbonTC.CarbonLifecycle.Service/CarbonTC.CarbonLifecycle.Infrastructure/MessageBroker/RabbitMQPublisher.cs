@@ -20,8 +20,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
     {
         private readonly RabbitMQSettings _settings;
         private readonly ILogger<RabbitMQPublisher> _logger;
-        private IConnection _connection;
-        private RModel _channel;
+        private IConnection? _connection;
+        private IModel? _channel;
         private readonly object _lock = new object();
         private bool _disposed = false;
 
@@ -91,7 +91,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             }
         }
 
-        public async Task PublishAsync<TEvent>(TEvent @event, string routingKey = null)
+        public async Task PublishAsync<TEvent>(TEvent @event, string? routingKey = null)
             where TEvent : IDomainEvent
         {
             if (@event == null)
@@ -99,10 +99,10 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
 
             EnsureInitialized();
 
-            await Task.Run(() => PublishWithRetry(@event, routingKey));
+            await Task.Run(() => PublishWithRetry(@event, routingKey ?? string.Empty));
         }
 
-        public async Task PublishBatchAsync<TEvent>(IEnumerable<TEvent> events, string routingKey = null)
+        public async Task PublishBatchAsync<TEvent>(IEnumerable<TEvent> events, string? routingKey = null)
             where TEvent : IDomainEvent
         {
             if (events == null)
@@ -116,7 +116,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             }
         }
 
-        public async Task PublishIntegrationEventAsync<TEvent>(TEvent @event, string routingKey = null)
+        public async Task PublishIntegrationEventAsync<TEvent>(TEvent @event, string? routingKey = null)
             where TEvent : class
         {
             if (@event == null)
@@ -125,7 +125,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             EnsureInitialized();
 
             // Gọi một hàm retry mới cho các sự kiện generic (không phải IDomainEvent)
-            await Task.Run(() => PublishGenericWithRetry(@event, routingKey));
+            await Task.Run(() => PublishGenericWithRetry(@event, routingKey ?? string.Empty));
         }
 
         private void PublishGenericWithRetry<TEvent>(TEvent @event, string routingKey)

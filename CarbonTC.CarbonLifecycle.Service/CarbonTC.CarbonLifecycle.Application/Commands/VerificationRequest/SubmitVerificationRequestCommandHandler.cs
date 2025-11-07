@@ -36,7 +36,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
             var ownerId = _identityService.GetUserId();
             if (string.IsNullOrEmpty(ownerId))
             {
-                throw new Exception("User is not authenticated.");
+                throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
             // 1. Lấy batch 
@@ -44,11 +44,11 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
 
             if (batch == null)
             {
-                throw new Exception("Batch not found or access denied.");
+                throw new KeyNotFoundException("Batch not found or access denied.");
             }
             if (batch.Status != JourneyBatchStatus.Pending)
             {
-                throw new Exception("Only 'Pending' batches can be submitted.");
+                throw new InvalidOperationException("Only 'Pending' batches can be submitted.");
             }
 
             // 2. Cập nhật trạng thái Batch - SỬ DỤNG DOMAIN BEHAVIOR

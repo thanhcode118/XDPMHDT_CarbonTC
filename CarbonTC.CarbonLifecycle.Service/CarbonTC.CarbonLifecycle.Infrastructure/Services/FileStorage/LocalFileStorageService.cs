@@ -34,7 +34,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.FileStorage
             }
         }
 
-        public async Task<string> SaveFileAsync(string fileName, Stream content, string userId, string contentType = null)
+        public async Task<string> SaveFileAsync(string fileName, Stream content, string userId, string? contentType = null)
         {
             ValidateFileName(fileName);
             ValidateFileSize(content);
@@ -48,7 +48,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.FileStorage
                 var filePath = GenerateFilePath(fileName, userId);
                 var directory = Path.GetDirectoryName(filePath);
 
-                if (!Directory.Exists(directory))
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }

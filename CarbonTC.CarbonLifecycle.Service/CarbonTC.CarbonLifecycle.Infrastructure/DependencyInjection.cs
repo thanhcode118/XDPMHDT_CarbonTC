@@ -11,11 +11,7 @@ using CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories;
 using CarbonTC.CarbonLifecycle.Infrastructure.Services.FileStorage;
 using Microsoft.Extensions.Options;
 using CarbonTC.CarbonLifecycle.Domain.Abstractions;
-using CarbonTC.CarbonLifecycle.Domain.Repositories;
-// ===== BẮT ĐẦU CẬP NHẬT =====
-// Thêm using này để đăng ký Consumer
 using CarbonTC.CarbonLifecycle.Infrastructure.BackgroundServices;
-// ===== KẾT THÚC CẬP NHẬT =====
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure
 {
@@ -86,18 +82,18 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
     /// </summary>
     internal class NoOpMessagePublisher : IMessagePublisher
     {
-        public Task PublishAsync<TEvent>(TEvent @event, string routingKey = null)
+        public Task PublishAsync<TEvent>(TEvent @event, string? routingKey = null)
             where TEvent : CarbonTC.CarbonLifecycle.Domain.Events.IDomainEvent
         {
             return Task.CompletedTask;
         }
-        public Task PublishIntegrationEventAsync<TEvent>(TEvent @event, string routingKey = null)
+        public Task PublishIntegrationEventAsync<TEvent>(TEvent @event, string? routingKey = null)
             where TEvent : class
         {
             return Task.CompletedTask;
         }
 
-        public Task PublishBatchAsync<TEvent>(IEnumerable<TEvent> events, string routingKey = null)
+        public Task PublishBatchAsync<TEvent>(IEnumerable<TEvent> events, string? routingKey = null)
             where TEvent : CarbonTC.CarbonLifecycle.Domain.Events.IDomainEvent
         {
             return Task.CompletedTask;

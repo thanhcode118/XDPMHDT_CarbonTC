@@ -6,7 +6,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Repositories
 {
     public interface IAuditReportRepository
     {
-        Task<AuditReport> GetByIdAsync(Guid id);
+        Task<AuditReport?> GetByIdAsync(Guid id);
         Task AddAsync(AuditReport report);
         // Có thể thêm phương thức tìm kiếm theo EntityType, EntityId
     }
