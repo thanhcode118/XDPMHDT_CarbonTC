@@ -1,0 +1,54 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonTC.CarbonLifecycle.Service", "CarbonTC.CarbonLifecycle.Service\CarbonTC.CarbonLifecycle.Service.csproj", "{A518700C-9F6D-484F-997E-43112EFE92E1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonTC.CarbonLifecycle.Domain", "CarbonTC.CarbonLifecycle.Domain\CarbonTC.CarbonLifecycle.Domain.csproj", "{6172E54A-E5EB-4D07-9B54-8A1BF6CB6C44}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonTC.CarbonLifecycle.Application", "CarbonTC.CarbonLifecycle.Application\CarbonTC.CarbonLifecycle.Application.csproj", "{3460946A-779D-4053-9D0C-BE8578A4DC1A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonTC.CarbonLifecycle.Infrastructure", "CarbonTC.CarbonLifecycle.Infrastructure\CarbonTC.CarbonLifecycle.Infrastructure.csproj", "{F128BA27-DE8A-4B82-A446-5570BB63D593}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonTC.CarbonLifecycle.Api", "CarbonTC.CarbonLifecycle.Api\CarbonTC.CarbonLifecycle.Api.csproj", "{7918A7DF-ACD5-4EBE-87D8-15180473D8B9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "..\CarbonTC.Gateway\ApiGateway\ApiGateway.csproj", "{A37693FE-53CC-4A67-8F2F-AD795BB1EA01}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A518700C-9F6D-484F-997E-43112EFE92E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A518700C-9F6D-484F-997E-43112EFE92E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A518700C-9F6D-484F-997E-43112EFE92E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A518700C-9F6D-484F-997E-43112EFE92E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6172E54A-E5EB-4D07-9B54-8A1BF6CB6C44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6172E54A-E5EB-4D07-9B54-8A1BF6CB6C44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6172E54A-E5EB-4D07-9B54-8A1BF6CB6C44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6172E54A-E5EB-4D07-9B54-8A1BF6CB6C44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3460946A-779D-4053-9D0C-BE8578A4DC1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3460946A-779D-4053-9D0C-BE8578A4DC1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3460946A-779D-4053-9D0C-BE8578A4DC1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3460946A-779D-4053-9D0C-BE8578A4DC1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F128BA27-DE8A-4B82-A446-5570BB63D593}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F128BA27-DE8A-4B82-A446-5570BB63D593}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F128BA27-DE8A-4B82-A446-5570BB63D593}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F128BA27-DE8A-4B82-A446-5570BB63D593}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7918A7DF-ACD5-4EBE-87D8-15180473D8B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7918A7DF-ACD5-4EBE-87D8-15180473D8B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7918A7DF-ACD5-4EBE-87D8-15180473D8B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7918A7DF-ACD5-4EBE-87D8-15180473D8B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A37693FE-53CC-4A67-8F2F-AD795BB1EA01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A37693FE-53CC-4A67-8F2F-AD795BB1EA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A37693FE-53CC-4A67-8F2F-AD795BB1EA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A37693FE-53CC-4A67-8F2F-AD795BB1EA01}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {26B7E0EF-CA52-4610-8454-4B82215E00BC}
+	EndGlobalSection
+EndGlobal
