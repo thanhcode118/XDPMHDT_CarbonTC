@@ -1,0 +1,110 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+.sidebarHeader {
+  padding: 25px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brandLogo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-left: 10px;
+}
+
+.sidebarMenu {
+  list-style: none;
+  padding: 20px 0;
+  margin: 0;
+}
+
+.sidebarMenu li {
+  margin-bottom: 5px;
+}
+
+.sidebarMenu a {
+  display: flex;
+  align-items: center;
+  padding: 15px 25px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.sidebarMenu a:hover,
+.sidebarMenu a.active {
+  color: var(--text-primary);
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.sidebarMenu a.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--ev-owner-color);
+}
+
+.sidebarMenu i {
+  margin-right: 15px;
+  font-size: 1.2rem;
+}
+
+.sidebarProfile {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.profileInfo {
+  display: flex;
+  align-items: center;
+}
+
+.profileAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.profileName {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.profileRole {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 992px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  :global(.activemenu) {
+    transform: translateX(0);
+  }
+}
+

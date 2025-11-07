@@ -1,0 +1,118 @@
+.walletCard {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.walletCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-gradient);
+  opacity: 0.1;
+  z-index: -1;
+}
+
+.walletHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.walletTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.walletIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.walletBalance {
+  margin-bottom: 30px;
+}
+
+.balanceLabel {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.balanceAmount {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.balanceValue {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.walletActions {
+  display: flex;
+  gap: 15px;
+}
+
+.btnCustom {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btnOutlineCustom {
+  background: transparent;
+  color: var(--ev-owner-color);
+  border: 1px solid var(--ev-owner-color);
+}
+
+.btnOutlineCustom:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+@media (max-width: 576px) {
+  .balanceAmount {
+    font-size: 2.5rem;
+  }
+  
+  .walletActions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,133 @@
+.marketplaceCard {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 25px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.marketplaceCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-gradient);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.marketplaceCard:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.marketplaceCard:hover::before {
+  opacity: 0.05;
+}
+
+.marketplaceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.marketplaceType {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.fixedPrice {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.auction {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.priceTrend {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.up {
+  color: #4ade80;
+}
+
+.down {
+  color: #f87171;
+}
+
+.time {
+  color: var(--text-secondary);
+}
+
+.marketplaceTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.marketplaceDetails {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.marketplaceDetailItem {
+  text-align: center;
+}
+
+.marketplaceDetailValue {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.marketplaceDetailLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.marketplaceFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.marketplaceSeller {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.btnCustom {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}

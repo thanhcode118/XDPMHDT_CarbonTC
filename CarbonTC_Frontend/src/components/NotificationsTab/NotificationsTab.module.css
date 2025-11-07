@@ -1,0 +1,169 @@
+.tabContent {
+  display: block;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.cardBody {
+  padding: 25px;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.notificationItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+.notificationInfo {
+  flex: 1;
+}
+
+.notificationTitle {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+.notificationDescription {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.formSwitch {
+  display: flex;
+  align-items: center;
+}
+
+.formCheckInput {
+  width: 50px;
+  height: 25px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 25px;
+  position: relative;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.3s ease;
+}
+
+.formCheckInput:checked {
+  background-color: var(--ev-owner-color);
+}
+
+.formCheckInput::before {
+  content: '';
+  position: absolute;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s ease;
+}
+
+.formCheckInput:checked::before {
+  transform: translateX(25px);
+}
+
+.formCheckLabel {
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.btnCustom {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.saveButton {
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cardBody {
+    padding: 20px;
+  }
+  
+  .notificationItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .formSwitch {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 576px) {
+  .cardBody {
+    padding: 15px;
+  }
+  
+  .cardTitle {
+    font-size: 1.1rem;
+  }
+  
+  .notificationTitle {
+    font-size: 0.9rem;
+  }
+  
+  .notificationDescription {
+    font-size: 0.8rem;
+  }
+  
+  .formCheckInput {
+    width: 45px;
+    height: 22px;
+  }
+  
+  .formCheckInput::before {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .btnCustom {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
