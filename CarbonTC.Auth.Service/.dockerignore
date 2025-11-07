@@ -1,0 +1,74 @@
+# ================================
+# .NET Build Artifacts
+# ================================
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+
+# ================================
+# IDE & Editor Files
+# ================================
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ================================
+# Git & CI/CD
+# ================================
+.git/
+.gitignore
+.gitattributes
+*.md
+README.md
+CHANGELOG.md
+
+# ================================
+# Docker Files
+# ================================
+Dockerfile
+.dockerignore
+docker-compose*.yml
+.env
+.env.*
+
+# ================================
+# OS Files
+# ================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+# Package Manager Files
+# ================================
+**/node_modules/
+**/packages/
+*.nupkg
+
+# ================================
+# Logs & Temporary Files
+# ================================
+*.log
+*.tmp
+*.temp
+logs/
+temp/
+
+# ================================
+# Database Files
+# ================================
+*.db
+*.db-shm
+*.db-wal
+
+# ================================
+# Test Coverage
+# ================================
+coverage/
+*.coverage
+*.coveragexml

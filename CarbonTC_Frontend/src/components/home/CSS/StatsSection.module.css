@@ -1,0 +1,24 @@
+.statsSection {
+    padding: 80px 0;
+    background: linear-gradient(180deg, #0f0f1e 0%, #1a1a2e 100%);
+}
+
+.statItem {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.statNumber {
+    font-size: 3rem;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 10px;
+}
+
+.statLabel {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}

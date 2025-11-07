@@ -1,0 +1,58 @@
+.transactionItem {
+  display: flex;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.transactionItem:last-child {
+  border-bottom: none;
+}
+
+.transactionIcon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 1.2rem;
+}
+
+.transactionIconIncome {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.transactionIconExpense {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.transactionDetails {
+  flex: 1;
+}
+
+.transactionTitle {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.transactionDate {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.transactionAmount {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.amountPositive {
+  color: #4ade80;
+}
+
+.amountNegative {
+  color: #f87171;
+}
