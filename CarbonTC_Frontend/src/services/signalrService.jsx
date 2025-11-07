@@ -5,8 +5,8 @@ let connectionCount = 0;
 let connectionPromise = null;
 
 const createConnection = () => {
-
-    const token = localStorage.getItem('userToken');
+    // Ưu tiên accessToken, fallback về userToken để tương thích ngược
+    const token = localStorage.getItem('accessToken') || localStorage.getItem('userToken');
     
     if (!token) {
         console.error('No token found in localStorage for SignalR connection');
