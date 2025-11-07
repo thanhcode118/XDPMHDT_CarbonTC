@@ -9,14 +9,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Configuration
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
-    //.AddJsonFile("ocelot.SwaggerEndPoints.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddOcelot();
-//builder.Services.AddSwaggerForOcelot(builder.Configuration);      
+builder.Services.AddSwaggerForOcelot(builder.Configuration);      
 
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //    .AddJwtBearer("JwtBearer", options =>
@@ -34,17 +33,17 @@ builder.Services.AddOcelot();
 //    });
 
 var app = builder.Build();
-
+app.UseWebSockets();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();     
+    //app.UseSwagger();
+    //app.UseSwaggerUI();
 
-    //app.UseSwaggerForOcelotUI(opt =>
-    //{
-    //    opt.PathToSwaggerGenerator = "/swagger/docs";
-    //});
+    app.UseSwaggerForOcelotUI(opt =>
+    {
+        opt.PathToSwaggerGenerator = "/swagger/docs";
+    });
 }
 
 app.UseHttpsRedirection();
