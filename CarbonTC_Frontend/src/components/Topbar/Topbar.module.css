@@ -1,9 +1,4 @@
 .topbar {
-  position: sticky; /* hoặc fixed nếu bạn muốn nó luôn nằm trên cùng */
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 2000; /* cao hơn tất cả nội dung dashboard */
   background: var(--card-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
