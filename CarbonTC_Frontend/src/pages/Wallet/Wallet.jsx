@@ -8,6 +8,7 @@ import TransactionItem from '../../components/TransactionItem/TransactionItem';
 import WithdrawModal from '../../components/WithdrawModal/WithdrawModal';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
+import { getWalletSummary , getTransactionChartData} from '../../services/listingService';
 import styles from './Wallet.module.css';
 
 const Wallet = () => {
@@ -16,41 +17,12 @@ const Wallet = () => {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Sample data
-  const walletStats = [
-    {
-      type: '1',
-      icon: 'bi-arrow-up-circle-fill',
-      value: '85',
-      label: 'Tín chỉ kiếm được',
-      change: '12% so với tháng trước',
-      changeType: 'positive'
-    },
-    {
-      type: '2',
-      icon: 'bi-arrow-down-circle-fill',
-      value: '40',
-      label: 'Tín chỉ đã bán',
-      change: '8% so với tháng trước',
-      changeType: 'positive'
-    },
-    {
-      type: '3',
-      icon: 'bi-graph-up-arrow',
-      value: '15.000',
-      label: 'Giá trung bình/tín chỉ',
-      change: '5% so với tháng trước',
-      changeType: 'positive'
-    },
-    {
-      type: '4',
-      icon: 'bi-calendar-check',
-      value: '12',
-      label: 'Giao dịch thành công',
-      change: '15% so với tháng trước',
-      changeType: 'positive'
-    }
-  ];
+  const [statsData, setStatsData] = useState([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const [chartPeriod, setChartPeriod] = useState(0); 
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const [chartLoading, setChartLoading] = useState(true);
 
   const transactions = [
     {
@@ -87,34 +59,112 @@ const Wallet = () => {
     }
   ];
 
-  const chartData = {
-    labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'],
-    datasets: [
-      {
-        label: 'Tín chỉ kiếm được',
-        data: [12, 19, 8, 15, 22, 18, 25],
-        borderColor: '#667eea',
-        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-        tension: 0.4,
-        fill: true
-      },
-      {
-        label: 'Tín chỉ đã bán',
-        data: [5, 10, 3, 8, 12, 7, 15],
-        borderColor: '#f093fb',
-        backgroundColor: 'rgba(240, 147, 251, 0.1)',
-        tension: 0.4,
-        fill: true
-      }
-    ]
-  };
+  // const chartData = {
+  //   labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'],
+  //   datasets: [
+  //     {
+  //       label: 'Tín chỉ kiếm được',
+  //       data: [12, 19, 8, 15, 22, 18, 25],
+  //       borderColor: '#667eea',
+  //       backgroundColor: 'rgba(102, 126, 234, 0.1)',
+  //       tension: 0.4,
+  //       fill: true
+  //     },
+  //     {
+  //       label: 'Tín chỉ đã bán',
+  //       data: [5, 10, 3, 8, 12, 7, 15],
+  //       borderColor: '#f093fb',
+  //       backgroundColor: 'rgba(240, 147, 251, 0.1)',
+  //       tension: 0.4,
+  //       fill: true
+  //     }
+  //   ]
+  // };
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const fetchWalletData = async () => {
+      setStatsLoading(true);
+      setLoading(true); // Bắt đầu loading chung
+      
+      try {
+        // Gọi API
+        const summaryResponse = await getWalletSummary();
+        
+        if (summaryResponse.data && summaryResponse.data.success) {
+          const data = summaryResponse.data.data;
+          
+          // Helper map data API -> data cho StatCard
+          const getChangeType = (change) => 
+              change > 0 ? 'positive' : (change < 0 ? 'negative' : 'neutral');
+          
+          // Map dữ liệu API trả về sang định dạng StatCard
+          const mappedStats = [
+            {
+              type: '1',
+              icon: 'bi-search', // Tin đã đăng
+              value: data.listingsFound.toLocaleString(),
+              label: 'Tin đã đăng',
+              change: `${data.listingsFoundChangePercent}%`,
+              changeType: getChangeType(data.listingsFoundChangePercent)
+            },
+            {
+              type: '2',
+              icon: 'bi-check-circle-fill', // Tin đã bán
+              value: data.listingsSold.toLocaleString(),
+              label: 'Tin đã bán',
+              change: `${data.listingsSoldChangePercent}%`,
+              changeType: getChangeType(data.listingsSoldChangePercent)
+            },
+            {
+              type: '3',
+              icon: 'bi-graph-up-arrow', // Giá trung bình
+              value: data.averagePrice.toLocaleString(),
+              label: 'Giá bán TB (VNĐ)',
+              change: `${data.averagePriceChangePercent}%`,
+              changeType: getChangeType(data.averagePriceChangePercent)
+            },
+            {
+              type: '4',
+              icon: 'bi-arrow-left-right', // Giao dịch thành công
+              value: data.successfulTransactions.toLocaleString(),
+              label: 'Giao dịch thành công',
+              change: `${data.successfulTransactionsChangePercent}%`,
+              changeType: getChangeType(data.successfulTransactionsChangePercent)
+            }
+          ];
+          setStatsData(mappedStats);
+        } else {
+          showNotification('Không thể tải thống kê ví', 'error');
+        }
+      } catch (err) {
+         showNotification(err.message || 'Lỗi tải thống kê ví', 'error');
+      } finally {
+        setStatsLoading(false);
+        setLoading(false); // Tắt loading chung
+      }
+    };
+
+    fetchWalletData();
+  }, [showNotification]);
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      setChartLoading(true);
+      try {
+        const response = await getTransactionChartData(chartPeriod);
+        if (response.data && response.data.success) {
+          setChartData(response.data.data); // API trả về chính xác format
+        } else {
+          showNotification('Không thể tải dữ liệu biểu đồ', 'error');
+        }
+      } catch (err) {
+        showNotification(err.message || 'Lỗi tải biểu đồ', 'error');
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    fetchChartData();
+  }, [chartPeriod, showNotification]);
 
   const handleWithdraw = () => {
     setShowWithdrawModal(true);
@@ -171,18 +221,18 @@ const Wallet = () => {
         
         {/* Stats Grid */}
         <div className={styles.statsGrid}>
-          {walletStats.map((stat, index) => (
-            <StatCard
-              key={index}
-              type={stat.type}
-              icon={stat.icon}
-              value={stat.value}
-              label={stat.label}
-              change={stat.change}
-              changeType={stat.changeType}
-              delay={(index + 1) * 100}
-            />
-          ))}
+          {statsLoading ? (
+            // Hiển thị skeleton/loading cho stats (nếu muốn)
+            <p>Đang tải thống kê...</p> 
+          ) : (
+            statsData.map((stat, index) => (
+              <StatCard
+                key={index}
+                {...stat} // Truyền props
+                delay={(index + 1) * 100}
+              />
+            ))
+          )}
         </div>
         
         {/* Chart and Transactions */}
@@ -192,13 +242,35 @@ const Wallet = () => {
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Biểu đồ tín chỉ</h3>
                 <div className={styles.btnGroup} role="group">
-                  <button type="button" className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${styles.active}`}>Tuần</button>
-                  <button type="button" className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}>Tháng</button>
-                  <button type="button" className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}>Năm</button>
+                  <button 
+                    type="button" 
+                    className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 0 ? styles.active : ''}`}
+                    onClick={() => setChartPeriod(0)} // <-- 0 = Tuần
+                  >
+                    Tuần
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 1 ? styles.active : ''}`}
+                    onClick={() => setChartPeriod(1)} // <-- 1 = Tháng
+                  >
+                    Tháng
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${chartPeriod === 2 ? styles.active : ''}`}
+                    onClick={() => setChartPeriod(2)} // <-- 2 = Năm
+                  >
+                    Năm
+                  </button>
                 </div>
               </div>
               <div className={styles.cardBody}>
-                <WalletChart data={chartData} />
+                {chartLoading ? (
+                    <p>Đang tải biểu đồ...</p>
+                ) : (
+                    <WalletChart data={chartData} />
+                )}
               </div>
             </div>
           </div>

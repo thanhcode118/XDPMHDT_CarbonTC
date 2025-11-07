@@ -140,3 +140,20 @@ export const getTransactionSummary = () => {
     // Hãy đảm bảo apiClient của bạn có quyền truy cập endpoint này.
     return apiClientPD.get('/Transaction/summary');
 };
+
+/**
+ * Lấy dữ liệu thống kê tóm tắt cho Wallet
+ */
+export const getWalletSummary = () => {
+  return apiClientPD.get('/Transaction/wallet-summary');
+};
+
+/**
+ * Lấy dữ liệu biểu đồ thống kê
+ * @param {number} period - 0 = Tuần, 1 = Tháng, 2 = Năm
+ */
+export const getTransactionChartData = (period) => {
+  return apiClientPD.get('/transactions/summary/chart', { 
+    params: { period } 
+  });
+};

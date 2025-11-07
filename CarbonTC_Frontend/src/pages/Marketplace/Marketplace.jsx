@@ -99,7 +99,7 @@ const Marketplace = () => {
 
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
 
-  const [showSuccessModal, setShowSuccessModal] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState({});
 
   const [auctionUpdates, setAuctionUpdates] = useState({});

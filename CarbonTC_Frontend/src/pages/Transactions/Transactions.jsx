@@ -8,6 +8,7 @@ import TransactionDetailModal from '../../components/TransactionDetailModal/Tran
 import Pagination from '../../components/Pagination/Pagination';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
+import { getCertificate } from '../../services/transactionService';
 import styles from './Transactions.module.css';
 
 import { getSalesTransactions, getPurchasesTransactions, getTransactionSummary } from '../../services/listingService'
@@ -47,6 +48,8 @@ const Transactions = () => {
     sortDescending: true
   });
   const [paginationData, setPaginationData] = useState(null);
+
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const mapStatsData = () => {
     if (!statsData) {
@@ -224,11 +227,39 @@ const Transactions = () => {
     }, 2000);
   };
 
-  const handleDownloadCertificate = () => {
-    showNotification('Đang tải chứng nhận giao dịch...', 'info');
-    setTimeout(() => {
-      showNotification('Tải chứng nhận thành công!', 'success');
-    }, 2000);
+  const handleDownloadCertificate = async () => {
+    if (!selectedTransaction) return;
+
+    setIsDownloading(true);
+    showNotification('Đang chuẩn bị chứng nhận...', 'info');
+
+    try {
+      const transactionId = selectedTransaction.id; 
+      const response = await getCertificate(transactionId);
+
+      if (response.data && response.data.success) {
+        const certificateUrl = response.data.data.certificate_url;
+        
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = certificateUrl;
+        
+        document.body.appendChild(iframe);
+        
+        iframe.onload = () => {
+          showNotification('Đã tải xong, đang mở cửa sổ in...', 'success');
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        };
+
+      } else {
+        showNotification(response.data.message || 'Không thể lấy chứng nhận.', 'error');
+      }
+    } catch (err) {
+      showNotification(err.message || 'Lỗi kết nối máy chủ chứng nhận.', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -355,6 +386,7 @@ const Transactions = () => {
         onClose={handleCloseModal}
         transaction={selectedTransaction}
         onDownloadCertificate={handleDownloadCertificate}
+        isDownloading={isDownloading}
       />
     </div>
   );
