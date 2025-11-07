@@ -125,7 +125,7 @@ public class EWalletServiceImpl implements EWalletService {
         Long walletId = eWallet.getWalletId();
 
         // 2. Tìm log bằng walletId (Long)
-        List<TransactionLog> logs = transactionLogRepository.findByWalletIdOrderByCreatedAtDesc(walletId);
+        List<TransactionLog> logs = transactionLogRepository.findByWallet_WalletIdOrderByCreatedAtDesc(walletId);
 
         return logs.stream()
                 .map(log -> modelMapper.map(log, TransactionLogResponse.class))
