@@ -20,6 +20,9 @@ import Login from './pages/Login/Login.jsx'; // ✅ Trang Login
 import Register from './pages/Register/Register.jsx'; // ✅ Trang Login
 import PaymentReturn from './pages/Payments/PaymentReturn.jsx';
 
+// --- IMPORT PRIVATE ROUTE ---
+import PrivateRoute from './components/PrivateRoute.jsx';
+
 // Hook thông báo
 import { useNotification } from './hooks/useNotification';
 
@@ -51,46 +54,51 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         {/* =================== NHÓM 2: DASHBOARD =================== */}
-        <Route
-          path="/dashboard"
-          element={<Dashboard showNotification={showNotification} />}
-        />
-        <Route
-          path="/marketplace"
-          element={<Marketplace showNotification={showNotification} />}
-        />
-        <Route
-          path="/dashboard/trips"
-          element={<Trips showNotification={showNotification} />}
-        />
-        <Route
-          path="/dashboard/wallet"
-          element={<Wallet showNotification={showNotification} />}
-        />
-        <Route
-          path="/dashboard/vehicles"
-          element={<Vehicles showNotification={showNotification} />}
-        />
-        <Route
-          path="/dashboard/transactions"
-          element={<Transactions showNotification={showNotification} />}
-        />
-        <Route
-          path="/dashboard/reports"
-          element={<Reports showNotification={showNotification} />}
-        />
-        <Route
-          path="/dashboard/settings"
-          element={<SettingsTabs showNotification={showNotification} />}
-        />
-
-        {/* <Route path="/admin/*" element={<AppRouter />} /> */}
-        {/* Payment return (VNPay) */}
-        <Route 
-          path='/payment/return' 
-          element={<PaymentReturn />} 
-        />
-      </Routes>
+      <Route 
+          element={
+            <PrivateRoute 
+              roles={['EVOwner', 'CVA']} // Chỉ định các vai trò được phép
+            />
+          }
+        ></Route>
+          <Route
+            path="/dashboard"
+            element={<Dashboard showNotification={showNotification} />}
+          />
+          <Route
+            path="/marketplace"
+            element={<Marketplace showNotification={showNotification} />}
+          />
+          <Route
+            path="/dashboard/trips"
+            element={<Trips showNotification={showNotification} />}
+          />
+          <Route
+            path="/dashboard/wallet"
+            element={<Wallet showNotification={showNotification} />}
+          />
+          <Route
+            path="/dashboard/vehicles"
+            element={<Vehicles showNotification={showNotification} />}
+          />
+          <Route
+            path="/dashboard/transactions"
+            element={<Transactions showNotification={showNotification} />}
+          />
+          <Route
+            path="/dashboard/reports"
+            element={<Reports showNotification={showNotification} />}
+          />
+          <Route
+            path="/dashboard/settings"
+            element={<SettingsTabs showNotification={showNotification} />}
+          />
+          {/* <Route path="/admin/*" element={<AppRouter />} /> */}
+          <Route 
+            path='/payment/return' 
+            element={<PaymentReturn />} 
+          />
+        </Routes>
     </>
   );
 }
