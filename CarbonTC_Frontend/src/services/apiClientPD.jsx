@@ -10,7 +10,8 @@ const apiClientPD = axios.create({
 
 apiClientPD.interceptors.request.use(
   (config) => {
-    // Ưu tiên accessToken, fallback về userToken để tương thích ngược
+    // Sử dụng accessToken từ auth service (đồng bộ với authService.js)
+    // Fallback về userToken để tương thích ngược nếu có
     const token = localStorage.getItem('accessToken') || localStorage.getItem('userToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
