@@ -37,7 +37,13 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
             float quantity;
 
             // chung 111
-            if (request.CreditId != null)
+            if (request.CreditId == null || request.CreditId == Guid.Empty)
+            {
+                verificationStandard = "VERRA";
+                vintage = DateTime.UtcNow.Year;
+                quantity = 0;
+            }
+            else
             {
                 var creditToSell = await _unitOfWork.CreditInventories.GetByCreditIdAsync(request.CreditId.Value);
                 quantity = (float)creditToSell.AvailableAmount;
@@ -45,12 +51,6 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
                 var cvaStandards = await _carbonLifecycleService.GetCVAStandardsAsync(request.CreditId.Value, cancellationToken);
                 verificationStandard = cvaStandards.StandardName;
                 vintage = cvaStandards.EffectiveDate.Year;
-            }
-            else
-            {
-                verificationStandard = "VERRA";
-                vintage = DateTime.UtcNow.Year;
-                quantity = 0;
             }
 
             var creditType = "RenewableEnergy";
