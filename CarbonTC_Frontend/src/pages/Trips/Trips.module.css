@@ -145,3 +145,49 @@
     align-items: flex-start;
   }
 }
+
+
+/* --- Style cho khu vực tạo lô --- */
+.createBatchSection {
+  background: rgba(102, 126, 234, 0.08); /* Nền hơi khác biệt */
+  border: 1px dashed var(--ev-owner-color); /* Viền đứt nét */
+}
+
+.createBatchTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+/* Tái sử dụng style form từ các component khác nếu có, hoặc định nghĩa ở đây */
+.formLabel {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+  display: block;
+  font-size: 0.9rem;
+}
+
+.formControl {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 15px; /* Giảm padding một chút */
+  color: var(--text-primary);
+  width: 100%;
+  transition: all 0.3s ease;
+  font-size: 0.9rem; /* Giảm font size */
+}
+
+.formControl:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--ev-owner-color);
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+  color: var(--text-primary);
+  outline: none;
+}
+.formControl::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
