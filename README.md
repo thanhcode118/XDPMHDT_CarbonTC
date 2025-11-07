@@ -1,3 +1,12 @@
+# XDPMHDT_CarbonTC
+
+cd CarbonTC.Admin.Service/admin-frontend
+cd CarbonTC.Admin.Service/admin-backend
+
+email: 
+admin@test.com
+pw: 
+123456
 # Terminal 1
 cd C:\Users\LENOVO\Downloads\GIT\XDPMHDT_CarbonTC\CarbonTC.Auth.Service
 docker-compose up -d mysql rabbitmq
