@@ -13,10 +13,11 @@ namespace SharedLibrary.Interfaces
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="exchange"></param>
+        /// <param name="exchangeType"></param>
         /// <param name="routingKey"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        Task PublishAsync<T>(string exchange, string routingKey, T message);
+        Task PublishAsync<T>(string exchange, string exchangeType, string routingKey, T message);
 
         /// <summary>
         /// Phương thức bất đồng bộ để xuất bản một tin nhắn đến một hàng đợi cụ thể trong hệ thống RabbitMQ.

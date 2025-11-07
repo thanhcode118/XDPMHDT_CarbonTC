@@ -57,40 +57,16 @@ namespace SharedLibrary.Services
                 autoDelete: false,
                 arguments: null
             );
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (model, ea) =>
-            {
-                try
-                {
-                    var body = ea.Body.ToArray();
-                    var json = Encoding.UTF8.GetString(body);
-                    var message = JsonSerializer.Deserialize<T>(json);
-
-                    if (message != null)
-                    {
-                        await handler(message);
-                        await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
-                        _logger.LogInformation("Message processed from queue {Queue}", queueName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error processing message from queue {Queue}", queueName);
-                    await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
-                }
-            };
-
-            await _channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: consumer);
-            _logger.LogInformation("Started consuming from queue {Queue}", queueName);
+            await StartConsumerAsync(queueName, handler);
         }
 
-        public async Task Subscribe<T>(string exchange, string routingKey, string queueName, Func<T, Task> handler)
+        public async Task Subscribe<T>(string exchange, string exchangeType, string routingKey, string queueName, Func<T, Task> handler)
         {
             if (_channel == null) throw new InvalidOperationException("Channel not initialized.");
 
             await _channel.ExchangeDeclareAsync(
                 exchange: exchange,
-                type: ExchangeType.Topic,
+                type: exchangeType,
                 durable: true,
                 autoDelete: false
             );
@@ -105,9 +81,23 @@ namespace SharedLibrary.Services
 
             await _channel.QueueBindAsync(queue: queueName, exchange: exchange, routingKey: routingKey);
 
+            await StartConsumerAsync(queueName, handler, exchange, routingKey);
+        }
+
+        private async Task StartConsumerAsync<T>(
+            string queueName, 
+            Func<T, Task> handler, 
+            string? exchange = null,
+            string? routingKey = null)
+        {
+            if (_channel == null) throw new InvalidOperationException("Channel not initialized.");
+
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.ReceivedAsync += async (model, ea) =>
             {
+                var logContext = string.IsNullOrEmpty(exchange)
+                    ? $"Queue '{queueName}'"
+                    : $"Exchange '{exchange}' -> Queue '{queueName}'";
                 try
                 {
                     var body = ea.Body.ToArray();
@@ -117,19 +107,22 @@ namespace SharedLibrary.Services
                     if (message != null)
                     {
                         await handler(message);
-                        await _channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
-                        _logger.LogInformation($"Message processed from exchange: {exchange}, routing key: {routingKey}");
+                        await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                        _logger.LogInformation("Message from queue '{Queue}' processed successfully.", queueName);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Error processing message from exchange: {exchange}");
-                    await _channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true);
+                    _logger.LogError(ex, "Error processing message from queue '{Queue}'. Message will be rejected.", queueName);
+                    await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
                 }
             };
 
             await _channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: consumer);
-            _logger.LogInformation($"Started consuming from exchange: {exchange}, routing key: {routingKey}");
+            _logger.LogInformation("Started consuming from {Context}",
+                string.IsNullOrEmpty(exchange)
+                    ? $"Queue '{queueName}'"
+                    : $"Exchange '{exchange}' with binding key '{routingKey}' to Queue '{queueName}'");
         }
 
         public async ValueTask DisposeAsync()

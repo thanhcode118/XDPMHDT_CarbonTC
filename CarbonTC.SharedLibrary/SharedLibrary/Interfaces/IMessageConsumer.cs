@@ -17,10 +17,11 @@ namespace SharedLibrary.Interfaces
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="exchange"></param>
+        /// <param name="exchangeType"></param>
         /// <param name="routingKey"></param>
         /// <param name="queueName"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        Task Subscribe<T>(string exchange, string routingKey, string queueName, Func<T, Task> handler);
+        Task Subscribe<T>(string exchange, string exchangeType, string routingKey, string queueName, Func<T, Task> handler);
     }
 }

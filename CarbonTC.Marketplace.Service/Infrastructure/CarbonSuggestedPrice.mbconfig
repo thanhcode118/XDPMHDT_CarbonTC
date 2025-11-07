@@ -1,0 +1,415 @@
+﻿{
+  "Scenario": "Regression",
+  "DataSource": {
+    "Version": 3,
+    "EscapeCharacter": "\"",
+    "ReadMultiLines": false,
+    "KeepDiacritics": false,
+    "KeepPunctuations": false,
+    "AllowQuoting": false,
+    "Type": "TabularFile",
+    "FilePath": "C:\\Workspace\\c#\\TrainModelCarbon\\TrainModelCarbon\\train_data.csv",
+    "Delimiter": ",",
+    "DecimalMarker": ".",
+    "HasHeader": true,
+    "ColumnProperties": [
+      {
+        "ColumnName": "TransactionID",
+        "ColumnPurpose": "Ignore",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "TransactionDate",
+        "ColumnPurpose": "Ignore",
+        "ColumnDataFormat": "String",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "CreditType",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "String",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "VerificationStandard",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "String",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "Vintage",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "Quantity",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "MarketSupply_SameType",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "MarketDemand_RecentVolume",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "PricePerCredit",
+        "ColumnPurpose": "Label",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      }
+    ]
+  },
+  "Environment": {
+    "Type": "LocalCPU",
+    "Version": 1
+  },
+  "RunHistory": {
+    "Version": 3,
+    "Type": "Result",
+    "Trials": [
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.99981578580895059,
+        "RuntimeInSeconds": 5.069,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e5",
+          "e0": {
+            "OutputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ],
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ]
+          },
+          "e1": {
+            "OutputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "InputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ]
+          },
+          "e2": {
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard",
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfLeaves": 2719,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 0.20217863096110203,
+            "NumberOfTrees": 1366,
+            "SubsampleFraction": 0.99999977667298645,
+            "MaximumBinCountPerFeature": 186,
+            "FeatureFraction": 0.9346261953192353,
+            "L1Regularization": 5.7092683981377579E-10,
+            "L2Regularization": 0.65938407263254883,
+            "LabelColumnName": "PricePerCredit",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.99981007253490017,
+        "RuntimeInSeconds": 0.796,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e5",
+          "e0": {
+            "OutputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ],
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ]
+          },
+          "e1": {
+            "OutputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "InputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ]
+          },
+          "e2": {
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard",
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfLeaves": 2112,
+            "MinimumExampleCountPerLeaf": 24,
+            "LearningRate": 0.71484934948341139,
+            "NumberOfTrees": 82,
+            "SubsampleFraction": 0.59357020166501717,
+            "MaximumBinCountPerFeature": 258,
+            "FeatureFraction": 0.96021967588244,
+            "L1Regularization": 4.4145161737396459E-10,
+            "L2Regularization": 0.99999977667298645,
+            "LabelColumnName": "PricePerCredit",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 0.9997771542490872,
+        "RuntimeInSeconds": 0.898,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3",
+          "e0": {
+            "OutputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ],
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ]
+          },
+          "e1": {
+            "OutputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "InputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ]
+          },
+          "e2": {
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard",
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e3": {
+            "NumberOfLeaves": 15,
+            "MinimumExampleCountPerLeaf": 3,
+            "NumberOfTrees": 520,
+            "MaximumBinCountPerFeature": 710,
+            "FeatureFraction": 0.99999999,
+            "LearningRate": 0.99999977667298645,
+            "LabelColumnName": "PricePerCredit",
+            "FeatureColumnName": "Features",
+            "DiskTranspose": false
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.99975389912292578,
+        "RuntimeInSeconds": 17.104,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e5",
+          "e0": {
+            "OutputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ],
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ]
+          },
+          "e1": {
+            "OutputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "InputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ]
+          },
+          "e2": {
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard",
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfLeaves": 2123,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 0.93510442247116266,
+            "NumberOfTrees": 5133,
+            "SubsampleFraction": 0.15283257016152635,
+            "MaximumBinCountPerFeature": 143,
+            "FeatureFraction": 0.901241047611794,
+            "L1Regularization": 1.9690477129548085E-09,
+            "L2Regularization": 0.99999977667298645,
+            "LabelColumnName": "PricePerCredit",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.99971488621826055,
+        "RuntimeInSeconds": 0.129,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e5",
+          "e0": {
+            "OutputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ],
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard"
+            ]
+          },
+          "e1": {
+            "OutputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "InputColumnNames": [
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ]
+          },
+          "e2": {
+            "InputColumnNames": [
+              "CreditType",
+              "VerificationStandard",
+              "Vintage",
+              "Quantity",
+              "MarketSupply_SameType",
+              "MarketDemand_RecentVolume"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfLeaves": 1504,
+            "MinimumExampleCountPerLeaf": 36,
+            "LearningRate": 0.99999977667298645,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 0.3232620318831797,
+            "MaximumBinCountPerFeature": 357,
+            "FeatureFraction": 0.9858131564456446,
+            "L1Regularization": 3.41338884235419E-10,
+            "L2Regularization": 0.99999977667298645,
+            "LabelColumnName": "PricePerCredit",
+            "FeatureColumnName": "Features"
+          }
+        }
+      }
+    ],
+    "Estimators": {
+      "e0": "OneHotEncoding",
+      "e1": "ReplaceMissingValues",
+      "e2": "Concatenate",
+      "e3": "FastTreeRegression",
+      "e4": "FastForestRegression",
+      "e5": "LightGbmRegression",
+      "e6": "LbfgsPoissonRegressionRegression",
+      "e7": "SdcaRegression"
+    },
+    "Schema": "e0 * e1 * e2 * (e3 + e4 + e5 + e6 + e7)",
+    "MetricName": "RSquared",
+    "ModelFilePath": "C:\\Workspace\\c#\\XDPMHDT_CarbonTC\\CarbonTC.Marketplace.Service\\Infrastructure\\CarbonSuggestedPrice.mlnet"
+  },
+  "Type": "TrainingConfig",
+  "Version": 5,
+  "TrainingOption": {
+    "Version": 2,
+    "Subsampling": false,
+    "Type": "RegressionTrainingOption",
+    "TrainingTime": 120,
+    "LabelColumn": "PricePerCredit",
+    "ValidationOption": {
+      "Version": 0,
+      "Type": "CrossValidationValidationOption",
+      "NumberOfFolds": 5
+    }
+  }
+}
