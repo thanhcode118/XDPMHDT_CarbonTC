@@ -1,0 +1,59 @@
+.settingsTabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 25px;
+  overflow-x: auto;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 0 10px;
+}
+
+.settingsTab {
+  padding: 15px 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  white-space: nowrap;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+
+.settingsTab:hover {
+  color: var(--text-primary);
+}
+
+.settingsTab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--ev-owner-color);
+}
+
+@media (max-width: 768px) {
+  .settingsTabs {
+    padding: 0 5px;
+    border-radius: 12px;
+  }
+  
+  .settingsTab {
+    padding: 12px 15px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .settingsTabs {
+    margin-bottom: 20px;
+    padding: 0;
+    border-radius: 12px;
+  }
+  
+  .settingsTab {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    flex: 1;
+    text-align: center;
+    min-width: auto;
+  }
+}

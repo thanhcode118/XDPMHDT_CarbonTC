@@ -1,0 +1,170 @@
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: none;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  margin: 50px auto;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btnClose {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnClose:hover {
+  color: var(--text-secondary);
+}
+
+.modalBody {
+  padding: 25px;
+}
+
+.modalFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.formControl, .formSelect {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 15px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.formControl::placeholder, .formSelect option {
+  color: var(--text-secondary);
+}
+
+.formControl:focus, .formSelect:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--ev-owner-color);
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.formLabel {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+  display: block;
+}
+
+.formCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formCheckInput {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.formCheckInput:checked {
+  background-color: var(--ev-owner-color);
+  border-color: var(--ev-owner-color);
+}
+
+.formCheckLabel {
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btnCustom {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btnOutlineCustom {
+  background: transparent;
+  color: var(--ev-owner-color);
+  border: 1px solid var(--ev-owner-color);
+}
+
+.btnOutlineCustom:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    margin: 20px;
+    max-width: calc(100% - 40px);
+  }
+}

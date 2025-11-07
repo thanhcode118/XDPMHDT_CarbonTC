@@ -1,0 +1,211 @@
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: none;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  margin: 50px auto;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btnClose {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnClose:hover {
+  color: var(--text-secondary);
+}
+
+.modalBody {
+  padding: 25px;
+}
+
+.modalFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tripDetailStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.tripDetailStat {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.tripDetailStatIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 1.2rem;
+}
+
+.detailStatIcon1 {
+  background: var(--primary-gradient);
+}
+
+.detailStatIcon2 {
+  background: var(--secondary-gradient);
+}
+
+.detailStatIcon3 {
+  background: var(--accent-gradient);
+}
+
+.detailStatIcon4 {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.tripDetailStatInfo {
+  flex: 1;
+}
+
+.tripDetailStatValue {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.tripDetailStatLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.tripInfo {
+  margin-top: 25px;
+}
+
+.tripInfo h6 {
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.infoTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.infoTable tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.infoTable tr:last-child {
+  border-bottom: none;
+}
+
+.infoTable td {
+  padding: 10px 0;
+  vertical-align: top;
+}
+
+.infoTable td:first-child {
+  width: 30%;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.btnCustom {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btnOutlineCustom {
+  background: transparent;
+  color: var(--ev-owner-color);
+  border: 1px solid var(--ev-owner-color);
+}
+
+.btnOutlineCustom:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    margin: 20px;
+    max-width: calc(100% - 40px);
+  }
+  
+  .tripDetailStats {
+    grid-template-columns: 1fr;
+  }
+}
