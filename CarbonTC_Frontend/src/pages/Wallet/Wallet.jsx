@@ -19,7 +19,7 @@ import {
   createDepositPayment,
   createWithdrawRequest,
   getMyEWallet
-} from '../../utils/walletApi.jsx';
+} from '../../services/walletService.jsx';
 
 const Wallet = () => {
   const { sidebarActive, toggleSidebar } = useSidebar();
