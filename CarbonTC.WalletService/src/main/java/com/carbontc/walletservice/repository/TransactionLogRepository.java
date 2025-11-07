@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface TransactionLogRepository extends JpaRepository<TransactionLog,Long> {
-    List<TransactionLog> findByWalletIdOrderByCreatedAtDesc(Long walletId);
+    List<TransactionLog> findByWallet_WalletIdOrderByCreatedAtDesc(Long walletId);
 
     List<TransactionLog> findByStatusAndCreatedAtBefore(String pending, LocalDateTime cutoff);
 
