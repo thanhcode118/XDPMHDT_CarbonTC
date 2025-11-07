@@ -1,0 +1,196 @@
+/* Pagination.module.css */
+
+.paginationContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 0 10px 0;
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Container cho các nút điều hướng và số trang */
+.paginationContainer > *:not(:last-child) {
+    flex: 1;
+}
+
+.pageNumbers {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Base button style */
+.pageButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    min-height: 44px;
+    font-size: 0.9rem;
+}
+
+/* Nút điều hướng (Previous/Next) */
+.navButton {
+    min-width: 100px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.navButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Nút số trang */
+.pageNumber {
+    min-width: 44px;
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.pageNumber:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Trang active */
+.pageNumber.active {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    transform: scale(1.05);
+}
+
+/* Nút disabled */
+.pageButton:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.pageButton:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Dấu ... */
+.pageDots {
+    color: var(--text-secondary);
+    padding: 0 8px;
+    font-weight: 500;
+}
+
+/* Thông tin trang */
+.pageInfo {
+    display: flex;
+    justify-content: flex-end;
+    flex: 1;
+}
+
+.pageText {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pageText strong {
+    color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .paginationContainer {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .pageNumbers {
+        order: 1;
+        width: 100%;
+    }
+    
+    .navButton {
+        order: 2;
+        min-width: 120px;
+    }
+    
+    .pageInfo {
+        order: 3;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .paginationContainer > *:not(:last-child) {
+        flex: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageNumbers {
+        gap: 4px;
+    }
+    
+    .pageNumber {
+        min-width: 40px;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .navButton {
+        min-width: 110px;
+        padding: 8px 12px;
+    }
+    
+    .pageButton {
+        min-height: 40px;
+    }
+}
+
+/* Hiệu ứng hover tinh tế */
+.pageButton:not(:disabled):hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animation cho active state */
+@keyframes activePulse {
+    0% {
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+    }
+    100% {
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+}
+
+.pageNumber.active {
+    animation: activePulse 2s ease-in-out infinite;
+}

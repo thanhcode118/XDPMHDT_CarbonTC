@@ -1,0 +1,113 @@
+/* Kế thừa và chỉnh sửa từ TripCard.module.css */
+.batchCard {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  cursor: default; /* Không cần click cả card như TripCard */
+}
+
+.batchCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.batchHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Thêm đường kẻ mờ */
+  padding-bottom: 10px;
+}
+
+.batchId {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.batchStatus {
+  padding: 5px 12px; /* Tăng padding */
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase; /* In hoa trạng thái */
+}
+
+/* Sao chép style trạng thái từ TripCard.module.css hoặc định nghĩa lại */
+.completed {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.pending {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.error { /* Style mới cho trạng thái Lỗi */
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.defaultStatus { /* Style mặc định */
+ background: rgba(184, 188, 200, 0.2); /* var(--text-secondary) với alpha */
+ color: var(--text-secondary);
+}
+
+
+.batchDetails {
+  display: flex;
+  flex-direction: column; /* Hiển thị thông tin theo cột */
+  gap: 10px; /* Khoảng cách giữa các dòng thông tin */
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+}
+
+.batchDetailItem {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.batchDetailItem i {
+  margin-right: 8px;
+  color: var(--ev-owner-color); /* Màu icon giống TripCard */
+  font-size: 1rem; /* Kích thước icon */
+}
+
+.batchActions {
+  display: flex;
+  justify-content: flex-end; /* Đẩy nút sang phải */
+  gap: 10px; /* Khoảng cách giữa các nút */
+  padding-top: 15px; /* Thêm khoảng cách phía trên nút */
+  border-top: 1px solid rgba(255, 255, 255, 0.05); /* Thêm đường kẻ mờ */
+}
+
+/* Style riêng cho nút xóa nếu muốn khác biệt */
+.deleteButton {
+  border-color: #f87171 !important; /* Màu viền đỏ */
+  color: #f87171 !important;      /* Màu chữ đỏ */
+}
+
+.deleteButton:hover {
+  background-color: rgba(248, 113, 113, 0.1) !important; /* Nền đỏ mờ khi hover */
+}
+
+
+/* Responsive (tương tự TripCard.module.css nếu cần) */
+@media (max-width: 576px) {
+  .batchHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .batchActions {
+    justify-content: center; /* Căn giữa nút trên mobile */
+  }
+}

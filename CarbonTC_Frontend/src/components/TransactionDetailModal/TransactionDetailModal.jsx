@@ -5,7 +5,8 @@ const TransactionDetailModal = ({
   show, 
   onClose, 
   transaction,
-  onDownloadCertificate 
+  onDownloadCertificate,
+  isDownloading
 }) => {
   if (!show || !transaction) return null;
 
@@ -125,6 +126,7 @@ const TransactionDetailModal = ({
             type="button" 
             className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}
             onClick={onClose}
+            disabled={isDownloading}
           >
             Đóng
           </button>
@@ -132,8 +134,16 @@ const TransactionDetailModal = ({
             type="button" 
             className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
             onClick={onDownloadCertificate}
+            disabled={isDownloading}
           >
-            Tải chứng nhận
+            {isDownloading ? (
+            <>
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style={{ marginRight: '8px' }}></span>
+              Đang tải...
+            </>
+            ) : (
+              'Tải chứng nhận'
+            )}
           </button>
         </div>
       </div>

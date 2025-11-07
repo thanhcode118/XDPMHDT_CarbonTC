@@ -1,0 +1,115 @@
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.cardBody {
+  padding: 25px;
+}
+
+.tableResponsive {
+  overflow-x: auto;
+}
+
+.customTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.customTable th {
+  text-align: left;
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.customTable td {
+  padding: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.customTable tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badgeSuccess {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.badgeWarning {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.badgeDanger {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.badgeSuccess {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btnCustom {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnOutlineCustom {
+  background: transparent;
+  color: var(--ev-owner-color);
+  border: 1px solid var(--ev-owner-color);
+}
+
+.btnOutlineCustom:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.btnSm {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}

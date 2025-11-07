@@ -23,7 +23,6 @@ const processQueue = (error, token = null) => {
       prom.resolve(token);
     }
   });
-  
   failedQueue = [];
 };
 
@@ -81,13 +80,11 @@ axiosInstance.interceptors.response.use(
         }
 
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-            refreshToken
-          });
+          const response = await axiosInstance.post('/auth/refresh-token', { refreshToken });
 
           if (response.data.success) {
             const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-            
+
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('refreshToken', newRefreshToken);
 
@@ -95,7 +92,6 @@ axiosInstance.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
             processQueue(null, accessToken);
-            
             return axiosInstance(originalRequest);
           }
         } catch (err) {
