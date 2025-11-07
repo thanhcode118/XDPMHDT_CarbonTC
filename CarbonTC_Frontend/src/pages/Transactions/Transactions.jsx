@@ -5,195 +5,261 @@ import StatCard from '../../components/StatCard/StatCard';
 import TransactionFilter from '../../components/TransactionFilter/TransactionFilter';
 import TransactionItem from '../../components/TransactionItemTrading/TransactionItem';
 import TransactionDetailModal from '../../components/TransactionDetailModal/TransactionDetailModal';
+import Pagination from '../../components/Pagination/Pagination';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
+import { getCertificate } from '../../services/transactionService';
 import styles from './Transactions.module.css';
+
+import { getSalesTransactions, getPurchasesTransactions, getTransactionSummary } from '../../services/listingService'
+
+const mapApiStatusToFe = (statusEnum) => {
+  switch (statusEnum) {
+    case 1: return 'pending';
+    case 2: return 'completed';
+    case 3: return 'cancelled';
+    case 4: return 'failed';
+    default: return 'unknown';
+  }
+};
 
 const Transactions = () => {
   const { sidebarActive, toggleSidebar } = useSidebar();
   const { showNotification } = useNotification();
   const [transactions, setTransactions] = useState([]);
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Sample data
-  const transactionStats = [
-    {
-      type: '1',
-      icon: 'bi-arrow-left-right-fill',
-      value: '24',
-      label: 'Tổng giao dịch',
-      change: '12% so với tháng trước',
-      changeType: 'positive'
-    },
-    {
-      type: '2',
-      icon: 'bi-check-circle-fill',
-      value: '18',
-      label: 'Giao dịch thành công',
-      change: '8% so với tháng trước',
-      changeType: 'positive'
-    },
-    {
-      type: '3',
-      icon: 'bi-clock-fill',
-      value: '4',
-      label: 'Đang xử lý',
-      change: '2% so với tháng trước',
-      changeType: 'negative'
-    },
-    {
-      type: '4',
-      icon: 'bi-currency-dollar',
-      value: '1.875.000',
-      label: 'Tổng doanh thu (VNĐ)',
-      change: '15% so với tháng trước',
-      changeType: 'positive'
-    }
-  ];
+  const [statsData, setStatsData] = useState(null); 
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const sampleTransactions = [
-    {
-      id: 'CC2023001',
-      type: 'sell',
-      status: 'completed',
-      quantity: 20,
-      price: 15000,
-      totalValue: 300000,
-      fee: { amount: 15000, percentage: 5 },
-      date: '15/05/2023',
-      seller: {
-        name: 'Nguyễn Văn An',
-        role: 'Chủ xe điện',
-        avatar: 'https://picsum.photos/seed/user123/30/30.jpg'
-      },
-      buyer: {
-        name: 'Trần Thị Bình',
-        role: 'Người mua tín chỉ',
-        avatar: 'https://picsum.photos/seed/buyer456/30/30.jpg'
-      }
-    },
-    {
-      id: 'CC2023002',
-      type: 'sell',
-      status: 'completed',
-      quantity: 15,
-      price: 15000,
-      totalValue: 225000,
-      fee: { amount: 11250, percentage: 5 },
-      date: '14/05/2023',
-      seller: {
-        name: 'Nguyễn Văn An',
-        role: 'Chủ xe điện',
-        avatar: 'https://picsum.photos/seed/user123/30/30.jpg'
-      },
-      buyer: {
-        name: 'Hoàng Văn Nam',
-        role: 'Người mua tín chỉ',
-        avatar: 'https://picsum.photos/seed/buyer789/30/30.jpg'
-      }
-    },
-    {
-      id: 'CC2023003',
-      type: 'sell',
-      status: 'pending',
-      quantity: 10,
-      price: 18000,
-      totalValue: 180000,
-      fee: { amount: 9000, percentage: 5 },
-      date: '12/05/2023',
-      seller: {
-        name: 'Nguyễn Văn An',
-        role: 'Chủ xe điện',
-        avatar: 'https://picsum.photos/seed/user123/30/30.jpg'
-      },
-      buyer: {
-        name: 'Lê Thị Lan',
-        role: 'Người mua tín chỉ',
-        avatar: 'https://picsum.photos/seed/buyer321/30/30.jpg'
-      }
-    }
-  ];
+  const [activeTab, setActiveTab] = useState('sales'); // 'sales' hoặc 'purchases'
+  const [queryParams, setQueryParams] = useState({ // State cho bộ lọc
+    pageNumber: 1,
+    pageSize: 10,
+    status: null,
+    startDate: null,
+    endDate: null,
+    minAmount: null,
+    maxAmount: null,
+    sortBy: 'CreatedAt',
+    sortDescending: true
+  });
+  const [paginationData, setPaginationData] = useState(null);
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setTransactions(sampleTransactions);
-      setFilteredTransactions(sampleTransactions);
-      setLoading(false);
-    }, 1000);
-  }, []);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleFilter = (filters) => {
-    let filtered = [...transactions];
-    
-    if (filters.type) {
-      filtered = filtered.filter(transaction => transaction.type === filters.type);
+  const mapStatsData = () => {
+    if (!statsData) {
+        // Trả về mảng rỗng hoặc skeleton UI khi đang tải
+        return [];
     }
-    
-    if (filters.status) {
-      filtered = filtered.filter(transaction => transaction.status === filters.status);
-    }
-    
-    if (filters.dateFrom) {
-      filtered = filtered.filter(transaction => {
-        const transactionDate = new Date(transaction.date.split('/').reverse().join('-'));
-        const filterDate = new Date(filters.dateFrom);
-        return transactionDate >= filterDate;
-      });
-    }
-    
-    if (filters.dateTo) {
-      filtered = filtered.filter(transaction => {
-        const transactionDate = new Date(transaction.date.split('/').reverse().join('-'));
-        const filterDate = new Date(filters.dateTo);
-        return transactionDate <= filterDate;
-      });
-    }
-    
-    setFilteredTransactions(filtered);
+
+    // Helper để xác định loại thay đổi
+    const getChangeType = (change) => change > 0 ? 'positive' : (change < 0 ? 'negative' : 'neutral');
+
+    return [
+        {
+            type: '1',
+            icon: 'bi-arrow-left-right-fill',
+            value: statsData.totalTransactions.toLocaleString(),
+            label: 'Tổng giao dịch',
+            change: `${statsData.totalTransactionsChange}%`,
+            changeType: getChangeType(statsData.totalTransactionsChange)
+        },
+        {
+            type: '2',
+            icon: 'bi-check-circle-fill',
+            value: statsData.successfulTransactions.toLocaleString(),
+            label: 'Giao dịch thành công',
+            change: `${statsData.successfulTransactionsChange}%`,
+            changeType: getChangeType(statsData.successfulTransactionsChange)
+        },
+        {
+            type: '3',
+            icon: 'bi-clock-fill',
+            value: statsData.pendingTransactions.toLocaleString(),
+            label: 'Đang xử lý',
+            change: `${statsData.pendingTransactionsChange}%`,
+            changeType: getChangeType(statsData.pendingTransactionsChange)
+        },
+        {
+            type: '4',
+            icon: 'bi-currency-dollar',
+            value: statsData.totalRevenue.toLocaleString(),
+            label: 'Tổng doanh thu (VNĐ)',
+            change: `${statsData.totalRevenueChange}%`,
+            changeType: getChangeType(statsData.totalRevenueChange)
+        }
+    ];
   };
 
+  const mappedStats = mapStatsData();
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setLoading(true);
+      try {
+        let response;
+        const cleanParams = {};
+        for (const key in queryParams) {
+          if (queryParams[key] !== null && queryParams[key] !== '') {
+            cleanParams[key] = queryParams[key];
+          }
+        }
+
+        if (activeTab === 'sales') {
+          response = await getSalesTransactions(cleanParams);
+        } else {
+          response = await getPurchasesTransactions(cleanParams);
+        }
+
+        if (response.data && response.data.success) {
+          setTransactions(response.data.data.items);
+          setPaginationData({
+             totalCount: response.data.data.totalCount,
+             pageNumber: response.data.data.pageNumber,
+             pageSize: response.data.data.pageSize,
+             totalPages: response.data.data.totalPages,
+          });
+        } else {
+          showNotification('Không thể tải lịch sử giao dịch', 'error');
+        }
+      } catch (err) {
+        showNotification(err.message || 'Lỗi kết nối server', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();  
+  }, [activeTab, queryParams, showNotification]);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+        setStatsLoading(true);
+        try {
+            const response = await getTransactionSummary();
+            if (response.data && response.data.success) {
+                setStatsData(response.data.data);
+            } else {
+                showNotification('Không thể tải thống kê', 'error');
+            }
+        } catch (err) {
+            showNotification(err.message || 'Lỗi tải thống kê', 'error');
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+    fetchSummary();
+  }, [showNotification]);
+
+  const handleFilter = (filtersFromChild) => {
+    setQueryParams(prev => ({ ...prev, ...filtersFromChild, pageNumber: 1 }));
+  };
+
+  const handleTabChange = (tab) => {
+    if (tab === activeTab) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveTab(tab);
+      setIsTransitioning(false);
+    }, 150);
+  };
+
+  const handlePageChange = (newPage) => {
+        setQueryParams(prev => ({
+            ...prev,
+            pageNumber: newPage
+        }));
+    };
+
   const handleViewDetails = (transaction) => {
-    setSelectedTransaction(transaction);
+    const pricePerUnit = transaction.quantity > 0 ? (transaction.totalAmount / transaction.quantity) : 0;
+    const feePercentage = transaction.totalAmount > 0 ? (transaction.platformFee / transaction.totalAmount * 100).toFixed(1) : 0;
+
+    const mappedTransaction = {
+      id: transaction.id,
+      type: activeTab === 'sales' ? 'sell' : 'buy',
+      status: mapApiStatusToFe(transaction.status), 
+      quantity: transaction.quantity,
+      price: pricePerUnit,
+      totalValue: transaction.totalAmount,
+      fee: { amount: transaction.platformFee, percentage: feePercentage },
+      date: new Date(transaction.createdAt).toLocaleDateString('vi-VN'),
+      seller: {
+        name: `Người bán: ...${transaction.sellerId.slice(-6)}`,
+        role: 'Người bán',
+        avatar: `https://i.pravatar.cc/30?u=${transaction.sellerId}`
+      },
+      buyer: {
+        name: `Người mua: ...${transaction.buyerId.slice(-6)}`,
+        role: 'Người mua',
+        avatar: `https://i.pravatar.cc/30?u=${transaction.buyerId}`
+      }
+    };
+    setSelectedTransaction(mappedTransaction);
     setShowDetailModal(true);
   };
 
   const handleCancel = (transactionId) => {
-    // Update transaction status to cancelled
-    setTransactions(prev => 
-      prev.map(transaction => 
-        transaction.id === transactionId 
-          ? { ...transaction, status: 'cancelled' }
-          : transaction
-      )
-    );
-    setFilteredTransactions(prev => 
-      prev.map(transaction => 
-        transaction.id === transactionId 
-          ? { ...transaction, status: 'cancelled' }
-          : transaction
-      )
-    );
-    showNotification('Đã hủy giao dịch thành công!', 'success');
+    // TODO: Gọi API hủy giao dịch ở đây
+    // Ví dụ: 
+    // try {
+    //   await cancelTransaction(transactionId);
+    //   showNotification('Đã hủy giao dịch thành công!', 'success');
+    //   // Gọi lại API để refresh list
+    //   setQueryParams(prev => ({ ...prev })); // Trigger useEffect
+    // } catch(err) {
+    //   showNotification('Hủy thất bại!', 'error');
+    // }
+    console.log("Yêu cầu hủy API cho:", transactionId);
+    showNotification('Chức năng hủy đang được phát triển', 'info');
   };
 
   const handleExport = () => {
     showNotification('Đang xuất báo cáo giao dịch...', 'info');
-    // Simulate export
     setTimeout(() => {
       showNotification('Xuất báo cáo thành công!', 'success');
     }, 2000);
   };
 
-  const handleDownloadCertificate = () => {
-    showNotification('Đang tải chứng nhận giao dịch...', 'info');
-    // Simulate download
-    setTimeout(() => {
-      showNotification('Tải chứng nhận thành công!', 'success');
-    }, 2000);
+  const handleDownloadCertificate = async () => {
+    if (!selectedTransaction) return;
+
+    setIsDownloading(true);
+    showNotification('Đang chuẩn bị chứng nhận...', 'info');
+
+    try {
+      const transactionId = selectedTransaction.id; 
+      const response = await getCertificate(transactionId);
+
+      if (response.data && response.data.success) {
+        const certificateUrl = response.data.data.certificate_url;
+        
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = certificateUrl;
+        
+        document.body.appendChild(iframe);
+        
+        iframe.onload = () => {
+          showNotification('Đã tải xong, đang mở cửa sổ in...', 'success');
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        };
+
+      } else {
+        showNotification(response.data.message || 'Không thể lấy chứng nhận.', 'error');
+      }
+    } catch (err) {
+      showNotification(err.message || 'Lỗi kết nối máy chủ chứng nhận.', 'error');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -201,7 +267,7 @@ const Transactions = () => {
     setSelectedTransaction(null);
   };
 
-  if (loading) {
+  if (loading && transactions.length === 0) { 
     return (
       <div className={styles.app}>
         <div className={styles.mainContent}>
@@ -231,52 +297,85 @@ const Transactions = () => {
         
         {/* Stats Grid */}
         <div className={styles.statsGrid}>
-          {transactionStats.map((stat, index) => (
-            <StatCard
-              key={index}
-              type={stat.type}
-              icon={stat.icon}
-              value={stat.value}
-              label={stat.label}
-              change={stat.change}
-              changeType={stat.changeType}
-              delay={(index + 1) * 100}
-            />
-          ))}
+          {statsLoading ? (
+            <p>Đang tải thống kê...</p> 
+          ) : (
+            mappedStats.map((stat, index) => (
+              <StatCard
+                key={index}
+                {...stat} 
+                delay={(index + 1) * 100}
+              />
+            ))
+          )}
+        </div>
+
+          
+        <div className={`${styles.card}`} data-aos="fade-up" data-aos-delay="100">
+          <div className={styles.tabsWrapper}>
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'sales' ? styles.active : ''}`}
+              onClick={() => handleTabChange('sales')}
+              disabled={isTransitioning}
+            >
+              Giao dịch Bán
+            </button>
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'purchases' ? styles.active : ''}`}
+              onClick={() => handleTabChange('purchases')}
+              disabled={isTransitioning}
+            >
+              Giao dịch Mua
+            </button>
+          </div>
         </div>
         
+        
         {/* Filter Section */}
-        <TransactionFilter
-          onFilter={handleFilter}
-          onExport={handleExport}
-        />
+        <div className='mt-3'>
+          <TransactionFilter
+            onFilter={handleFilter}
+            onExport={handleExport}
+            activeTab={activeTab}
+          />
+
+        </div>
         
         {/* Transaction List */}
         <div className={styles.card} data-aos="fade-up" data-aos-delay="600">
           <div className={styles.cardHeader}>
-            <h3 className={styles.cardTitle}>Lịch sử giao dịch</h3>
-            <div className={styles.transactionCount}>
-              {filteredTransactions.length} giao dịch
-            </div>
+          <h3 className={styles.cardTitle}>Lịch sử giao dịch</h3>
+          <div className={styles.transactionCount}>
+            {paginationData?.totalCount || 0} giao dịch
+          </div>
           </div>
           <div className={styles.cardBody}>
             <div className={styles.transactionList}>
-              {filteredTransactions.length > 0 ? (
-                filteredTransactions.map((transaction, index) => (
+              {loading && <p>Đang tải...</p>} 
+              {!loading && transactions.length > 0 ? (
+                transactions.map((transaction) => (
                   <TransactionItem
                     key={transaction.id}
                     transaction={transaction}
+                    transactionType={activeTab} 
                     onViewDetails={handleViewDetails}
                     onCancel={handleCancel}
                   />
-                ))
-              ) : (
-                <div className={styles.emptyState}>
-                  <i className="bi bi-arrow-left-right"></i>
-                  <p>Không tìm thấy giao dịch nào phù hợp với bộ lọc</p>
-                </div>
-              )}
+            ))
+            ) : (
+            !loading && ( 
+              <div className={styles.emptyState}>
+                <i className="bi bi-arrow-left-right"></i>
+                <p>Không tìm thấy giao dịch nào</p>
+              </div>
+            )
+          )}  
             </div>
+              <Pagination
+                currentPage={paginationData.pageNumber}
+                totalPages={paginationData.totalPages}
+                onPageChange={handlePageChange}
+              />
           </div>
         </div>
       </div>
@@ -287,6 +386,7 @@ const Transactions = () => {
         onClose={handleCloseModal}
         transaction={selectedTransaction}
         onDownloadCertificate={handleDownloadCertificate}
+        isDownloading={isDownloading}
       />
     </div>
   );

@@ -7,8 +7,19 @@ const StatCard = ({
   value, 
   label, 
   change, 
-  changeType = 'positive' 
+  changeType = 'positive' // 'positive', 'negative', hoặc 'neutral'
 }) => {
+
+  const getChangeIcon = () => {
+    if (changeType === 'positive') {
+      return 'bi-arrow-up';
+    }
+    if (changeType === 'negative') {
+      return 'bi-arrow-down';
+    }
+    return 'bi-dash'; 
+  };
+
   return (
     <div className={`${styles.statCard} ${styles[`statCard${type}`]}`} data-aos="fade-up">
       <div className={styles.statHeader}>
@@ -19,7 +30,7 @@ const StatCard = ({
       <div className={styles.statValue}>{value}</div>
       <div className={styles.statLabel}>{label}</div>
       <div className={`${styles.statChange} ${styles[changeType]}`}>
-        <i className="bi bi-arrow-up"></i> {change}
+        <i className={`bi ${getChangeIcon()}`}></i> {change}
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ import Reports from './pages/Reports/Reports.jsx';
 import SettingsTabs from './pages/Settings/Settings.jsx';
 import Login from './pages/Login/Login.jsx'; // ✅ Trang Login
 import Register from './pages/Register/Register.jsx'; // ✅ Trang Login
+import PaymentReturn from './pages/Payments/PaymentReturn.jsx';
 
 // Hook thông báo
 import { useNotification } from './hooks/useNotification';
@@ -84,6 +85,11 @@ function App() {
         />
 
         {/* <Route path="/admin/*" element={<AppRouter />} /> */}
+        {/* Payment return (VNPay) */}
+        <Route 
+          path='/payment/return' 
+          element={<PaymentReturn />} 
+        />
       </Routes>
     </>
   );
