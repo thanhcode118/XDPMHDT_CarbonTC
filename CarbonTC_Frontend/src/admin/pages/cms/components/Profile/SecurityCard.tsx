@@ -1,13 +1,14 @@
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
   Box,
   Button,
   Typography,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+// import { Close as CloseIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { Input } from '../../../../components/fields';
 import type { ChangePasswordData } from '../../hooks/useProfile';
@@ -24,6 +25,7 @@ function SecurityCard({
   loading = false,
   onChangePassword,
 }: SecurityCardProps) {
+  const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState<ChangePasswordData>({
     currentPassword: '',
     newPassword: '',
@@ -49,6 +51,16 @@ function SecurityCard({
     message: string;
   }>({ show: false, type: 'success', message: '' });
 
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+    handleResetForm();
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    handleResetForm();
+  };
+
   const handleChange = (field: keyof ChangePasswordData) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -72,13 +84,11 @@ function SecurityCard({
       confirmPassword: '',
     };
 
-    // Validate current password
     if (!formData.currentPassword.trim()) {
       newErrors.currentPassword = true;
       newErrorMessages.currentPassword = 'Current password is required';
     }
 
-    // Validate new password
     if (!formData.newPassword.trim()) {
       newErrors.newPassword = true;
       newErrorMessages.newPassword = 'New password is required';
@@ -88,7 +98,6 @@ function SecurityCard({
         'Password must be at least 6 characters';
     }
 
-    // Validate confirm password
     if (!formData.confirmPassword.trim()) {
       newErrors.confirmPassword = true;
       newErrorMessages.confirmPassword = 'Please confirm your password';
@@ -117,16 +126,13 @@ function SecurityCard({
     });
 
     if (result.success) {
-      // Reset form
-      setFormData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
+      setTimeout(() => {
+        handleCloseDialog();
+      }, 1500);
     }
   };
 
-  const handleCancel = () => {
+  const handleResetForm = () => {
     setFormData({
       currentPassword: '',
       newPassword: '',
@@ -145,162 +151,88 @@ function SecurityCard({
     setAlert({ show: false, type: 'success', message: '' });
   };
 
-  const hasFormData =
-    formData.currentPassword || formData.newPassword || formData.confirmPassword;
-
   return (
-    <Card>
-      <CardHeader
-        title="🔒 Security Settings"
-        sx={{
-          '& .MuiCardHeader-title': {
-            fontSize: '1.25rem',
-            fontWeight: 600,
+    <>
+      <Box sx={{ display: 'flex', alignItems: 'center' , flexDirection: 'column', gap: 2 }}>
+        <Button
+          variant="contained"
+          onClick={handleOpenDialog}
+          sx={{ maxWidth: 200, fontWeight: 600 }}
+        >
+          Change Password
+        </Button>
+      </Box>
+        {/* <CardContent>
+        </CardContent>
+      <Card>
+      </Card> */}
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
           },
         }}
-      />
-      <CardContent>
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 600, mb: 1, fontSize: '1rem' }}
-              >
-                Change Password
-              </Typography>
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            pb: 1,
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Đổi mật khẩu
+          </Typography>
+        </DialogTitle>
 
-              <Input
-                label="Current Password"
-                name="currentPassword"
-                typeInput="password"
-                value={formData.currentPassword}
-                isError={errors.currentPassword}
-                errorText={errorMessages.currentPassword}
-                onChange={handleChange('currentPassword')}
-                disabled={loading || submitting}
-                size="small"
-                placeholder="Enter current password"
-              />
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, py: 1 }}>
+            <Input
+              label="Mật khẩu cũ (*)"
+              name="currentPassword"
+              typeInput="password"
+              value={formData.currentPassword}
+              isError={errors.currentPassword}
+              errorText={errorMessages.currentPassword}
+              onChange={handleChange('currentPassword')}
+              disabled={loading || submitting}
+              size="small"
+              placeholder="Nhập mật khẩu hiện tại"
+            />
 
-              <Input
-                label="New Password"
-                name="newPassword"
-                typeInput="password"
-                value={formData.newPassword}
-                isError={errors.newPassword}
-                errorText={errorMessages.newPassword}
-                onChange={handleChange('newPassword')}
-                disabled={loading || submitting}
-                size="small"
-                placeholder="Enter new password"
-                helperText="Minimum 6 characters"
-              />
+            <Input
+              label="Mật khẩu mới (*)"
+              name="newPassword"
+              typeInput="password"
+              value={formData.newPassword}
+              isError={errors.newPassword}
+              errorText={errorMessages.newPassword}
+              onChange={handleChange('newPassword')}
+              disabled={loading || submitting}
+              size="small"
+              placeholder="Nhập mật khẩu mới"
+            />
 
-              <Input
-                label="Confirm New Password"
-                name="confirmPassword"
-                typeInput="password"
-                value={formData.confirmPassword}
-                isError={errors.confirmPassword}
-                errorText={errorMessages.confirmPassword}
-                onChange={handleChange('confirmPassword')}
-                disabled={loading || submitting}
-                size="small"
-                placeholder="Confirm new password"
-              />
+            <Input
+              label="Xác nhận mật khẩu (*)"
+              name="confirmPassword"
+              typeInput="password"
+              value={formData.confirmPassword}
+              isError={errors.confirmPassword}
+              errorText={errorMessages.confirmPassword}
+              onChange={handleChange('confirmPassword')}
+              disabled={loading || submitting}
+              size="small"
+              placeholder="Xác nhận mật khẩu mới"
+            />
 
-              {hasFormData && (
-                <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleCancel}
-                    disabled={submitting}
-                    fullWidth
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    fullWidth
-                  >
-                    {submitting ? 'Changing...' : 'Change Password'}
-                  </Button>
-                </Box>
-              )}
-            </Box>
-          </Grid>
-
-          {/* Right Column - Security Info */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 600, mb: 1, fontSize: '1rem' }}
-              >
-                Password Requirements
-              </Typography>
-
-              <Box
-                sx={{
-                  p: 2,
-                  backgroundColor: 'rgba(25, 118, 210, 0.04)',
-                  borderRadius: 2,
-                  border: '1px solid rgba(25, 118, 210, 0.12)',
-                }}
-              >
-                <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                  Your password must contain:
-                </Typography>
-                <Box component="ul" sx={{ pl: 2, m: 0 }}>
-                  <Typography
-                    component="li"
-                    variant="body2"
-                    sx={{ mb: 0.5, color: 'text.secondary' }}
-                  >
-                    At least 6 characters
-                  </Typography>
-                  <Typography
-                    component="li"
-                    variant="body2"
-                    sx={{ mb: 0.5, color: 'text.secondary' }}
-                  >
-                    Mix of letters and numbers
-                  </Typography>
-                  <Typography
-                    component="li"
-                    variant="body2"
-                    sx={{ color: 'text.secondary' }}
-                  >
-                    Special characters recommended
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box
-                sx={{
-                  p: 2,
-                  backgroundColor: 'rgba(237, 108, 2, 0.04)',
-                  borderRadius: 2,
-                  border: '1px solid rgba(237, 108, 2, 0.12)',
-                }}
-              >
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                  ⚠️ Security Tips
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  Never share your password with anyone. Change it regularly to
-                  keep your account secure.
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-
-          {/* Alert Message */}
-          {alert.show && (
-            <Grid size={{ xs: 12}}>
+            {alert.show && (
               <Alert
                 severity={alert.type}
                 onClose={() =>
@@ -309,11 +241,21 @@ function SecurityCard({
               >
                 {alert.message}
               </Alert>
-            </Grid>
-          )}
-        </Grid>
-      </CardContent>
-    </Card>
+            )}
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: 'center' , px: 3, py: 2 }}>
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting}
+            variant="contained"
+          >
+            {submitting ? 'Đang xử lý...' : 'Đổi mật khẩu'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 

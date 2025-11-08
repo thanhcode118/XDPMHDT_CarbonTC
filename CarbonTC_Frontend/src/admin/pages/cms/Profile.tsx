@@ -1,29 +1,27 @@
-import { Box, Container, Stack } from '@mui/material';
+import { Container, Stack } from '@mui/material';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useProfile } from './hooks/useProfile';
 import {
   ProfileHeader,
-  InformationCard,
   SecurityCard,
 } from './components/Profile';
 
 function Profile() {
-  const { profileData, loading, updateProfile, changePassword } = useProfile();
+  const {
+    profileData,
+    updateProfile,
+    loading,
+    changePassword,
+  } = useProfile();
 
   if (loading || !profileData) {
     return <LoadingSpinner />;
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <ProfileHeader profileData={profileData} />
-
+    <Container maxWidth="lg" sx={{ py: 2 }}>
+      <ProfileHeader profileData={profileData} onUpdate={updateProfile} />
       <Stack spacing={3}>
-        <InformationCard
-          profileData={profileData}
-          onUpdate={updateProfile}
-        />
-
         <SecurityCard onChangePassword={changePassword} />
       </Stack>
     </Container>

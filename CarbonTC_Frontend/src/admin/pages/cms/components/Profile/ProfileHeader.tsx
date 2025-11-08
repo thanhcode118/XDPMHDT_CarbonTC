@@ -1,17 +1,80 @@
-import { Box, Avatar, Typography, Chip, Button } from '@mui/material';
-import { Logout as LogoutIcon, Edit as EditIcon } from '@mui/icons-material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Grid,
+  Typography,
+} from '@mui/material';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../../store';
 import { formatDate } from '../../../../utils';
-import type { ProfileData } from '../../hooks/useProfile';
+import type { ProfileData, UpdateProfileData } from '../../hooks/useProfile';
+import EditProfileDialog from './EditProfileDialog';
 
 interface ProfileHeaderProps {
   profileData: ProfileData;
+  onUpdate: (data: UpdateProfileData) => Promise<{
+    success: boolean;
+    message: string;
+  }>;
 }
 
-function ProfileHeader({ profileData }: ProfileHeaderProps) {
+interface InfoRowProps {
+  label: string;
+  value: string | React.ReactNode;
+}
+
+function InfoRow({ label, value }: InfoRowProps) {
+  return (
+    <Box sx={{ mb: 1.5, display: 'flex', gap: 1 }}>
+      <Typography
+        variant="body1"
+        sx={{
+          color: 'text.secondary',
+          fontWeight: 600,
+          mb: 0.5,
+        }}
+      >
+        {label}:
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          color: 'text.primary',
+          fontSize: '1rem',
+        }}
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+function ProfileHeader({ profileData, onUpdate }: ProfileHeaderProps) {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+    // setFormData({
+    //   fullName: profileData.fullName,
+    //   phoneNumber: profileData.phoneNumber || '',
+    // });
+    // handleResetForm();
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    // handleResetForm();
+  };
 
   const handleLogout = () => {
     logout();
@@ -49,95 +112,176 @@ function ProfileHeader({ profileData }: ProfileHeaderProps) {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 3,
-        p: 3,
-        backgroundColor: 'background.paper',
-        borderRadius: 2,
-        mb: 3,
-        border: '1px solid',
-        borderColor: 'divider',
-        flexWrap: 'wrap',
-      }}
-    >
-      {/* Avatar */}
-      <Avatar
-        src={profileData.avatarUrl}
-        alt={profileData.fullName}
-        sx={{
-          width: { xs: 80, md: 100 },
-          height: { xs: 80, md: 100 },
-          fontSize: '2rem',
-          fontWeight: 600,
-          bgcolor: 'primary.main',
-        }}
-      >
-        {!profileData.avatarUrl && getInitials(profileData.fullName)}
-      </Avatar>
+    <>
+      <Box sx={{ mb: 3 }}>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card>
+              <CardContent>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Avatar
+                    src={profileData.avatarUrl}
+                    alt={profileData.fullName}
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      mb: 2,
+                    }}
+                  >
+                    {!profileData.avatarUrl && getInitials(profileData.fullName)}
+                  </Avatar>
 
-      <Box sx={{ flex: 1, minWidth: 200 }}>
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '1.5rem', md: '2rem' } }}
-        >
-          {profileData.fullName}
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ mb: 1, fontSize: '1rem' }}
-        >
-          {profileData.email}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-          <Chip
-            label={profileData.role}
-            color={getRoleColor(profileData.role)}
-            size="small"
-            sx={{ fontWeight: 600 }}
-          />
-          <Chip
-            label={profileData.status}
-            color={getStatusColor(profileData.status)}
-            size="small"
-            sx={{ fontWeight: 600 }}
-          />
-          <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-            Member since: {formatDate(profileData.createdAt)}
-          </Typography>
-        </Box>
-      </Box>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{
+                      mb: 1.5,
+                      textAlign: 'center',
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    ID: {profileData.userId}
+                  </Typography>
 
-      {/* Actions */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          flexDirection: { xs: 'column', sm: 'row' },
-          width: { xs: '100%', sm: 'auto' },
-        }}
-      >
-        <Button
-          variant="outlined"
-          startIcon={<EditIcon />}
-          sx={{ minWidth: 120 }}
-        >
-          Edit Profile
-        </Button>
-        <Button
-          variant="outlined"
-          color="error"
-          startIcon={<LogoutIcon />}
-          onClick={handleLogout}
-          sx={{ minWidth: 120 }}
-        >
-          Logout
-        </Button>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Chip
+                      label={profileData.role}
+                      color={getRoleColor(profileData.role)}
+                      size="small"
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Chip
+                      label={profileData.status}
+                      color={getStatusColor(profileData.status)}
+                      size="small"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 8 }}>
+            <Card>
+              <CardContent>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                  }}
+                >
+                  <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <InfoRow label="Full Name" value={profileData.fullName} />
+                      <InfoRow
+                        label="Phone Number"
+                        value={profileData.phoneNumber || '-'}
+                      />
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <InfoRow
+                        label="Created At"
+                        value={formatDate(profileData.createdAt)}
+                      />
+                      <InfoRow
+                        label="Role"
+                        value={
+                          <Chip
+                            label={profileData.role}
+                            color={getRoleColor(profileData.role)}
+                            size="small"
+                            sx={{ fontWeight: 600, height: 24 }}
+                          />
+                        }
+                      />
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <InfoRow
+                        label="Status"
+                        value={
+                          <Chip
+                            label={profileData.status}
+                            color={getStatusColor(profileData.status)}
+                            size="small"
+                            sx={{ fontWeight: 600, height: 24 }}
+                            icon={
+                              <Box
+                                sx={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: '50%',
+                                  backgroundColor:
+                                    profileData.status === 'ACTIVE'
+                                      ? '#4caf50'
+                                      : '#f44336',
+                                  ml: 1,
+                                }}
+                              />
+                            }
+                          />
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1.5,
+                      justifyContent: 'flex-end',
+                      pt: 2,
+                      borderTop: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      startIcon={<EditRoundedIcon />}
+                      onClick={handleOpenDialog}
+                      sx={{ minWidth: 120, fontWeight: 600 }}
+                    >
+                      Edit Profile
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      startIcon={<LogoutRoundedIcon />}
+                      onClick={handleLogout}
+                      sx={{ minWidth: 120, fontWeight: 600 }}
+                    >
+                      Logout
+                    </Button>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </Box>
-    </Box>
+      <EditProfileDialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        profileData={profileData}
+        onUpdate={onUpdate}
+      />
+    </>
   );
 }
 
