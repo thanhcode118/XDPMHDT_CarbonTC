@@ -14,12 +14,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../../store';
 import { formatDate } from '../../../../utils';
-import type { ProfileData, UpdateProfileData } from '../../hooks/useProfile';
+import type { ProfileData, UpdateProfileInput } from '../../hooks/useProfile';
 import EditProfileDialog from './EditProfileDialog';
 
 interface ProfileHeaderProps {
   profileData: ProfileData;
-  onUpdate: (data: UpdateProfileData) => Promise<{
+  onUpdate: (data: UpdateProfileInput) => Promise<{
     success: boolean;
     message: string;
   }>;
@@ -31,6 +31,7 @@ interface InfoRowProps {
 }
 
 function InfoRow({ label, value }: InfoRowProps) {
+  const isStringValue = typeof value === 'string';
   return (
     <Box sx={{ mb: 1.5, display: 'flex', gap: 1 }}>
       <Typography
@@ -43,15 +44,21 @@ function InfoRow({ label, value }: InfoRowProps) {
       >
         {label}:
       </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          color: 'text.primary',
-          fontSize: '1rem',
-        }}
-      >
-        {value}
-      </Typography>
+      {isStringValue ? (
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.primary',
+            fontSize: '1rem',
+          }}
+        >
+          {value}
+        </Typography>
+      ) : (
+        <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+          {value}
+        </Box>
+      )}
     </Box>
   );
 }
@@ -64,11 +71,6 @@ function ProfileHeader({ profileData, onUpdate }: ProfileHeaderProps) {
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
-    // setFormData({
-    //   fullName: profileData.fullName,
-    //   phoneNumber: profileData.phoneNumber || '',
-    // });
-    // handleResetForm();
   };
 
   const handleCloseDialog = () => {
@@ -102,14 +104,17 @@ function ProfileHeader({ profileData, onUpdate }: ProfileHeaderProps) {
     return status === 'ACTIVE' ? 'success' : 'error';
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string | null) => {
+    if (!name || typeof name !== 'string') return '';
     return name
-      .split(' ')
-      .map((n) => n[0])
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((n) => n[0]?.toUpperCase() ?? '')
       .join('')
-      .toUpperCase()
       .slice(0, 2);
   };
+  console.log('🔍 [ProfileHeader] Profile Data:', profileData);
 
   return (
     <>
@@ -126,15 +131,15 @@ function ProfileHeader({ profileData, onUpdate }: ProfileHeaderProps) {
                   }}
                 >
                   <Avatar
-                    src={profileData.avatarUrl}
-                    alt={profileData.fullName}
+                    src={profileData?.avatarUrl}
+                    alt={profileData?.fullName || 'User'}
                     sx={{
                       width: 120,
                       height: 120,
                       mb: 2,
                     }}
                   >
-                    {!profileData.avatarUrl && getInitials(profileData.fullName)}
+                    {!profileData?.avatarUrl && getInitials(profileData?.fullName || profileData?.email)}
                   </Avatar>
 
                   <Typography
@@ -146,7 +151,7 @@ function ProfileHeader({ profileData, onUpdate }: ProfileHeaderProps) {
                       wordBreak: 'break-all',
                     }}
                   >
-                    ID: {profileData.userId}
+                    ID: {profileData?.userId || 'N/A'}
                   </Typography>
 
                   <Box
@@ -187,27 +192,29 @@ function ProfileHeader({ profileData, onUpdate }: ProfileHeaderProps) {
                 >
                   <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                     <Grid size={{ xs: 12, md: 6 }}>
-                      <InfoRow label="Full Name" value={profileData.fullName} />
+                      <InfoRow label="Full Name" value={profileData?.fullName || 'N/A'} />
                       <InfoRow
                         label="Phone Number"
-                        value={profileData.phoneNumber || '-'}
+                        value={profileData?.phoneNumber || '-'}
                       />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
                       <InfoRow
                         label="Created At"
-                        value={formatDate(profileData.createdAt)}
+                        value={profileData?.createdAt ? formatDate(profileData.createdAt) : '-'}
                       />
                       <InfoRow
                         label="Role"
                         value={
-                          <Chip
-                            label={profileData.role}
-                            color={getRoleColor(profileData.role)}
-                            size="small"
-                            sx={{ fontWeight: 600, height: 24 }}
-                          />
+                          profileData?.role ? (
+                            <Chip
+                              label={profileData.role}
+                              color={getRoleColor(profileData.role)}
+                              size="small"
+                              sx={{ fontWeight: 600, height: 24 }}
+                            />
+                          ) : 'N/A'
                         }
                       />
                     </Grid>
@@ -216,26 +223,28 @@ function ProfileHeader({ profileData, onUpdate }: ProfileHeaderProps) {
                       <InfoRow
                         label="Status"
                         value={
-                          <Chip
-                            label={profileData.status}
-                            color={getStatusColor(profileData.status)}
-                            size="small"
-                            sx={{ fontWeight: 600, height: 24 }}
-                            icon={
-                              <Box
-                                sx={{
-                                  width: 8,
-                                  height: 8,
-                                  borderRadius: '50%',
-                                  backgroundColor:
-                                    profileData.status === 'ACTIVE'
-                                      ? '#4caf50'
-                                      : '#f44336',
-                                  ml: 1,
-                                }}
-                              />
-                            }
-                          />
+                          profileData?.status ? (
+                            <Chip
+                              label={profileData.status}
+                              color={getStatusColor(profileData.status)}
+                              size="small"
+                              sx={{ fontWeight: 600, height: 24 }}
+                              icon={
+                                <Box
+                                  sx={{
+                                    width: 8,
+                                    height: 8,
+                                    borderRadius: '50%',
+                                    backgroundColor:
+                                      profileData.status === 'ACTIVE'
+                                        ? '#4caf50'
+                                        : '#f44336',
+                                    ml: 1,
+                                  }}
+                                />
+                              }
+                            />
+                          ) : 'N/A'
                         }
                       />
                     </Grid>

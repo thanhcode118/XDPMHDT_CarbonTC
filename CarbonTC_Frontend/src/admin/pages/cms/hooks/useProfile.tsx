@@ -1,21 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../../store';
-
-export interface ProfileData {
-  userId: string;
-  fullName: string;
-  email: string;
-  role: string;
-  phoneNumber?: string;
-  createdAt: string;
-  status: 'ACTIVE' | 'INACTIVE';
-  avatarUrl?: string;
-}
-
-export interface UpdateProfileData {
-  fullName: string;
-  phoneNumber: string;
-}
+import { profileApi, type ProfileData, type UpdateProfileData } from '../../../services/profile.service';
 
 export interface ChangePasswordData {
   currentPassword: string;
@@ -24,7 +9,7 @@ export interface ChangePasswordData {
 }
 
 export const useProfile = () => {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -36,23 +21,20 @@ export const useProfile = () => {
 
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/admin/profile/${user.id}`);
-      // const data = await response.json();
+      const data = await profileApi.getProfile();
+      const actualData = (data as any)?.data || data;
 
-      // Mock data for now
-      const mockData: ProfileData = {
-        userId: user.id,
-        fullName: user.fullName || user.name || 'Admin User',
-        email: user.email,
-        role: user.role,
-        phoneNumber: '+84901234567',
-        createdAt: '2024-03-15T10:00:00Z',
-        status: user.status || 'ACTIVE',
-        avatarUrl: user.avatarUrl,
+      const mappedData: ProfileData = {
+        userId: actualData?.userId || actualData?._id || actualData?.id || 'N/A',
+        fullName: actualData?.fullName || actualData?.full_name || actualData?.name || 'N/A',
+        email: actualData?.email || user.email || 'N/A',
+        role: actualData?.role || actualData?.roleType || user.role || 'N/A',
+        phoneNumber: actualData?.phoneNumber || actualData?.phone_number || actualData?.phone,
+        createdAt: actualData?.createdAt || actualData?.created_at || actualData?.createdDate || new Date().toISOString(),
+        status: actualData?.status || actualData?.accountStatus || 'ACTIVE',
+        avatarUrl: actualData?.avatarUrl || actualData?.avatar_url || actualData?.avatar,
       };
-
-      setProfileData(mockData);
+      setProfileData(mappedData);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -60,30 +42,36 @@ export const useProfile = () => {
     }
   };
 
-  // Update basic info
-  const updateProfile = async (data: UpdateProfileData) => {
+  const updateProfile = async (data: Omit<UpdateProfileData, 'userId'>) => {
+    if (!profileData?.userId) {
+      return {
+        success: false,
+        message: 'User ID not found',
+      };
+    }
     setUpdateLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/admin/profile/${user?.id}`, {
-      //   method: 'PUT',
-      //   body: JSON.stringify(data),
-      // });
+      const result = await profileApi.updateProfile({
+        userId: profileData.userId,
+        fullName: data.fullName,
+        phoneNumber: data.phoneNumber,
+      });
 
-      // Mock update
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (result.success) {
+        setProfileData((prev) => prev ? {
+          ...prev,
+          fullName: data.fullName,
+          phoneNumber: data.phoneNumber,
+        }: null);
+      }
 
-      setProfileData((prev) =>
-        prev
-          ? {
-              ...prev,
-              fullName: data.fullName,
-              phoneNumber: data.phoneNumber,
-            }
-          : null
-      );
-
-      return { success: true, message: 'Profile updated successfully' };
+      if (user) {
+        setUser({
+          ...user,
+          fullName: data.fullName,
+        });
+      }
+      return result;
     } catch (error) {
       console.error('Error updating profile:', error);
       return { success: false, message: 'Failed to update profile' };
@@ -108,6 +96,12 @@ export const useProfile = () => {
         };
       }
 
+      const result = await profileApi.changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+
+      return result;
       // TODO: Replace with actual API call
       // const response = await fetch('/api/admin/change-password', {
       //   method: 'POST',
@@ -118,9 +112,9 @@ export const useProfile = () => {
       // });
 
       // Mock change password
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      return { success: true, message: 'Password changed successfully' };
+      // return { success: true, message: 'Password changed successfully' };
     } catch (error) {
       console.error('Error changing password:', error);
       return { success: false, message: 'Failed to change password' };
@@ -143,3 +137,6 @@ export const useProfile = () => {
     refetch: fetchProfile,
   };
 };
+
+export type { ProfileData, UpdateProfileData } from '../../../services/profile.service';
+export type UpdateProfileInput = Omit<UpdateProfileData, 'userId'>;
