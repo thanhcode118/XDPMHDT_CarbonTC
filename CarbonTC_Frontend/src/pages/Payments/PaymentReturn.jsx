@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styles from './PaymentReturn.module.css';
-import { getMyEWallet } from '../../utils/walletApi.jsx';
+import { getMyEWallet } from '../../services/walletService.jsx';
 import { useNotification } from '../../hooks/useNotification.jsx';
 
 const PaymentReturn = () => {

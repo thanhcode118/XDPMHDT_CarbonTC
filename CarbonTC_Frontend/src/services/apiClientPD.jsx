@@ -10,7 +10,9 @@ const apiClientPD = axios.create({
 
 apiClientPD.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('userToken');
+    // Sử dụng accessToken từ auth service (đồng bộ với authService.js)
+    // Fallback về userToken để tương thích ngược nếu có
+    const token = localStorage.getItem('accessToken') || localStorage.getItem('userToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
@@ -30,6 +32,7 @@ apiClientPD.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       console.error('Token expired or invalid');
+      localStorage.removeItem('accessToken');
       localStorage.removeItem('userToken');
       localStorage.removeItem('currentUser');
     }
