@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -14,6 +15,8 @@ using CarbonTC.CarbonLifecycle.Application.Services;
 using CarbonTC.CarbonLifecycle.Application.Abstractions.Services;
 using CarbonTC.CarbonLifecycle.Application.Commands.AuditReport;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
+using CarbonTC.CarbonLifecycle.Application.IntegrationEvents;
+using CarbonTC.CarbonLifecycle.Application.Abstractions.Messaging;
 
 namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
 {
@@ -21,6 +24,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
     {
         private readonly IVerificationRequestRepository _verificationRequestRepository;
         private readonly IJourneyBatchRepository _journeyBatchRepository; // Cần để lấy thông tin batch
+        private readonly ICarbonCreditRepository _carbonCreditRepository;
         private readonly ICVAStandardRepository _cvaStandardRepository;
         private readonly IVerificationProcessDomainService _verificationProcessDomainService;
         private readonly IUnitOfWork _unitOfWork;
@@ -28,6 +32,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
         private readonly IMapper _mapper;
         private readonly ILogger<ReviewVerificationRequestCommandHandler> _logger;
         private readonly IMediator _mediator; // Inject Mediator để gửi Audit command
+        private readonly IMessagePublisher _messagePublisher;
 
         // Bỏ IWalletService vì chúng ta dùng Event-Driven
         // private readonly IWalletService _walletService;
@@ -41,7 +46,9 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
             IIdentityService identityService,
             IMapper mapper,
             ILogger<ReviewVerificationRequestCommandHandler> logger,
-            IMediator mediator
+            IMediator mediator,
+            IMessagePublisher messagePublisher,
+            ICarbonCreditRepository carbonCreditRepository
             /* IWalletService walletService */)
         {
             _verificationRequestRepository = verificationRequestRepository;
@@ -53,6 +60,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
             _mapper = mapper;
             _logger = logger;
             _mediator = mediator;
+            _messagePublisher = messagePublisher;
+            _carbonCreditRepository = carbonCreditRepository;
             // _walletService = walletService;
         }
 
@@ -155,6 +164,43 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
 
             // 4. Lưu thay đổi vào DB (cập nhật status của Request và Batch)
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // THÊM LOGIC PUBLISH SAU KHI SAVE THÀNH CÔNG
+            if (reviewData.IsApproved)
+            {
+                // Truy vấn lại Credit vừa tạo ra (Giả định 1 Batch chỉ tạo ra 1 Credit)
+                var newCredits = await _carbonCreditRepository.GetByVerificationRequestIdAsync(verificationRequest.Id);
+                var newCredit = newCredits.FirstOrDefault();
+
+                if (newCredit != null)
+                {
+                    // 1. Gửi CreditIssuedIntegrationEvent (Service Payment)
+                    var creditIssuedEvent = new CreditIssuedIntegrationEvent
+                    {
+                        OwnerUserId = newCredit.UserId,
+                        CreditAmount = newCredit.AmountKgCO2e,
+                        ReferenceId = verificationRequest.JourneyBatchId.ToString(), // Dùng Batch ID làm Reference
+                        IssuedAt = new DateTimeOffset(newCredit.IssueDate, TimeSpan.Zero),
+                    };
+                    // Routing Key: credit.issued
+                    _ = _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit.issued");
+
+                    // 2. Gửi CreditInventoryUpdateIntegrationEvent (Service Marketplace/Trading)
+                    var inventoryUpdateEvent = new CreditInventoryUpdateIntegrationEvent
+                    {
+                        CreditId = newCredit.Id,
+                        TotalAmount = newCredit.AmountKgCO2e,
+                    };
+                    // Routing Key: credit.inventory.update
+                    _ = _messagePublisher.PublishIntegrationEventAsync(inventoryUpdateEvent, "credit.inventory.update"); 
+
+                    _logger.LogInformation("Integration events published successfully for Credit ID: {CreditId}", newCredit.Id);
+                }
+                else
+                {
+                    _logger.LogError("Carbon Credit entity not found after approval for VerificationRequestId: {VerificationRequestId}", verificationRequest.Id);
+                }
+            }
 
             // 5. Ghi Audit Log (sau khi SaveChanges thành công)
             var newValuesJson = JsonSerializer.Serialize(new { verificationRequest.Status, verificationRequest.Notes });

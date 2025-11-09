@@ -104,7 +104,12 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.EVJourney
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // 7. Map kết quả và trả về
-            return _mapper.Map<EvJourneyResponseDto>(journey);
+            var result = _mapper.Map<EvJourneyResponseDto>(journey);
+            
+            // Đảm bảo JourneyBatchId được map đúng (vì có thể AutoMapper không map được private property)
+            result.JourneyBatchId = batchToUse.Id;
+            
+            return result;
         }
     }
 }

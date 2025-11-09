@@ -37,9 +37,8 @@ RUN dotnet publish CarbonTC.CarbonLifecycle.Api.csproj -c Release -o /app/publis
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Expose ports for HTTP and HTTPS
-EXPOSE 8080
-EXPOSE 8081
+# Expose port 80 for HTTP (matches docker-compose.yml ASPNETCORE_URLS configuration)
+EXPOSE 80
 
 # Copy the published output from the 'publish' stage to the final runtime image
 COPY --from=publish /app/publish .

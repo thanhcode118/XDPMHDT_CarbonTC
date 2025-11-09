@@ -16,6 +16,10 @@ namespace CarbonTC.CarbonLifecycle.Application.Mappings
                 .ForMember(dest => dest.OwnerId,
                            opt => opt.MapFrom(src => src.UserId))
 
+                // Ánh xạ JourneyBatchId (Entity) sang JourneyBatchId (DTO)
+                .ForMember(dest => dest.JourneyBatchId,
+                           opt => opt.MapFrom(src => src.JourneyBatchId))
+
                 // Ánh xạ CO2EstimateKg (Entity) sang CalculatedCarbonCredits (DTO)
                 .ForMember(dest => dest.CalculatedCarbonCredits,
                            opt => opt.MapFrom(src => src.CO2EstimateKg))

@@ -148,14 +148,19 @@ public class Program
             // Đăng ký API Layer 
             builder.Services.AddApiLayer();
 
-            // Cấu hình CORS
+            // Cấu hình CORS - chỉ cho phép frontend origin
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", policy =>
+                options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader();
+                    policy.WithOrigins(
+                            "http://localhost:5173",  // Vite default port
+                            "http://localhost:3000",  // Alternative React port
+                            "https://localhost:5173"  // HTTPS nếu cần
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials(); // Cho phép gửi credentials (cookies, auth headers)
                 });
             });
 
@@ -166,18 +171,6 @@ public class Program
             // MediatR & AutoMapper
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(appAssembly));
             builder.Services.AddAutoMapper(appAssembly);
-
-            // Thêm dịch vụ CORS (bạn gọi 2 lần, nhưng không sao, cái này cụ thể hơn)
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowFrontend", // Đặt tên cho policy
-                    builder =>
-                    {
-                        builder.WithOrigins("http://localhost:5173") // Cho phép origin của frontend
-                               .AllowAnyHeader()
-                               .AllowAnyMethod();
-                    });
-            });
 
             Log.Information("Application building started...");
             var app = builder.Build();
@@ -217,12 +210,6 @@ public class Program
             }
             // ===========================================
 
-            // Sử dụng CORS policy đã định nghĩa
-            app.UseCors("AllowFrontend");
-
-            // Sử dụng Global Error Handling Middleware
-            app.UseMiddleware<ErrorHandlingMiddleware>();
-
             // Apply migrations nếu đang ở môi trường Development
             if (app.Environment.IsDevelopment())
             {
@@ -244,18 +231,25 @@ public class Program
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Carbon Lifecycle Service API V1");
-                    c.RoutePrefix = string.Empty;
+                    c.RoutePrefix = "swagger"; // Đặt route prefix về "swagger" để truy cập tại /swagger
                     c.DocumentTitle = "Carbon Lifecycle Service API Documentation";
                 });
             }
 
-            // Pipeline
-            app.UseCors("AllowAll");
+            // ======================================================================
+            // === PIPELINE MIDDLEWARE - THỨ TỰ QUAN TRỌNG ===
+            // ======================================================================
+            
+            // CORS phải được đặt TRƯỚC Authentication và Authorization
+            app.UseCors("AllowFrontend");
 
             if (!app.Environment.IsDevelopment())
             {
                 app.UseHttpsRedirection();
             }
+
+            // Sử dụng Global Error Handling Middleware
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             // ======================================================================
             // === THÊM MIDDLEWARE XÁC THỰC ===

@@ -44,6 +44,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SubmitForVerification([FromBody] SubmitRequestDto requestDto)
@@ -60,6 +61,11 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             {
                 _logger.LogWarning(ex, "Failed to submit batch: {Message}", ex.Message);
                 return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Access denied when submitting batch: {Message}", ex.Message);
+                return StatusCode(StatusCodes.Status403Forbidden, ApiResponse<object>.FailureResponse(ex.Message));
             }
             catch (InvalidOperationException ex)
             {

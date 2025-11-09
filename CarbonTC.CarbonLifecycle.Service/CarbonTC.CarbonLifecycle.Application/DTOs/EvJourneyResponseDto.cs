@@ -10,6 +10,7 @@ namespace CarbonTC.CarbonLifecycle.Application.DTOs
     {
         public Guid Id { get; set; }
         public string OwnerId { get; set; } // Sẽ map từ UserId
+        public Guid JourneyBatchId { get; set; } // ID của batch mà journey này thuộc về
         public decimal DistanceKm { get; set; } 
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
