@@ -33,14 +33,12 @@ namespace Application.Common.Features.Listings.Commands.BuyNow
 
             var totalPrice = listing.PricePerUnit * request.Amount;
 
-
-            // chung 111
-            //await _balanceService.WarmUpBalanceAsync(buyerId.Value, null);
-            //var reserved = await _balanceService.ReserveBalanceForPurchaseAsync(buyerId.Value, totalPrice);
-            //if (!reserved)
-            //{
-            //    return Result.Failure(new Error("Wallet", "Insufficient funds (checked via Redis)."));
-            //}
+            await _balanceService.WarmUpBalanceAsync(buyerId.Value, null);
+            var reserved = await _balanceService.ReserveBalanceForPurchaseAsync(buyerId.Value, totalPrice);
+            if (!reserved)
+            {
+                return Result.Failure(new Error("Wallet", "Insufficient funds (checked via Redis)."));
+            }
 
             try
             {
