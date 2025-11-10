@@ -242,7 +242,7 @@ services:
       - MARKETPLACE_SERVICE_URL=http://marketplace-service:5003
       - WALLET_SERVICE_URL=http://wallet-service:5004
       - LIFECYCLE_SERVICE_URL=http://lifecycle-service:5002
-      - NODE_ENV=development
+      - NODE_ENV=production
       - JWT_SECRET=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
       - JWT_PUBLIC_KEY=your_jwt_public_key_here
       - AUTH_ISS=CarbonTC.Auth
