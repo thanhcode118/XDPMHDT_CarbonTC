@@ -1,11 +1,16 @@
 .app {
   position: relative;
+  min-height: 100vh;
+  background: var(--dark-bg, #0f0f1e);
+  width: 100%;
 }
 
 .mainContent {
   margin-left: var(--sidebar-width);
   padding: 30px;
-  min-height: 100vh;
+  padding-bottom: 50px;
+  min-height: calc(100vh - 60px);
+  background: var(--dark-bg, #0f0f1e);
 }
 
 .mobileToggle {
@@ -190,4 +195,264 @@
 .formControl::placeholder {
   color: var(--text-secondary);
   opacity: 0.7;
+}
+
+/* --- Timeline Styles for Journey History --- */
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timelineGroup {
+  margin-bottom: 40px;
+}
+
+.timelineDate {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  display: flex;
+  align-items: center;
+}
+
+.tripCount {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 10px;
+}
+
+.timelineItems {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timelineItems::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--ev-owner-color), rgba(102, 126, 234, 0.3));
+}
+
+.timelineItem {
+  position: relative;
+  margin-bottom: 25px;
+  padding-left: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.timelineItem:hover {
+  transform: translateX(5px);
+}
+
+.timelineMarker {
+  position: absolute;
+  left: -6px;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  background: var(--card-bg);
+  border: 3px solid var(--ev-owner-color);
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.timelineMarker i {
+  font-size: 8px;
+  color: var(--ev-owner-color);
+}
+
+.timelineContent {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px 20px;
+  transition: all 0.3s ease;
+}
+
+.timelineItem:hover .timelineContent {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--ev-owner-color);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.timelineTime {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.timelineStatus {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.timelineStatus.completed {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.timelineStatus.pending {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.timelineStatus.verified {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.timelineStatus.failed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.timelineRoute {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.timelineLocation {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 150px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.locationName {
+  font-weight: 500;
+}
+
+.timelineArrow {
+  color: var(--ev-owner-color);
+  font-size: 1.2rem;
+}
+
+.timelineStats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timelineStat {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.timelineStat i {
+  margin-right: 5px;
+  color: var(--ev-owner-color);
+}
+
+@media (max-width: 768px) {
+  .timeline {
+    padding-left: 20px;
+  }
+  
+  .timelineItem {
+    padding-left: 25px;
+  }
+  
+  .timelineRoute {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .timelineArrow {
+    transform: rotate(90deg);
+    margin: 5px 0;
+  }
+  
+  .timelineStats {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* --- Tab Styles --- */
+.tabContainer {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.tabButton {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.tabButton:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabButton.tabActive {
+  color: var(--ev-owner-color);
+  border-bottom-color: var(--ev-owner-color);
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.tabButton i {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tabContainer {
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .tabButton {
+    width: 100%;
+    justify-content: center;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+  
+  .tabButton.tabActive {
+    border-left-color: var(--ev-owner-color);
+    border-bottom-color: transparent;
+  }
+  
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

@@ -24,7 +24,7 @@ const Sidebar = ({ activePage, className }) => {
     { icon: 'bi-shop', label: 'Thị trường', page: 'marketplace', path: '/marketplace' }, // Path này riêng
     { icon: 'bi-arrow-left-right', label: 'Giao dịch', page: 'transactions', path: '/dashboard/transactions' },
     { icon: 'bi-graph-up', label: 'Báo cáo', page: 'reports', path: '/dashboard/reports' },
-    { icon: 'bi-patch-check-fill', label: 'Duyệt yêu cầu', page: 'verification', path: '/dashboard/verification', roles: ['CVA'] },
+    { icon: 'bi-patch-check-fill', label: 'Xác minh', page: 'verification', path: '/dashboard/verification' },
     { icon: 'bi-gear', label: 'Cài đặt', page: 'settings', path: '/dashboard/settings' }
   ];
 

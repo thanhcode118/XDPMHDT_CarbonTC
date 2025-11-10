@@ -4,6 +4,7 @@ using CarbonTC.CarbonLifecycle.Application.Abstractions.Storage;
 using CarbonTC.CarbonLifecycle.Application.Common;
 using CarbonTC.CarbonLifecycle.Domain.Events;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
+using CarbonTC.CarbonLifecycle.Infrastructure.Persistence;
 using System.Text;
 
 namespace CarbonTC.CarbonLifecycle.Api.Controllers
@@ -17,19 +18,22 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
         private readonly IMessagePublisher _messagePublisher;
         private readonly IFileStorageService _fileStorage;
         private readonly ILogger<TestInfrastructureController> _logger;
+        private readonly AppDbContext _context;
 
         public TestInfrastructureController(
             IEVJourneyRepository journeyRepository,
             IJourneyBatchRepository batchRepository,
             IMessagePublisher messagePublisher,
             IFileStorageService fileStorage,
-            ILogger<TestInfrastructureController> logger)
+            ILogger<TestInfrastructureController> logger,
+            AppDbContext context)
         {
             _journeyRepository = journeyRepository;
             _batchRepository = batchRepository;
             _messagePublisher = messagePublisher;
             _fileStorage = fileStorage;
             _logger = logger;
+            _context = context;
         }
 
         /// <summary>
@@ -150,6 +154,36 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
                 },
                 "Service is running"
             ));
+        }
+
+        /// <summary>
+        /// Thêm dữ liệu seed vào database (10 hàng mỗi bảng)
+        /// CHỈ DÙNG TRONG MÔI TRƯỜNG DEVELOPMENT!
+        /// </summary>
+        [HttpPost("seed-more-data")]
+        public async Task<IActionResult> SeedMoreData()
+        {
+            try
+            {
+                await DbInitializer.AddMoreSeedData(_context);
+                
+                return Ok(ApiResponse<object>.SuccessResponse(
+                    new
+                    {
+                        Message = "Đã thêm thành công 10 hàng dữ liệu vào mỗi bảng",
+                        Timestamp = DateTime.UtcNow
+                    },
+                    "Seed data added successfully"
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to seed more data");
+                return StatusCode(500, ApiResponse<object>.FailureResponse(
+                    "Failed to seed data",
+                    ex.Message
+                ));
+            }
         }
     }
 }

@@ -1,0 +1,258 @@
+-- MySQL dump 10.13  Distrib 8.0.44, for Linux (x86_64)
+--
+-- Host: localhost    Database: carbon_lifecycle_db
+-- ------------------------------------------------------
+-- Server version	8.0.44
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `AuditReports`
+--
+
+DROP TABLE IF EXISTS `AuditReports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `AuditReports` (
+  `Id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `EntityType` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `EntityId` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `Action` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `ChangedBy` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `ChangeDate` datetime(6) NOT NULL,
+  `OriginalValues` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `NewValues` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `CreatedAt` datetime(6) NOT NULL,
+  `LastModifiedAt` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `AuditReports`
+--
+
+LOCK TABLES `AuditReports` WRITE;
+/*!40000 ALTER TABLE `AuditReports` DISABLE KEYS */;
+INSERT INTO `AuditReports` VALUES ('2606f0f3-82d2-4f62-be72-09e4c5191297','CarbonCredit','e3669d10-cd88-4376-affa-fe3aff39d219','Issued','user-9','2025-11-01 10:56:40.098512','{}','{\"Status\":\"Issued\"}','2025-11-01 10:56:40.098512','2025-11-01 10:56:40.098512'),('27e4e8d9-afec-418e-8b2b-7ef02cc93f58','EVJourney','3e6b0b2a-7c22-4696-9493-d45c43e9018b','Issued','user-3','2025-11-07 11:06:14.951000','{}','{\"Status\":\"Issued\"}','2025-11-07 11:06:14.951000','2025-11-07 11:06:14.951000'),('2df16a9c-74bb-4ebd-ba86-4832a82f5ef2','EVJourney','4c4beefd-d2aa-4a4e-9229-9f10bbc40654','Updated','user-7','2025-11-03 11:06:14.951000','{}','{\"Status\":\"Updated\"}','2025-11-03 11:06:14.951000','2025-11-03 11:06:14.951000'),('32bc9a24-85e0-4b60-9e07-f90e019bf5e2','VerificationRequest','651e1a76-6908-4d8c-b26a-97a3b8f1ed20','Created','system-seed','2025-11-04 10:56:40.098512','{}','{\"Status\":\"Created\"}','2025-11-04 10:56:40.098512','2025-11-04 10:56:40.098512'),('3bc0e6b5-9f12-4712-ba03-f196c096ecde','JourneyBatch','54b86b83-a5d5-4cb5-ac5a-21c8af59bdd7','Verified','system-seed','2025-11-02 11:06:14.951000','{}','{\"Status\":\"Verified\"}','2025-11-02 11:06:14.951000','2025-11-02 11:06:14.951000'),('493f563e-0e50-464d-9b3b-60145dcdfc73','JourneyBatch','bf44abaf-1b9e-4fe9-9bac-447c7066d1a3','Verified','system-seed','2025-11-02 10:56:40.098512','{}','{\"Status\":\"Verified\"}','2025-11-02 10:56:40.098512','2025-11-02 10:56:40.098512'),('4bc8d22b-113d-45a9-ba2e-4865277bd06e','EVJourney','5e4b9643-b2aa-4725-a693-cdcbca0c9a3d','Issued','user-3','2025-11-07 10:56:40.098512','{}','{\"Status\":\"Issued\"}','2025-11-07 10:56:40.098512','2025-11-07 10:56:40.098512'),('50d2678e-8a29-418e-b97f-787bff345f2b','JourneyBatch','2fffcfe3-f0f3-4225-9c01-abecca168901','Created','system-seed','2025-11-10 11:06:14.951000','{}','{\"Status\":\"Created\"}','2025-11-10 11:06:14.951000','2025-11-10 11:06:14.951000'),('515a0bb8-b804-413a-bfb2-66029223b350','CarbonCredit','9795f189-4831-41fe-b8a2-fa33ced08b3f','Issued','user-9','2025-11-01 11:06:14.951000','{}','{\"Status\":\"Issued\"}','2025-11-01 11:06:14.951000','2025-11-01 11:06:14.951000'),('663caa35-332f-4d4b-98f4-6a2ac0854179','JourneyBatch','7b39f551-26c1-4000-830e-6f3dd019ded6','Rejected','system-seed','2025-11-06 11:06:14.951000','{}','{\"Status\":\"Rejected\"}','2025-11-06 11:06:14.951000','2025-11-06 11:06:14.951000'),('69a394d0-c250-435f-95ef-d6d5db8287b5','VerificationRequest','7d0b78e8-3cc2-403c-ac42-6db2043f0e93','Verified','system-seed','2025-11-08 10:56:40.098512','{}','{\"Status\":\"Verified\"}','2025-11-08 10:56:40.098512','2025-11-08 10:56:40.098512'),('69d7f0fb-717f-4b22-9d26-464c89e0547f','CarbonCredit','0f8cb1e1-7f7b-4395-b4eb-6107bd44e20f','Approved','user-5','2025-11-05 11:06:14.951000','{}','{\"Status\":\"Approved\"}','2025-11-05 11:06:14.951000','2025-11-05 11:06:14.951000'),('802d9381-a28f-47c6-9817-f72b3125c99f','CarbonCredit','ce09a166-6a9c-430c-b4ad-8d08fd98566b','Updated','user-1','2025-11-09 11:06:14.951000','{}','{\"Status\":\"Updated\"}','2025-11-09 11:06:14.951000','2025-11-09 11:06:14.951000'),('83ba4180-efde-4d20-9ced-c4db5c4aaec4','JourneyBatch','580af3b8-907d-41bc-b592-46433150e9a8','Rejected','system-seed','2025-11-06 10:56:40.098512','{}','{\"Status\":\"Rejected\"}','2025-11-06 10:56:40.098512','2025-11-06 10:56:40.098512'),('8914331b-8880-46ff-aa6f-549e9df9965d','CarbonCredit','1fbc1d2c-a58e-4cf8-8b22-5efb66a06a3e','Approved','user-5','2025-11-05 10:56:40.098512','{}','{\"Status\":\"Approved\"}','2025-11-05 10:56:40.098512','2025-11-05 10:56:40.098512'),('8aa0585b-d8c8-43d0-bc08-d84ee471e0b6','VerificationRequest','bf0d1d87-5263-44da-a513-eb0ac20b3eb4','Created','system-seed','2025-11-04 11:06:14.951000','{}','{\"Status\":\"Created\"}','2025-11-04 11:06:14.951000','2025-11-04 11:06:14.951000'),('c93e2d7d-cccf-42bb-a0db-285fd4919601','CarbonCredit','e054b9d3-03e4-45ba-b348-346ee6384bc6','Updated','user-1','2025-11-09 10:56:40.098512','{}','{\"Status\":\"Updated\"}','2025-11-09 10:56:40.098512','2025-11-09 10:56:40.098512'),('cc5d778d-a208-4382-a53c-af1ab4641927','VerificationRequest','c6c8a134-995c-4936-a26d-39d094a14ac4','Verified','system-seed','2025-11-08 11:06:14.951000','{}','{\"Status\":\"Verified\"}','2025-11-08 11:06:14.951000','2025-11-08 11:06:14.951000'),('cdb5c252-d241-4004-bb3c-bff832219493','EVJourney','c2869c1e-d463-4024-9594-97dd5d27d207','Updated','user-7','2025-11-03 10:56:40.098512','{}','{\"Status\":\"Updated\"}','2025-11-03 10:56:40.098512','2025-11-03 10:56:40.098512'),('fb2591dc-3286-488e-a66e-0c5b5e4ec9b1','JourneyBatch','e6745cf8-ec33-4992-9358-9ba5a3c29675','Created','system-seed','2025-11-10 10:56:40.098512','{}','{\"Status\":\"Created\"}','2025-11-10 10:56:40.098512','2025-11-10 10:56:40.098512'),('fedcba98-7654-4fed-8cba-fedcba987654','JourneyBatch','b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b','Seed','system-seed','2025-10-23 00:00:00.000000','{}','{\'Status\':\'Verified\'}','2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000');
+/*!40000 ALTER TABLE `AuditReports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `CVAStandards`
+--
+
+DROP TABLE IF EXISTS `CVAStandards`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CVAStandards` (
+  `Id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `StandardName` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `VehicleType` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `ConversionRate` decimal(18,4) NOT NULL,
+  `MinDistanceRequirement` decimal(18,4) NOT NULL,
+  `EffectiveDate` datetime(6) NOT NULL,
+  `EndDate` datetime(6) DEFAULT NULL,
+  `IsActive` tinyint(1) NOT NULL,
+  `CreatedAt` datetime(6) NOT NULL,
+  `LastModifiedAt` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CVAStandards`
+--
+
+LOCK TABLES `CVAStandards` WRITE;
+/*!40000 ALTER TABLE `CVAStandards` DISABLE KEYS */;
+INSERT INTO `CVAStandards` VALUES ('22a0473e-40c3-44eb-8569-c525a9ea18b9','GoldStandard','Tesla-ModelY',0.0900,1.0000,'2024-01-01 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952231',NULL),('38a2600b-16d6-41b4-9b5c-aa5eac991df3','ACR','Nissan-Leaf',0.0800,1.0000,'2024-01-15 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099300',NULL),('3a9c190a-343f-4903-a27a-fde87c9a4911','ACR','Nissan-Leaf',0.0800,1.0000,'2024-01-15 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952673',NULL),('48cc439d-5d57-4619-b753-c9dc361984eb','CAR','Porsche-Taycan',0.1600,3.0000,'2024-07-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099362',NULL),('53a5f35e-0c0c-410a-8f38-ea3efb955f5f','VCS','BYD-Atto3',0.1100,1.5000,'2024-02-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952484',NULL),('55e8de21-3083-46de-aaa9-b34d9bfce507','VCS','Audi-e-tron',0.1500,2.0000,'2024-06-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099361',NULL),('6b6f2938-c8e7-4831-a28f-756ece9e0d28','GoldStandard','Tesla-ModelY',0.0900,1.0000,'2024-01-01 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.098931',NULL),('78627f35-3d2c-4c76-9a8c-ef41217ef0cc','GoldStandard','Mercedes-EQC',0.1400,2.5000,'2024-05-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952675',NULL),('7dc12b74-b272-4796-90d9-6c65378b06c4','ACR','Kia-EV6',0.1100,1.5000,'2024-08-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099363',NULL),('81a96b4b-0de3-4f01-9933-3113933a1045','VCS','Audi-e-tron',0.1500,2.0000,'2024-06-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952676',NULL),('88f7cba9-2487-4e34-bca5-c1e0adabb41e','CAR','Hyundai-Kona',0.1000,1.2000,'2024-03-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099298',NULL),('8ac9d0ae-a367-4366-9b95-86b58a61682d','CAR','Hyundai-Kona',0.1000,1.2000,'2024-03-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952670',NULL),('9b6f52e6-2f37-4366-97af-8704e4e92b2d','VERRA','BMW-iX3',0.1300,2.0000,'2024-04-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952674',NULL),('afa93970-e7d4-479b-bf2c-dffd27e2dd7a','VERRA','Vinfast-VFe34',0.1200,1.0000,'2024-01-01 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952172',NULL),('b361076d-60f0-47b4-ba38-ffb359e99d6f','GoldStandard','Mercedes-EQC',0.1400,2.5000,'2024-05-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099357',NULL),('ca16155a-fd9f-4f57-bfbd-daff8d156992','CAR','Porsche-Taycan',0.1600,3.0000,'2024-07-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952683',NULL),('d2a0a0f0-a3b0-4b10-8b7a-0a0a0a0a0a01','TC-Std-VFe34-2024','Vinfast-VFe34',0.1200,1.0000,'2024-01-01 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000'),('d7a1125d-b561-4424-98f8-9a51eef6dcb0','VERRA','BMW-iX3',0.1300,2.0000,'2024-04-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099354',NULL),('daa12d01-8e64-45fb-acbc-b3c56a902fa9','VCS','BYD-Atto3',0.1100,1.5000,'2024-02-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.099154',NULL),('e1b1b1f1-b4c1-4c21-9c8b-1b1b1b1b1b02','TC-Std-TeslaY-2024','Tesla-ModelY',0.0900,1.0000,'2024-01-01 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000'),('f1c2a624-85c5-441f-879b-36433b885940','ACR','Kia-EV6',0.1100,1.5000,'2024-08-01 00:00:00.000000','2026-12-31 00:00:00.000000',1,'2025-11-10 11:06:14.952687',NULL),('f7b82ba1-9c28-42d8-a4c6-0f66f4056977','VERRA','Vinfast-VFe34',0.1200,1.0000,'2024-01-01 00:00:00.000000','2025-12-31 00:00:00.000000',1,'2025-11-10 10:56:40.098860',NULL);
+/*!40000 ALTER TABLE `CVAStandards` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `CarbonCredits`
+--
+
+DROP TABLE IF EXISTS `CarbonCredits`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CarbonCredits` (
+  `Id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `JourneyBatchId` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `UserId` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `AmountKgCO2e` decimal(65,30) NOT NULL,
+  `IssueDate` datetime(6) NOT NULL,
+  `ExpiryDate` datetime(6) DEFAULT NULL,
+  `Status` int NOT NULL,
+  `TransactionHash` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `CreatedAt` datetime(6) NOT NULL,
+  `LastModifiedAt` datetime(6) DEFAULT NULL,
+  `VerificationRequestId` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `IX_CarbonCredits_JourneyBatchId` (`JourneyBatchId`),
+  KEY `IX_CarbonCredits_VerificationRequestId` (`VerificationRequestId`),
+  CONSTRAINT `FK_CarbonCredits_JourneyBatches_JourneyBatchId` FOREIGN KEY (`JourneyBatchId`) REFERENCES `JourneyBatches` (`Id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_CarbonCredits_VerificationRequests_VerificationRequestId` FOREIGN KEY (`VerificationRequestId`) REFERENCES `VerificationRequests` (`Id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CarbonCredits`
+--
+
+LOCK TABLES `CarbonCredits` WRITE;
+/*!40000 ALTER TABLE `CarbonCredits` DISABLE KEYS */;
+INSERT INTO `CarbonCredits` VALUES ('0f8cb1e1-7f7b-4395-b4eb-6107bd44e20f','c6c8a134-995c-4936-a26d-39d094a14ac4','auth0|demo-user-11111',13.233000000000000000000000000000,'2025-11-10 11:06:15.348166','2027-11-10 11:06:15.348144',1,'0x0f8cb1e17f7b4395','2025-11-10 11:06:15.348165',NULL,'ce7ad462-2f90-430f-8de6-456479b422d2'),('1f668fcc-2af7-43fa-9d6b-f40b0d86f78c','fef22254-5bc2-4e20-a95a-0162cd431b72','auth0|demo-user-67890',7.616000000000000000000000000000,'2025-11-10 10:56:40.329292','2027-11-10 10:56:40.329292',1,'0x1f668fcc2af743fa','2025-11-10 10:56:40.329292',NULL,NULL),('1fbc1d2c-a58e-4cf8-8b22-5efb66a06a3e','7d0b78e8-3cc2-403c-ac42-6db2043f0e93','auth0|demo-user-11111',13.233000000000000000000000000000,'2025-11-10 10:56:40.329136','2027-11-10 10:56:40.329127',1,'0x1fbc1d2ca58e4cf8','2025-11-10 10:56:40.329135',NULL,'5088193e-4e1c-4b18-9ec8-aa0821650ed8'),('2ce12b41-4766-48ca-ac24-d693883bf243','5a0df05b-a249-4eed-82d4-96b0d83f25f8','auth0|demo-user-11111',32.080000000000000000000000000000,'2025-11-10 11:06:15.348460','2027-11-10 11:06:15.348459',1,'0x2ce12b41476648ca','2025-11-10 11:06:15.348460',NULL,NULL),('36434cb6-1a11-4506-94bf-2bef32534dc3','5d393495-436c-45a0-83a0-935009552786','auth0|demo-user-12345',10.976000000000000000000000000000,'2025-11-10 11:06:15.348455','2027-11-10 11:06:15.348455',1,'0x36434cb61a114506','2025-11-10 11:06:15.348455',NULL,NULL),('3e6b0b2a-7c22-4696-9493-d45c43e9018b','2fffcfe3-f0f3-4225-9c01-abecca168901','auth0|demo-user-12345',10.260000000000000000000000000000,'2025-11-10 11:06:15.346941','2027-11-10 11:06:15.345892',1,'0x3e6b0b2a7c224696','2025-11-10 11:06:15.346606',NULL,'38cbbd17-3136-4e3b-b202-35a3461f709b'),('412a6f50-3828-4780-bb55-5b50f1ce8d2e','1ebd3dea-141e-4444-a646-aff9eb60ce0f','auth0|demo-user-11111',19.604000000000000000000000000000,'2025-11-10 11:06:15.348452','2027-11-10 11:06:15.348451',1,'0x412a6f5038284780','2025-11-10 11:06:15.348452',NULL,NULL),('44e69cf6-9091-40a2-bb90-0cf1ce52497f','e7982fae-6c05-4772-845d-22fb20df088e','auth0|demo-user-67890',16.590000000000000000000000000000,'2025-11-10 11:06:15.348458','2027-11-10 11:06:15.348457',1,'0x44e69cf6909140a2','2025-11-10 11:06:15.348457',NULL,NULL),('580af3b8-907d-41bc-b592-46433150e9a8','e054b9d3-03e4-45ba-b348-346ee6384bc6','auth0|demo-user-67890',3.780000000000000000000000000000,'2025-11-10 10:56:40.328878','2027-11-10 10:56:40.328877',1,'0x580af3b8907d41bc','2025-11-10 10:56:40.328878',NULL,'f8585028-c046-49c1-aa95-e66c3f55694b'),('5e4b9643-b2aa-4725-a693-cdcbca0c9a3d','e6745cf8-ec33-4992-9358-9ba5a3c29675','auth0|demo-user-12345',10.260000000000000000000000000000,'2025-11-10 10:56:40.328815','2027-11-10 10:56:40.328529',1,'0x5e4b9643b2aa4725','2025-11-10 10:56:40.328748',NULL,'66484335-8c39-41ac-95d8-55153ba80f2a'),('71bc9cd5-41d8-4d60-a28e-5e3485dd2897','a42c7634-c89a-4623-883c-f6e4faac7dd7','auth0|demo-user-12345',6.570000000000000000000000000000,'2025-11-10 10:56:40.329290','2027-11-10 10:56:40.329289',1,'0x71bc9cd541d84d60','2025-11-10 10:56:40.329290',NULL,NULL),('7b39f551-26c1-4000-830e-6f3dd019ded6','ce09a166-6a9c-430c-b4ad-8d08fd98566b','auth0|demo-user-67890',3.780000000000000000000000000000,'2025-11-10 11:06:15.347200','2027-11-10 11:06:15.347195',1,'0x7b39f55126c14000','2025-11-10 11:06:15.347199',NULL,'66fc409a-b794-4421-81de-e202d26190ac'),('96781748-2a5e-4724-a782-74513b0f9e98','0eec5282-09bd-4677-ac5b-620252b182cc','auth0|demo-user-67890',16.590000000000000000000000000000,'2025-11-10 10:56:40.329298','2027-11-10 10:56:40.329298',1,'0x967817482a5e4724','2025-11-10 10:56:40.329298',NULL,NULL),('99a84075-36fb-4ae8-aa42-c12e22a99015','0cd2e7d4-c744-4b05-9a5c-116795764ef8','auth0|demo-user-12345',9.779000000000000000000000000000,'2025-11-10 11:06:15.348462','2027-11-10 11:06:15.348462',1,'0x99a8407536fb4ae8','2025-11-10 11:06:15.348462',NULL,NULL),('abcdef12-3456-4abc-9def-abcdef123456','b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b','auth0|demo-user-12345',14.040000000000000000000000000000,'2025-10-23 00:00:00.000000',NULL,1,'0xabc123def4567890','2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000','12345678-90ab-4cde-8fab-1234567890ab'),('b7704bb4-8fa4-4196-a814-aa99c82ff975','68a3653e-18cf-4d3c-854c-14dd5ee13aa1','auth0|demo-user-12345',6.570000000000000000000000000000,'2025-11-10 11:06:15.348443','2027-11-10 11:06:15.348441',1,'0xb7704bb48fa44196','2025-11-10 11:06:15.348442',NULL,NULL),('c4a09c4e-600c-46cb-9349-389ef71b3bfb','66a76978-ec3a-4839-8308-2cd291e369f1','auth0|demo-user-12345',10.976000000000000000000000000000,'2025-11-10 10:56:40.329297','2027-11-10 10:56:40.329296',1,'0xc4a09c4e600c46cb','2025-11-10 10:56:40.329296',NULL,NULL),('cdca45b7-e0de-4161-88f0-fb20c2af607b','9ca03fbc-00cd-490c-9fa1-c48cedc54c3c','auth0|demo-user-11111',32.080000000000000000000000000000,'2025-11-10 10:56:40.329300','2027-11-10 10:56:40.329300',1,'0xcdca45b7e0de4161','2025-11-10 10:56:40.329300',NULL,NULL),('d47ccb7e-5398-4cbd-96c0-97742d161a91','ad1a2972-7f13-4136-9cef-7e1134da0c9e','auth0|demo-user-67890',7.616000000000000000000000000000,'2025-11-10 11:06:15.348448','2027-11-10 11:06:15.348447',1,'0xd47ccb7e53984cbd','2025-11-10 11:06:15.348448',NULL,NULL),('e76fb733-2ff0-441e-908b-a59454fc9f5b','a7b129c2-3870-4254-a160-22e1b93f757a','auth0|demo-user-11111',19.604000000000000000000000000000,'2025-11-10 10:56:40.329295','2027-11-10 10:56:40.329295',1,'0xe76fb7332ff0441e','2025-11-10 10:56:40.329295',NULL,NULL),('ecb97c33-6dc6-4807-9180-e9800f217247','6b54571b-d7d3-4433-aa96-fcd161c6220e','auth0|demo-user-12345',9.779000000000000000000000000000,'2025-11-10 10:56:40.329302','2027-11-10 10:56:40.329301',1,'0xecb97c336dc64807','2025-11-10 10:56:40.329301',NULL,NULL);
+/*!40000 ALTER TABLE `CarbonCredits` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `EVJourneys`
+--
+
+DROP TABLE IF EXISTS `EVJourneys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `EVJourneys` (
+  `Id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `JourneyBatchId` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `UserId` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `StartTime` datetime(6) NOT NULL,
+  `EndTime` datetime(6) NOT NULL,
+  `DistanceKm` decimal(18,4) NOT NULL,
+  `CO2EstimateKg` decimal(18,4) NOT NULL,
+  `VehicleType` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Origin` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Destination` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `Status` int NOT NULL,
+  `CreatedAt` datetime(6) NOT NULL,
+  `LastModifiedAt` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `IX_EVJourneys_JourneyBatchId` (`JourneyBatchId`),
+  CONSTRAINT `FK_EVJourneys_JourneyBatches_JourneyBatchId` FOREIGN KEY (`JourneyBatchId`) REFERENCES `JourneyBatches` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `EVJourneys`
+--
+
+LOCK TABLES `EVJourneys` WRITE;
+/*!40000 ALTER TABLE `EVJourneys` DISABLE KEYS */;
+INSERT INTO `EVJourneys` VALUES ('27e37a97-e43c-4080-8103-c044ec53c6b3','0cd2e7d4-c744-4b05-9a5c-116795764ef8','auth0|demo-user-12345','2025-11-01 09:06:14.951000','2025-11-01 10:36:14.951000',88.9000,9.7790,'Kia-EV6','Origin-10','Destination-10',0,'2025-11-10 11:06:15.123867',NULL),('285463a2-6a29-476b-ac43-71dccbf2db40','0eec5282-09bd-4677-ac5b-620252b182cc','auth0|demo-user-67890','2025-11-03 08:56:40.098512','2025-11-03 10:26:40.098512',110.6000,16.5900,'Audi-e-tron','Origin-8','Destination-8',0,'2025-11-10 10:56:40.217260',NULL),('30aefd49-e3ae-4bb9-af7f-eb92fd81bb32','5a0df05b-a249-4eed-82d4-96b0d83f25f8','auth0|demo-user-11111','2025-11-02 09:06:14.951000','2025-11-02 10:36:14.951000',200.5000,32.0800,'Porsche-Taycan','Origin-9','Destination-9',0,'2025-11-10 11:06:15.123863',NULL),('314753c9-753b-44b9-a199-f7f46088669f','66a76978-ec3a-4839-8308-2cd291e369f1','auth0|demo-user-12345','2025-11-04 08:56:40.098512','2025-11-04 10:26:40.098512',78.4000,10.9760,'Mercedes-EQC','Origin-7','Destination-7',0,'2025-11-10 10:56:40.217258',NULL),('360addfb-9ea6-48d6-8c42-d0866ab8e8c8','e7982fae-6c05-4772-845d-22fb20df088e','auth0|demo-user-67890','2025-11-03 09:06:14.951000','2025-11-03 10:36:14.951000',110.6000,16.5900,'Audi-e-tron','Origin-8','Destination-8',0,'2025-11-10 11:06:15.123860',NULL),('4c4beefd-d2aa-4a4e-9229-9f10bbc40654','ce09a166-6a9c-430c-b4ad-8d08fd98566b','auth0|demo-user-67890','2025-11-09 09:06:14.951000','2025-11-09 10:36:14.951000',42.0000,3.7800,'Tesla-ModelY','Origin-2','Destination-2',0,'2025-11-10 11:06:15.123488',NULL),('54b86b83-a5d5-4cb5-ac5a-21c8af59bdd7','c6c8a134-995c-4936-a26d-39d094a14ac4','auth0|demo-user-11111','2025-11-08 09:06:14.951000','2025-11-08 10:36:14.951000',120.3000,13.2330,'BYD-Atto3','Origin-3','Destination-3',0,'2025-11-10 11:06:15.123666',NULL),('5fe4645b-42a6-4b1b-a59c-1f31b06f7897','671935ac-6934-4c37-a181-dae2f5059619','test-user-123','2025-10-20 08:00:00.000000','2025-10-20 09:15:00.000000',85.5000,10.2600,'Vinfast-VFe34','Home','Work',1,'2025-11-10 09:54:03.766482','2025-11-10 10:20:31.827561'),('651e1a76-6908-4d8c-b26a-97a3b8f1ed20','e6745cf8-ec33-4992-9358-9ba5a3c29675','auth0|demo-user-12345','2025-11-10 08:56:40.098512','2025-11-10 10:26:40.098512',85.5000,10.2600,'Vinfast-VFe34','Origin-1','Destination-1',0,'2025-11-10 10:56:40.216485',NULL),('6b6a48df-defc-42d9-bc2c-da1194d8217f','9ca03fbc-00cd-490c-9fa1-c48cedc54c3c','auth0|demo-user-11111','2025-11-02 08:56:40.098512','2025-11-02 10:26:40.098512',200.5000,32.0800,'Porsche-Taycan','Origin-9','Destination-9',0,'2025-11-10 10:56:40.217263',NULL),('778ccf9f-0086-4968-8e5a-354f0e933e63','6b54571b-d7d3-4433-aa96-fcd161c6220e','auth0|demo-user-12345','2025-11-01 08:56:40.098512','2025-11-01 10:26:40.098512',88.9000,9.7790,'Kia-EV6','Origin-10','Destination-10',0,'2025-11-10 10:56:40.217267',NULL),('7944cd3d-73e2-4bbc-a9ae-4b48748648e8','a7b129c2-3870-4254-a160-22e1b93f757a','auth0|demo-user-11111','2025-11-05 08:56:40.098512','2025-11-05 10:26:40.098512',150.8000,19.6040,'BMW-iX3','Origin-6','Destination-6',0,'2025-11-10 10:56:40.217255',NULL),('95cbd61d-5885-4900-9362-1a6911741254','5d393495-436c-45a0-83a0-935009552786','auth0|demo-user-12345','2025-11-04 09:06:14.951000','2025-11-04 10:36:14.951000',78.4000,10.9760,'Mercedes-EQC','Origin-7','Destination-7',0,'2025-11-10 11:06:15.123858',NULL),('9795f189-4831-41fe-b8a2-fa33ced08b3f','68a3653e-18cf-4d3c-854c-14dd5ee13aa1','auth0|demo-user-12345','2025-11-07 09:06:14.951000','2025-11-07 10:36:14.951000',65.7000,6.5700,'Hyundai-Kona','Origin-4','Destination-4',0,'2025-11-10 11:06:15.123845',NULL),('98ab3380-dd40-4aa1-9c44-910bc1629ae1','0ec01657-3ce0-43a2-a913-70614d022225','test-user-123','2025-10-21 14:00:00.000000','2025-10-21 15:00:00.000000',42.0000,3.7800,'Tesla-ModelY','Work','Gym',0,'2025-11-10 09:54:03.771393',NULL),('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d','b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b','auth0|demo-user-12345','2025-10-20 08:00:00.000000','2025-10-20 09:15:00.000000',85.5000,10.2600,'Vinfast-VFe34','N/A','N/A',3,'2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000'),('af23293e-57ff-4255-8d5f-b9b0abd254e9','ad1a2972-7f13-4136-9cef-7e1134da0c9e','auth0|demo-user-67890','2025-11-06 09:06:14.951000','2025-11-06 10:36:14.951000',95.2000,7.6160,'Nissan-Leaf','Origin-5','Destination-5',0,'2025-11-10 11:06:15.123852',NULL),('bf0d1d87-5263-44da-a513-eb0ac20b3eb4','2fffcfe3-f0f3-4225-9c01-abecca168901','auth0|demo-user-12345','2025-11-10 09:06:14.951000','2025-11-10 10:36:14.951000',85.5000,10.2600,'Vinfast-VFe34','Origin-1','Destination-1',0,'2025-11-10 11:06:15.123032',NULL),('bf44abaf-1b9e-4fe9-9bac-447c7066d1a3','7d0b78e8-3cc2-403c-ac42-6db2043f0e93','auth0|demo-user-11111','2025-11-08 08:56:40.098512','2025-11-08 10:26:40.098512',120.3000,13.2330,'BYD-Atto3','Origin-3','Destination-3',0,'2025-11-10 10:56:40.217043',NULL),('c2869c1e-d463-4024-9594-97dd5d27d207','e054b9d3-03e4-45ba-b348-346ee6384bc6','auth0|demo-user-67890','2025-11-09 08:56:40.098512','2025-11-09 10:26:40.098512',42.0000,3.7800,'Tesla-ModelY','Origin-2','Destination-2',0,'2025-11-10 10:56:40.216764',NULL),('c309157e-5417-41a6-93e3-37a26cfec9f9','9886546c-0eef-40ce-9d6f-725457168a01','test-user-123','2025-10-22 18:30:00.000000','2025-10-22 18:55:00.000000',15.2000,1.8240,'Vinfast-VFe34','Gym','Home',1,'2025-11-10 09:54:03.774657','2025-11-10 09:56:42.639051'),('c4a0ad2a-d089-45fc-819e-f50f16511b9e','1ebd3dea-141e-4444-a646-aff9eb60ce0f','auth0|demo-user-11111','2025-11-05 09:06:14.951000','2025-11-05 10:36:14.951000',150.8000,19.6040,'BMW-iX3','Origin-6','Destination-6',0,'2025-11-10 11:06:15.123855',NULL),('dc74f279-690b-4afe-bbcf-00632fcb52a3','fef22254-5bc2-4e20-a95a-0162cd431b72','auth0|demo-user-67890','2025-11-06 08:56:40.098512','2025-11-06 10:26:40.098512',95.2000,7.6160,'Nissan-Leaf','Origin-5','Destination-5',0,'2025-11-10 10:56:40.217251',NULL),('e3669d10-cd88-4376-affa-fe3aff39d219','a42c7634-c89a-4623-883c-f6e4faac7dd7','auth0|demo-user-12345','2025-11-07 08:56:40.098512','2025-11-07 10:26:40.098512',65.7000,6.5700,'Hyundai-Kona','Origin-4','Destination-4',0,'2025-11-10 10:56:40.217246',NULL),('f6e5d4c3-b2a1-4c5d-9e8f-1a2b3c4d5e6f','b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b','auth0|demo-user-12345','2025-10-21 14:00:00.000000','2025-10-21 15:00:00.000000',42.0000,3.7800,'Tesla-ModelY','N/A','N/A',3,'2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000');
+/*!40000 ALTER TABLE `EVJourneys` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `JourneyBatches`
+--
+
+DROP TABLE IF EXISTS `JourneyBatches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `JourneyBatches` (
+  `Id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `UserId` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `CreationTime` datetime(6) NOT NULL,
+  `VerificationTime` datetime(6) DEFAULT NULL,
+  `Status` int NOT NULL,
+  `TotalDistanceKm` decimal(18,4) NOT NULL,
+  `TotalCO2SavedKg` decimal(18,4) NOT NULL,
+  `NumberOfJourneys` int NOT NULL,
+  `CreatedAt` datetime(6) NOT NULL,
+  `LastModifiedAt` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `JourneyBatches`
+--
+
+LOCK TABLES `JourneyBatches` WRITE;
+/*!40000 ALTER TABLE `JourneyBatches` DISABLE KEYS */;
+INSERT INTO `JourneyBatches` VALUES ('0cd2e7d4-c744-4b05-9a5c-116795764ef8','auth0|demo-user-12345','2025-11-10 11:06:15.072061','2025-11-01 11:06:14.951000',4,88.9000,9.7790,1,'2025-11-10 11:06:15.072061','2025-11-10 11:06:15.072062'),('0ec01657-3ce0-43a2-a913-70614d022225','test-user-123','2025-11-10 09:54:03.710436',NULL,0,142.7000,15.8640,3,'2025-11-10 09:54:03.710337','2025-11-10 09:54:03.774655'),('0eec5282-09bd-4677-ac5b-620252b182cc','auth0|demo-user-67890','2025-11-10 10:56:40.173552',NULL,1,110.6000,16.5900,1,'2025-11-10 10:56:40.173552','2025-11-10 10:56:40.173553'),('1ebd3dea-141e-4444-a646-aff9eb60ce0f','auth0|demo-user-11111','2025-11-10 11:06:15.072043','2025-11-05 11:06:14.951000',4,150.8000,19.6040,1,'2025-11-10 11:06:15.072042','2025-11-10 11:06:15.072046'),('2fffcfe3-f0f3-4225-9c01-abecca168901','auth0|demo-user-12345','2025-11-10 11:06:15.068699','2025-11-10 11:06:14.951000',2,85.5000,10.2600,1,'2025-11-10 11:06:15.068472','2025-11-10 11:06:15.069646'),('5a0df05b-a249-4eed-82d4-96b0d83f25f8','auth0|demo-user-11111','2025-11-10 11:06:15.072058','2025-11-02 11:06:14.951000',2,200.5000,32.0800,1,'2025-11-10 11:06:15.072058','2025-11-10 11:06:15.072059'),('5d393495-436c-45a0-83a0-935009552786','auth0|demo-user-12345','2025-11-10 11:06:15.072052','2025-11-04 11:06:14.951000',3,78.4000,10.9760,1,'2025-11-10 11:06:15.072052','2025-11-10 11:06:15.072053'),('66a76978-ec3a-4839-8308-2cd291e369f1','auth0|demo-user-12345','2025-11-10 10:56:40.173551','2025-11-04 10:56:40.098512',3,78.4000,10.9760,1,'2025-11-10 10:56:40.173550','2025-11-10 10:56:40.173551'),('671935ac-6934-4c37-a181-dae2f5059619','test-user-123','2025-11-10 10:20:31.827485',NULL,0,85.5000,10.2600,1,'2025-11-10 10:20:31.827457',NULL),('68a3653e-18cf-4d3c-854c-14dd5ee13aa1','auth0|demo-user-12345','2025-11-10 11:06:15.071841',NULL,0,65.7000,6.5700,1,'2025-11-10 11:06:15.071840','2025-11-10 11:06:15.071847'),('6b54571b-d7d3-4433-aa96-fcd161c6220e','auth0|demo-user-12345','2025-11-10 10:56:40.173556','2025-11-01 10:56:40.098512',4,88.9000,9.7790,1,'2025-11-10 10:56:40.173555','2025-11-10 10:56:40.173556'),('7d0b78e8-3cc2-403c-ac42-6db2043f0e93','auth0|demo-user-11111','2025-11-10 10:56:40.173328',NULL,1,120.3000,13.2330,1,'2025-11-10 10:56:40.173327','2025-11-10 10:56:40.173440'),('9886546c-0eef-40ce-9d6f-725457168a01','test-user-123','2025-11-10 09:56:42.634771',NULL,0,15.2000,1.8240,1,'2025-11-10 09:56:42.634764',NULL),('9ca03fbc-00cd-490c-9fa1-c48cedc54c3c','auth0|demo-user-11111','2025-11-10 10:56:40.173554','2025-11-02 10:56:40.098512',2,200.5000,32.0800,1,'2025-11-10 10:56:40.173553','2025-11-10 10:56:40.173554'),('a42c7634-c89a-4623-883c-f6e4faac7dd7','auth0|demo-user-12345','2025-11-10 10:56:40.173492',NULL,0,65.7000,6.5700,1,'2025-11-10 10:56:40.173492','2025-11-10 10:56:40.173493'),('a7b129c2-3870-4254-a160-22e1b93f757a','auth0|demo-user-11111','2025-11-10 10:56:40.173547','2025-11-05 10:56:40.098512',4,150.8000,19.6040,1,'2025-11-10 10:56:40.173547','2025-11-10 10:56:40.173548'),('ad1a2972-7f13-4136-9cef-7e1134da0c9e','auth0|demo-user-67890','2025-11-10 11:06:15.071859','2025-11-06 11:06:14.951000',2,95.2000,7.6160,1,'2025-11-10 11:06:15.071858','2025-11-10 11:06:15.071860'),('b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b','auth0|demo-user-12345','2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000',2,127.5000,14.0400,2,'2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000'),('c6c8a134-995c-4936-a26d-39d094a14ac4','auth0|demo-user-11111','2025-11-10 11:06:15.071383',NULL,1,120.3000,13.2330,1,'2025-11-10 11:06:15.071382','2025-11-10 11:06:15.071632'),('ce09a166-6a9c-430c-b4ad-8d08fd98566b','auth0|demo-user-67890','2025-11-10 11:06:15.070605','2025-11-09 11:06:14.951000',4,42.0000,3.7800,1,'2025-11-10 11:06:15.070603','2025-11-10 11:06:15.071011'),('e054b9d3-03e4-45ba-b348-346ee6384bc6','auth0|demo-user-67890','2025-11-10 10:56:40.172894','2025-11-09 10:56:40.098512',4,42.0000,3.7800,1,'2025-11-10 10:56:40.172893','2025-11-10 10:56:40.173086'),('e6745cf8-ec33-4992-9358-9ba5a3c29675','auth0|demo-user-12345','2025-11-10 10:56:40.172561','2025-11-10 10:56:40.098512',2,85.5000,10.2600,1,'2025-11-10 10:56:40.172501','2025-11-10 10:56:40.172852'),('e7982fae-6c05-4772-845d-22fb20df088e','auth0|demo-user-67890','2025-11-10 11:06:15.072056',NULL,1,110.6000,16.5900,1,'2025-11-10 11:06:15.072056','2025-11-10 11:06:15.072057'),('fef22254-5bc2-4e20-a95a-0162cd431b72','auth0|demo-user-67890','2025-11-10 10:56:40.173499','2025-11-06 10:56:40.098512',2,95.2000,7.6160,1,'2025-11-10 10:56:40.173499','2025-11-10 10:56:40.173500');
+/*!40000 ALTER TABLE `JourneyBatches` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `VerificationRequests`
+--
+
+DROP TABLE IF EXISTS `VerificationRequests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `VerificationRequests` (
+  `Id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `JourneyBatchId` char(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `RequestorId` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `VerifierId` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `RequestDate` datetime(6) NOT NULL,
+  `VerificationDate` datetime(6) DEFAULT NULL,
+  `Status` int NOT NULL,
+  `Notes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `CreatedAt` datetime(6) NOT NULL,
+  `LastModifiedAt` datetime(6) DEFAULT NULL,
+  `CvaStandardId` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `IX_VerificationRequests_JourneyBatchId` (`JourneyBatchId`),
+  KEY `IX_VerificationRequests_CvaStandardId` (`CvaStandardId`),
+  CONSTRAINT `FK_VerificationRequests_CVAStandards_CvaStandardId` FOREIGN KEY (`CvaStandardId`) REFERENCES `CVAStandards` (`Id`) ON DELETE SET NULL,
+  CONSTRAINT `FK_VerificationRequests_JourneyBatches_JourneyBatchId` FOREIGN KEY (`JourneyBatchId`) REFERENCES `JourneyBatches` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `VerificationRequests`
+--
+
+LOCK TABLES `VerificationRequests` WRITE;
+/*!40000 ALTER TABLE `VerificationRequests` DISABLE KEYS */;
+INSERT INTO `VerificationRequests` VALUES ('12345678-90ab-4cde-8fab-1234567890ab','b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b','auth0|demo-user-12345','system-seed','2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000',1,'Seed data - automatically approved.','2025-10-23 00:00:00.000000','2025-10-23 00:00:00.000000','d2a0a0f0-a3b0-4b10-8b7a-0a0a0a0a0a01'),('132a6e07-2ccb-4a31-900a-d599bd76f90f','0eec5282-09bd-4677-ac5b-620252b182cc','auth0|demo-user-67890','','2025-11-10 10:56:40.281762',NULL,0,'Verification request for batch 8','2025-11-10 10:56:40.281762',NULL,NULL),('32d9a8a5-3293-4e35-9460-fd5ca825269c','0cd2e7d4-c744-4b05-9a5c-116795764ef8','auth0|demo-user-12345','','2025-11-10 11:06:15.210540',NULL,0,'Verification request for batch 10','2025-11-10 11:06:15.210539',NULL,NULL),('32fed319-a062-4f70-81bf-30a2ba7d9312','a42c7634-c89a-4623-883c-f6e4faac7dd7','auth0|demo-user-12345','verifier-002','2025-11-10 10:56:40.281434','2025-11-10 10:56:40.281739',2,'Rejected batch 4 - insufficient data','2025-11-10 10:56:40.281433','2025-11-10 10:56:40.281739',NULL),('34dbc1a8-cd36-44b7-8c74-51d43a6b1bf4','5a0df05b-a249-4eed-82d4-96b0d83f25f8','auth0|demo-user-11111','','2025-11-10 11:06:15.210536',NULL,0,'Verification request for batch 9','2025-11-10 11:06:15.210535',NULL,NULL),('38cbbd17-3136-4e3b-b202-35a3461f709b','2fffcfe3-f0f3-4225-9c01-abecca168901','auth0|demo-user-12345','verifier-001','2025-11-10 11:06:15.206953','2025-11-10 11:06:15.208560',1,'Approved batch 1','2025-11-10 11:06:15.206483','2025-11-10 11:06:15.208751','afa93970-e7d4-479b-bf2c-dffd27e2dd7a'),('3e290308-108a-4a5d-a03a-10b31570407f','fef22254-5bc2-4e20-a95a-0162cd431b72','auth0|demo-user-67890','verifier-002','2025-11-10 10:56:40.281752','2025-11-10 10:56:40.281757',2,'Rejected batch 5 - insufficient data','2025-11-10 10:56:40.281751','2025-11-10 10:56:40.281757',NULL),('5088193e-4e1c-4b18-9ec8-aa0821650ed8','7d0b78e8-3cc2-403c-ac42-6db2043f0e93','auth0|demo-user-11111','verifier-001','2025-11-10 10:56:40.281011','2025-11-10 10:56:40.281425',1,'Approved batch 3','2025-11-10 10:56:40.281009','2025-11-10 10:56:40.281425','daa12d01-8e64-45fb-acbc-b3c56a902fa9'),('66484335-8c39-41ac-95d8-55153ba80f2a','e6745cf8-ec33-4992-9358-9ba5a3c29675','auth0|demo-user-12345','verifier-001','2025-11-10 10:56:40.280419','2025-11-10 10:56:40.280725',1,'Approved batch 1','2025-11-10 10:56:40.280350','2025-11-10 10:56:40.280738','f7b82ba1-9c28-42d8-a4c6-0f66f4056977'),('66fc409a-b794-4421-81de-e202d26190ac','ce09a166-6a9c-430c-b4ad-8d08fd98566b','auth0|demo-user-67890','verifier-001','2025-11-10 11:06:15.208785','2025-11-10 11:06:15.209437',1,'Approved batch 2','2025-11-10 11:06:15.208783','2025-11-10 11:06:15.209438','22a0473e-40c3-44eb-8569-c525a9ea18b9'),('6e0bedd9-dfc8-4e30-aca5-cff1b00fa9e9','66a76978-ec3a-4839-8308-2cd291e369f1','auth0|demo-user-12345','','2025-11-10 10:56:40.281761',NULL,0,'Verification request for batch 7','2025-11-10 10:56:40.281761',NULL,NULL),('835e870d-f731-4328-9eb8-6d785ccdfe72','e7982fae-6c05-4772-845d-22fb20df088e','auth0|demo-user-67890','','2025-11-10 11:06:15.210532',NULL,0,'Verification request for batch 8','2025-11-10 11:06:15.210532',NULL,NULL),('ad659a98-965b-4e70-bc4a-4a31cb78bb24','68a3653e-18cf-4d3c-854c-14dd5ee13aa1','auth0|demo-user-12345','verifier-002','2025-11-10 11:06:15.209852','2025-11-10 11:06:15.210488',2,'Rejected batch 4 - insufficient data','2025-11-10 11:06:15.209851','2025-11-10 11:06:15.210489',NULL),('b4471c89-d404-4089-bb66-8f82d30554a0','9ca03fbc-00cd-490c-9fa1-c48cedc54c3c','auth0|demo-user-11111','','2025-11-10 10:56:40.281764',NULL,0,'Verification request for batch 9','2025-11-10 10:56:40.281763',NULL,NULL),('ce7ad462-2f90-430f-8de6-456479b422d2','c6c8a134-995c-4936-a26d-39d094a14ac4','auth0|demo-user-11111','verifier-001','2025-11-10 11:06:15.209456','2025-11-10 11:06:15.209841',1,'Approved batch 3','2025-11-10 11:06:15.209454','2025-11-10 11:06:15.209842','53a5f35e-0c0c-410a-8f38-ea3efb955f5f'),('d217cc64-2158-4c2c-90c8-30da126cdb28','1ebd3dea-141e-4444-a646-aff9eb60ce0f','auth0|demo-user-11111','','2025-11-10 11:06:15.210524',NULL,0,'Verification request for batch 6','2025-11-10 11:06:15.210523',NULL,NULL),('d5d622d1-9d5e-4fca-82bc-9f31f9b8e135','5d393495-436c-45a0-83a0-935009552786','auth0|demo-user-12345','','2025-11-10 11:06:15.210529',NULL,0,'Verification request for batch 7','2025-11-10 11:06:15.210528',NULL,NULL),('d68d1355-1b51-4e3e-9a0d-53c10642466a','a7b129c2-3870-4254-a160-22e1b93f757a','auth0|demo-user-11111','','2025-11-10 10:56:40.281760',NULL,0,'Verification request for batch 6','2025-11-10 10:56:40.281759',NULL,NULL),('db642195-8f69-45ab-92e2-bd74296dce47','ad1a2972-7f13-4136-9cef-7e1134da0c9e','auth0|demo-user-67890','verifier-002','2025-11-10 11:06:15.210509','2025-11-10 11:06:15.210518',2,'Rejected batch 5 - insufficient data','2025-11-10 11:06:15.210507','2025-11-10 11:06:15.210518',NULL),('dfa72852-dc77-40db-831a-a6dcdeee739d','6b54571b-d7d3-4433-aa96-fcd161c6220e','auth0|demo-user-12345','','2025-11-10 10:56:40.281766',NULL,0,'Verification request for batch 10','2025-11-10 10:56:40.281765',NULL,NULL),('f8585028-c046-49c1-aa95-e66c3f55694b','e054b9d3-03e4-45ba-b348-346ee6384bc6','auth0|demo-user-67890','verifier-001','2025-11-10 10:56:40.280751','2025-11-10 10:56:40.281003',1,'Approved batch 2','2025-11-10 10:56:40.280750','2025-11-10 10:56:40.281003','6b6f2938-c8e7-4831-a28f-756ece9e0d28');
+/*!40000 ALTER TABLE `VerificationRequests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `__EFMigrationsHistory`
+--
+
+DROP TABLE IF EXISTS `__EFMigrationsHistory`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `__EFMigrationsHistory` (
+  `MigrationId` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `ProductVersion` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`MigrationId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `__EFMigrationsHistory`
+--
+
+LOCK TABLES `__EFMigrationsHistory` WRITE;
+/*!40000 ALTER TABLE `__EFMigrationsHistory` DISABLE KEYS */;
+INSERT INTO `__EFMigrationsHistory` VALUES ('20251013094951_InitialCreate','8.0.6'),('20251023131534_SeedFullDatabase','8.0.6'),('20251024032359_AddVeriRequestToStandardAndCreditLink','8.0.6'),('20251024034056_UpdateSeedDataWithLinks','8.0.6');
+/*!40000 ALTER TABLE `__EFMigrationsHistory` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-11-10 11:18:35

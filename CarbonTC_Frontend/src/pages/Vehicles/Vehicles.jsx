@@ -3,115 +3,179 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Topbar from '../../components/Topbar/Topbar';
 import VehicleCard from '../../components/VehicleCard/VehicleCard';
 import EmptyState from '../../components/EmptyState/EmptyState';
-import AddVehicleModal from '../../components/AddVehicleModal/AddVehicleModal';
 import { useSidebar } from '../../hooks/useSidebar';
+import { useNotification } from '../../hooks/useNotification';
+import { getMyVehicles, getVehicleById } from '../../services/vehicleService';
 import styles from './Vehicles.module.css';
 
-const Vehicles = ({ showNotification }) => {
+// Helper function to get vehicle image based on vehicle type
+const getVehicleImage = (vehicleType) => {
+  if (!vehicleType) return 'https://images.unsplash.com/photo-1593941707882-a5bac6861d6c?w=600&h=400&fit=crop&auto=format';
+  
+  // Normalize vehicle type for image search
+  const normalizedType = vehicleType.toLowerCase();
+  
+  // Map specific vehicle types to their images
+  const imageMap = {
+    // Vinfast
+    'vinfast-vfe34': 'https://photo2.tinhte.vn/data/attachment-files/2021/03/5405185_vinfast_VF_e34_tinhte2.jpg',
+    'vinfast': 'https://photo2.tinhte.vn/data/attachment-files/2021/03/5405185_vinfast_VF_e34_tinhte2.jpg',
+    'vfe34': 'https://photo2.tinhte.vn/data/attachment-files/2021/03/5405185_vinfast_VF_e34_tinhte2.jpg',
+    'vfe': 'https://photo2.tinhte.vn/data/attachment-files/2021/03/5405185_vinfast_VF_e34_tinhte2.jpg',
+    
+    // Hyundai
+    'hyundai-kona': 'https://s1.cdn.autoevolution.com/images-webp/news/us-spec-hyundai-kona-n-hot-suv-shows-its-aggressive-face-for-the-first-time-157422-7.jpg.webp',
+    'hyundai': 'https://s1.cdn.autoevolution.com/images-webp/news/us-spec-hyundai-kona-n-hot-suv-shows-its-aggressive-face-for-the-first-time-157422-7.jpg.webp',
+    'kona': 'https://s1.cdn.autoevolution.com/images-webp/news/us-spec-hyundai-kona-n-hot-suv-shows-its-aggressive-face-for-the-first-time-157422-7.jpg.webp',
+    
+    // Mercedes
+    'mercedes-eqc': 'https://cdn.motor1.com/images/mgl/LKoQM/s3/mercedes-eqc-konkurrenten.webp',
+    'mercedes': 'https://cdn.motor1.com/images/mgl/LKoQM/s3/mercedes-eqc-konkurrenten.webp',
+    'eqc': 'https://cdn.motor1.com/images/mgl/LKoQM/s3/mercedes-eqc-konkurrenten.webp',
+    
+    // Kia
+    'kia-ev6': 'https://www.dsf.my/wp-content/uploads/2022/08/Kia-EV6-GT-4-600x451.jpeg?v=1661320855',
+    'kia': 'https://www.dsf.my/wp-content/uploads/2022/08/Kia-EV6-GT-4-600x451.jpeg?v=1661320855',
+    'ev6': 'https://www.dsf.my/wp-content/uploads/2022/08/Kia-EV6-GT-4-600x451.jpeg?v=1661320855',
+    
+    // Tesla
+    'tesla-modely': 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=400&fit=crop&auto=format',
+    'tesla-model3': 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+    'tesla-models': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&h=400&fit=crop&auto=format',
+    'tesla': 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=400&fit=crop&auto=format',
+    'model': 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=400&fit=crop&auto=format',
+    
+    // Porsche
+    'porsche-taycan': 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&h=400&fit=crop&auto=format',
+    'porsche': 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&h=400&fit=crop&auto=format',
+    'taycan': 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&h=400&fit=crop&auto=format',
+    
+    // BMW
+    'bmw-ix': 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+    'bmw': 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+    'ix': 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+    
+    // Audi
+    'audi-etron': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&h=400&fit=crop&auto=format',
+    'audi': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&h=400&fit=crop&auto=format',
+    'etron': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&h=400&fit=crop&auto=format',
+    
+    // Nissan
+    'nissan-leaf': 'https://images.unsplash.com/photo-1621007947382-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+    'nissan': 'https://images.unsplash.com/photo-1621007947382-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+    'leaf': 'https://images.unsplash.com/photo-1621007947382-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+  };
+  
+  // First check for exact match (case-insensitive)
+  const exactMatch = Object.keys(imageMap).find(key => 
+    normalizedType === key.toLowerCase()
+  );
+  if (exactMatch) {
+    return imageMap[exactMatch];
+  }
+  
+  // Then check if vehicle type contains any mapped keyword
+  for (const [key, url] of Object.entries(imageMap)) {
+    if (normalizedType.includes(key.toLowerCase())) {
+      return url;
+    }
+  }
+  
+  // Default: Fallback to a generic EV image
+  return 'https://images.unsplash.com/photo-1593941707882-a5bac6861d6c?w=600&h=400&fit=crop&auto=format&q=80';
+};
+
+const Vehicles = ({ showNotification: propShowNotification }) => {
   const { sidebarActive, toggleSidebar } = useSidebar();
+  const { showNotification: hookShowNotification } = useNotification();
+  const showNotification = propShowNotification || hookShowNotification;
+  
   const [vehicles, setVehicles] = useState([]);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Sample data - in real app, this would come from API
-  const sampleVehicles = [
-    {
-      id: 1,
-      name: 'VinFast VF 8',
-      image: 'https://picsum.photos/seed/vinfast/600/400.jpg',
-      status: 'statusConnected',
-      color: 'Xám bạc',
-      year: '2022',
-      mileage: 15000,
-      credits: 125,
-      co2Reduced: 312,
-      trips: 42,
-      isConnected: true
-    },
-    {
-      id: 2,
-      name: 'Tesla Model 3',
-      image: 'https://picsum.photos/seed/tesla/600/400.jpg',
-      status: 'statusConnected',
-      color: 'Đỏ',
-      year: '2021',
-      mileage: 25000,
-      credits: 85,
-      co2Reduced: 210,
-      trips: 28,
-      isConnected: true
-    },
-    {
-      id: 3,
-      name: 'Hyundai Ioniq 5',
-      image: 'https://picsum.photos/seed/hyundai/600/400.jpg',
-      status: 'statusDisconnected',
-      color: 'Xanh dương',
-      year: '2023',
-      mileage: 5000,
-      credits: 0,
-      co2Reduced: 0,
-      trips: 0,
-      isConnected: false
-    }
-  ];
-
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setVehicles(sampleVehicles);
-      setLoading(false);
-    }, 1000);
+    loadVehicles();
   }, []);
 
-  const handleAddVehicle = (vehicleData) => {
-    const newVehicle = {
-      id: vehicles.length + 1,
-      name: `${vehicleData.brand} ${vehicleData.model}`,
-      image: vehicleData.image ? URL.createObjectURL(vehicleData.image) : 'https://picsum.photos/seed/newcar/600/400.jpg',
-      status: 'statusConnected',
-      color: vehicleData.color,
-      year: vehicleData.year,
-      mileage: parseInt(vehicleData.mileage),
-      credits: 0,
-      co2Reduced: 0,
-      trips: 0,
-      isConnected: true
-    };
-
-    setVehicles(prev => [...prev, newVehicle]);
-    showNotification('Thêm xe điện thành công!', 'success');
+  const loadVehicles = async () => {
+    try {
+      setLoading(true);
+      const result = await getMyVehicles();
+      if (result.success && result.data) {
+        const vehiclesData = Array.isArray(result.data) ? result.data : [];
+        // Transform API data to match VehicleCard component expectations
+        // API returns: vehicleType, totalJourneys, totalDistanceKm, totalCarbonCredits, firstJourneyDate, lastJourneyDate
+        const transformedVehicles = vehiclesData.map((vehicle, index) => {
+          // Use vehicleType as the unique identifier and name
+          const vehicleType = vehicle.vehicleType || `Vehicle ${index + 1}`;
+          // Get appropriate image based on vehicle type
+          const imageUrl = vehicle.image || getVehicleImage(vehicleType);
+          
+          return {
+            id: vehicleType, // Use vehicleType as ID since API doesn't provide separate ID
+            vehicleId: vehicleType,
+            name: vehicleType, // Display vehicleType as the name
+            image: imageUrl,
+            mileage: vehicle.totalDistanceKm || 0, // Map from API field
+            credits: vehicle.totalCarbonCredits || 0, // Map from API field
+            co2Reduced: vehicle.totalCo2Reduced || vehicle.totalCarbonCredits || 0, // Use credits as CO2 reduced if not available
+            trips: vehicle.totalJourneys || 0, // Map from API field
+            // Include all original data for details view
+            ...vehicle
+          };
+        });
+        setVehicles(transformedVehicles);
+      } else {
+        // Hiển thị thông báo lỗi nếu có
+        const errorMessage = result.message || 'Không thể tải danh sách phương tiện';
+        showNotification(errorMessage, 'error');
+        setVehicles([]);
+      }
+    } catch (error) {
+      console.error('Error loading vehicles:', error);
+      const errorMessage = error.userMessage || error.message || 'Không thể tải danh sách phương tiện';
+      showNotification(errorMessage, 'error');
+      setVehicles([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleViewDetails = (vehicleId) => {
-    // Navigate to vehicle details page
-    console.log('View details for vehicle:', vehicleId);
-    showNotification('Chuyển đến trang chi tiết xe', 'info');
+  const handleViewDetails = async (vehicleId) => {
+    try {
+      // Since API doesn't have a get-by-id endpoint, find from current vehicles list
+      const vehicle = vehicles.find(v => 
+        v.id === vehicleId || 
+        v.vehicleId === vehicleId || 
+        v.vehicleType === vehicleId
+      );
+      
+      if (vehicle) {
+        setSelectedVehicle(vehicle);
+        setShowDetails(true);
+      } else {
+        // Fallback: try API call
+        const result = await getVehicleById(vehicleId);
+        if (result.success && result.data) {
+          setSelectedVehicle(result.data);
+          setShowDetails(true);
+        } else {
+          showNotification('Không thể tải thông tin chi tiết xe', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching vehicle details:', error);
+      showNotification('Không thể tải thông tin chi tiết xe', 'error');
+    }
   };
 
-  const handleSync = (vehicleId) => {
-    // Sync vehicle data
-    console.log('Sync vehicle:', vehicleId);
-    showNotification('Đang đồng bộ dữ liệu xe...', 'info');
-    
-    // Simulate sync
-    setTimeout(() => {
-      showNotification('Đồng bộ dữ liệu thành công!', 'success');
-    }, 2000);
+  const handleCloseDetails = () => {
+    setShowDetails(false);
+    setSelectedVehicle(null);
   };
 
-  const handleConnect = (vehicleId) => {
-    // Connect vehicle
-    console.log('Connect vehicle:', vehicleId);
-    setVehicles(prev => 
-      prev.map(vehicle => 
-        vehicle.id === vehicleId 
-          ? { ...vehicle, isConnected: true, status: 'statusConnected' }
-          : vehicle
-      )
-    );
-    showNotification('Kết nối xe thành công!', 'success');
-  };
 
   if (loading) {
     return (
@@ -141,47 +205,197 @@ const Vehicles = ({ showNotification }) => {
       <div className={styles.mainContent}>
         <Topbar title="Xe điện của tôi" />
         
-        {/* Add Vehicle Button */}
-        <div className={styles.addButtonContainer} data-aos="fade-up">
-          <button 
-            className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
-            onClick={() => setShowAddModal(true)}
-          >
-            <i className="bi bi-plus-circle me-2"></i>Thêm xe điện
-          </button>
-        </div>
-        
         {/* Vehicles List */}
         {vehicles.length > 0 ? (
-          <div className="row">
-            {vehicles.map((vehicle, index) => (
-              <div key={vehicle.id} className="col-lg-6" data-aos="fade-up" data-aos-delay={(index + 1) * 100}>
-                <VehicleCard
-                  vehicle={vehicle}
-                  onViewDetails={() => handleViewDetails(vehicle.id)}
-                  onSync={() => handleSync(vehicle.id)}
-                  onConnect={() => handleConnect(vehicle.id)}
-                />
-              </div>
-            ))}
+          <div className={styles.vehiclesGrid}>
+            {vehicles.map((vehicle, index) => {
+              // Use vehicleType as unique key (it's the identifier from API)
+              const vehicleId = vehicle.id || vehicle.vehicleId || vehicle.vehicleType || `vehicle-${index}`;
+              const uniqueKey = `vehicle-${vehicleId}-${index}`;
+              return (
+                <div key={uniqueKey} data-aos="fade-up" data-aos-delay={(index + 1) * 100}>
+                  <VehicleCard
+                    vehicle={vehicle}
+                    onViewDetails={() => handleViewDetails(vehicle.id || vehicle.vehicleId || vehicle.vehicleType)}
+                  />
+                </div>
+              );
+            })}
           </div>
         ) : (
           <EmptyState
             icon="bi-ev-station"
             title="Chưa có xe điện nào"
-            description="Bạn chưa thêm xe điện nào vào tài khoản của mình. Hãy thêm xe điện đầu tiên để bắt đầu kiếm tín chỉ carbon từ các chuyến đi của bạn."
-            actionText="Thêm xe điện"
-            onAction={() => setShowAddModal(true)}
+            description="Bạn chưa có xe điện nào trong hệ thống. Hãy thêm xe điện để bắt đầu theo dõi hành trình và kiếm tín chỉ carbon."
           />
         )}
       </div>
       
-      {/* Add Vehicle Modal */}
-      <AddVehicleModal
-        show={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSave={handleAddVehicle}
-      />
+      {/* Vehicle Details Modal */}
+      {showDetails && selectedVehicle && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+          onClick={handleCloseDetails}
+        >
+          <div 
+            style={{
+              background: 'rgba(15, 15, 30, 0.95)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderRadius: '16px',
+              padding: '30px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <div style={{ flex: 1 }}>
+                <h2 style={{ 
+                  margin: 0, 
+                  color: 'var(--text-primary)', 
+                  fontSize: '2rem',
+                  fontWeight: '700',
+                  marginBottom: '5px',
+                  background: 'var(--primary-gradient)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}>
+                  {selectedVehicle.vehicleType || selectedVehicle.vehicleName || selectedVehicle.name || 'N/A'}
+                </h2>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Chi tiết xe</p>
+              </div>
+              <button 
+                onClick={handleCloseDetails}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  padding: '5px',
+                  borderRadius: '8px',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                }}
+              >
+                <i className="bi bi-x"></i>
+              </button>
+            </div>
+            
+            {/* Vehicle Image */}
+            {selectedVehicle.image && (
+              <div style={{ 
+                width: '100%', 
+                height: '250px', 
+                borderRadius: '12px', 
+                overflow: 'hidden',
+                marginBottom: '25px',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <img 
+                  src={selectedVehicle.image} 
+                  alt={selectedVehicle.vehicleType || selectedVehicle.vehicleName || selectedVehicle.name || 'Vehicle'}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                />
+              </div>
+            )}
+            
+            <div style={{ display: 'grid', gap: '15px' }}>
+              
+              <div>
+                <strong style={{ color: 'var(--text-secondary)' }}>Tổng quãng đường:</strong>
+                <p style={{ margin: '5px 0', color: 'var(--text-primary)' }}>
+                  {(selectedVehicle.totalDistanceKm || selectedVehicle.totalMileage || selectedVehicle.mileage || 0).toLocaleString('vi-VN')} km
+                </p>
+              </div>
+              
+              <div>
+                <strong style={{ color: 'var(--text-secondary)' }}>Tổng tín chỉ:</strong>
+                <p style={{ margin: '5px 0', color: 'var(--text-primary)' }}>
+                  {(selectedVehicle.totalCarbonCredits || selectedVehicle.totalCredits || selectedVehicle.credits || 0).toLocaleString('vi-VN')}
+                </p>
+              </div>
+              
+              <div>
+                <strong style={{ color: 'var(--text-secondary)' }}>CO₂ giảm phát thải:</strong>
+                <p style={{ margin: '5px 0', color: 'var(--text-primary)' }}>
+                  {(selectedVehicle.totalCo2Reduced || selectedVehicle.co2Reduced || selectedVehicle.totalCarbonCredits || 0).toLocaleString('vi-VN')} kg
+                </p>
+              </div>
+              
+              <div>
+                <strong style={{ color: 'var(--text-secondary)' }}>Tổng số hành trình:</strong>
+                <p style={{ margin: '5px 0', color: 'var(--text-primary)' }}>
+                  {selectedVehicle.totalJourneys || selectedVehicle.trips || 0}
+                </p>
+              </div>
+              
+              {selectedVehicle.firstJourneyDate && (
+                <div>
+                  <strong style={{ color: 'var(--text-secondary)' }}>Hành trình đầu tiên:</strong>
+                  <p style={{ margin: '5px 0', color: 'var(--text-primary)' }}>
+                    {new Date(selectedVehicle.firstJourneyDate).toLocaleString('vi-VN')}
+                  </p>
+                </div>
+              )}
+              
+              {selectedVehicle.lastJourneyDate && (
+                <div>
+                  <strong style={{ color: 'var(--text-secondary)' }}>Hành trình cuối cùng:</strong>
+                  <p style={{ margin: '5px 0', color: 'var(--text-primary)' }}>
+                    {new Date(selectedVehicle.lastJourneyDate).toLocaleString('vi-VN')}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button 
+                className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+                onClick={handleCloseDetails}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

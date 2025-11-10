@@ -1,173 +1,173 @@
 .modal {
-  position: fixed; /* Quan trọng: để nổi lên trên */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex; /* Sử dụng flex để căn giữa */
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.6); /* Lớp phủ mờ */
-  opacity: 0; /* Ẩn ban đầu */
-  visibility: hidden; /* Ẩn ban đầu */
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  z-index: 1050; /* Đảm bảo cao hơn các phần tử khác */
-}
-
-.modal.show {
-  opacity: 1; /* Hiện khi có class 'show' */
-  visibility: visible;
-}
-
-.modalOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer; /* Cho phép click để đóng */
-}
-
-.modalContent {
-  background: var(--card-bg); /* Hoặc màu nền bạn muốn */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 0; /* Bỏ padding mặc định */
-  width: 90%;
-  max-width: 500px; /* Giới hạn chiều rộng */
-  z-index: 1051; /* Cao hơn lớp phủ */
-  position: relative; /* Để các phần tử con định vị theo */
-  overflow: hidden; /* Tránh nội dung tràn ra ngoài */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  transform: scale(0.9); /* Hiệu ứng nhỏ */
-  transition: transform 0.3s ease;
-}
-
-.modal.show .modalContent {
-    transform: scale(1); /* Phóng to khi hiện */
-}
-
-.modalHeader {
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modalTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.btnClose {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-.btnClose:hover {
+    position: fixed; /* Quan trọng: để nổi lên trên */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex; /* Sử dụng flex để căn giữa */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6); /* Lớp phủ mờ */
+    opacity: 0; /* Ẩn ban đầu */
+    visibility: hidden; /* Ẩn ban đầu */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1050; /* Đảm bảo cao hơn các phần tử khác */
+  }
+  
+  .modal.show {
+    opacity: 1; /* Hiện khi có class 'show' */
+    visibility: visible;
+  }
+  
+  .modalOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer; /* Cho phép click để đóng */
+  }
+  
+  .modalContent {
+    background: var(--card-bg); /* Hoặc màu nền bạn muốn */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 0; /* Bỏ padding mặc định */
+    width: 90%;
+    max-width: 500px; /* Giới hạn chiều rộng */
+    z-index: 1051; /* Cao hơn lớp phủ */
+    position: relative; /* Để các phần tử con định vị theo */
+    overflow: hidden; /* Tránh nội dung tràn ra ngoài */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9); /* Hiệu ứng nhỏ */
+    transition: transform 0.3s ease;
+  }
+  
+  .modal.show .modalContent {
+      transform: scale(1); /* Phóng to khi hiện */
+  }
+  
+  .modalHeader {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modalTitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
     color: var(--text-primary);
-}
-.btnClose:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-
-.modalBody {
-  padding: 20px;
-  color: var(--text-secondary);
-}
-
-.formGroup {
-  margin-bottom: 20px;
-}
-
-.formLabel {
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-  font-weight: 500;
-  display: block;
-  font-size: 0.9rem;
-}
-
-.hiddenFileInput {
-  display: none; /* Quan trọng: Ẩn input file gốc */
-}
-
-.fileInputContainer {
-  display: flex;
-  align-items: center;
-  gap: 15px; /* Khoảng cách giữa nút và tên file */
-  border: 1px dashed rgba(255, 255, 255, 0.2); /* Viền giả */
-  padding: 15px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.fileNameDisplay {
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-grow: 1; /* Cho phép tên file co giãn */
-}
-
-.errorMessage {
-  color: #f87171; /* Màu đỏ cho lỗi */
-  font-size: 0.85rem;
-  margin-top: 8px;
-}
- /* Style cho nút khi có lỗi */
-.errorButton {
-    border-color: #f87171 !important;
-    color: #f87171 !important;
-}
- .errorButton:hover {
-     background-color: rgba(248, 113, 113, 0.1) !important;
- }
-
-.helperText {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  opacity: 0.8;
-  margin-top: 15px;
-}
-
-.modalFooter {
-  background: rgba(255, 255, 255, 0.05);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 15px 20px;
-  display: flex;
-  justify-content: flex-end; /* Đẩy nút sang phải */
-  gap: 10px; /* Khoảng cách giữa các nút */
-}
-
-/* Responsive adjustments */
-@media (max-width: 576px) {
-    .modalContent {
-        max-width: 95%;
-        margin: 10px; /* Thêm margin nhỏ */
-    }
-    .modalBody {
-        padding: 15px;
-    }
-    .fileInputContainer {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px;
-    }
-     .modalFooter {
-         padding: 10px 15px;
-     }
-}
+  }
+  
+  .btnClose {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .btnClose:hover {
+      color: var(--text-primary);
+  }
+  .btnClose:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+  }
+  
+  
+  .modalBody {
+    padding: 20px;
+    color: var(--text-secondary);
+  }
+  
+  .formGroup {
+    margin-bottom: 20px;
+  }
+  
+  .formLabel {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+    display: block;
+    font-size: 0.9rem;
+  }
+  
+  .hiddenFileInput {
+    display: none; /* Quan trọng: Ẩn input file gốc */
+  }
+  
+  .fileInputContainer {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Khoảng cách giữa nút và tên file */
+    border: 1px dashed rgba(255, 255, 255, 0.2); /* Viền giả */
+    padding: 15px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  
+  .fileNameDisplay {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-grow: 1; /* Cho phép tên file co giãn */
+  }
+  
+  .errorMessage {
+    color: #f87171; /* Màu đỏ cho lỗi */
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+   /* Style cho nút khi có lỗi */
+  .errorButton {
+      border-color: #f87171 !important;
+      color: #f87171 !important;
+  }
+   .errorButton:hover {
+       background-color: rgba(248, 113, 113, 0.1) !important;
+   }
+  
+  .helperText {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    margin-top: 15px;
+  }
+  
+  .modalFooter {
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: flex-end; /* Đẩy nút sang phải */
+    gap: 10px; /* Khoảng cách giữa các nút */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+      .modalContent {
+          max-width: 95%;
+          margin: 10px; /* Thêm margin nhỏ */
+      }
+      .modalBody {
+          padding: 15px;
+      }
+      .fileInputContainer {
+          flex-direction: column;
+          align-items: flex-start;
+          padding: 10px;
+      }
+       .modalFooter {
+           padding: 10px 15px;
+       }
+  }
