@@ -28,7 +28,7 @@ namespace Infrastructure.BackgroundJobs.Consumer
         {
             await _consumer.Subscribe<TransactionCompletedCommand>(
                 "transaction_exchange",
-                ExchangeType.Direct,
+                ExchangeType.Topic,
                 "transaction.failed",
                 "transaction_failed_queue",
                 async (message) =>            
