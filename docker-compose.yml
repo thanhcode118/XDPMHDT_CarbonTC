@@ -23,6 +23,16 @@ services:
       timeout: 5s
       retries: 10
 
+  mongo-db:
+    image: mongo:6
+    container_name: carbontc-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - carbontc-network
+
   # ==============================
   # 2️⃣ Redis Cache
   # ==============================
@@ -62,7 +72,9 @@ services:
   # 4️⃣ API Gateway
   # ==============================
   api-gateway:
-    image: phucdaizz/carbontc-gateway:v1.1
+    build:
+      context: ./CarbonTC.Gateway 
+      dockerfile: Dockerfile
     container_name: carbontc-gateway
     restart: always
     ports:
@@ -73,6 +85,8 @@ services:
     depends_on:
       - marketplace-service
       - auth-service
+      - lifecycle-service
+      - admin-service
     networks:
       - carbontc-network
 
@@ -126,7 +140,7 @@ services:
       - RabbitMQ__Password=guest
       - RabbitMQ__VirtualHost=/
       - Services__WalletService=http://wallet-service:5004
-      - Services__CarbonLifecycleService=http://host.docker.internal:5002
+      - Services__CarbonLifecycleService=http://lifecycle-service:5002
       - ASPNETCORE_URLS=http://+:5003
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
@@ -181,6 +195,56 @@ services:
     networks:
       - carbontc-network
 
+  lifecycle-service:
+    build:
+      context: ./CarbonTC.CarbonLifecycle.Service
+      dockerfile: Dockerfile
+    container_name: lifecycle-service
+    restart: always
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_URLS=http://+:5002
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=carbon_lifecycle_db;User=root;Password=phucdai011;
+      - RabbitMQ__HostName=rabbitmq-server
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__VirtualHost=/
+      - FileStorage__RootPath=/app/uploaded_files
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      rabbitmq-server:
+        condition: service_healthy
+    volumes:
+      - carbon_lifecycle_files:/app/uploaded_files
+    networks:
+      - carbontc-network
+
+  admin-service:
+    build:
+      context: ./CarbonTC.Admin.Service/admin-backend
+      dockerfile: Dockerfile
+    container_name: carbontc-admin-service
+    restart: always
+    ports:
+      - "5005:5005"
+    environment:
+      - MONGODB_URI=mongodb://mongo-db:27017/admin_service
+      - RABBITMQ_URL=amqp://rabbitmq-server:5672
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - MARKETPLACE_SERVICE_URL=http://marketplace-service:5003
+      - WALLET_SERVICE_URL=http://wallet-service:5004
+      - LIFECYCLE_SERVICE_URL=http://lifecycle-service:5002
+      - NODE_ENV=development
+    depends_on:
+      - mongo-db
+      - rabbitmq-server
+    networks:
+      - carbontc-network
+
 # ==============================
 # 6️⃣ Network & Volumes
 # ==============================
@@ -191,3 +255,5 @@ networks:
 volumes:
   mysql_data:
   rabbitmq_data:
+  carbon_lifecycle_files:
+  mongo_data:
