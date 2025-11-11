@@ -6,11 +6,14 @@ import { formatNumber, formatDateTime } from '../../../utils';
 import type { WithdrawRequest } from '../../../services/wallet.service';
 
 interface WalletColumnsProps {
-  onApprove: (requestId: string) => void;
-  onReject: (requestId: string) => void;
+  onApprove: (requestId: number) => void;
+  onReject: (requestId: number) => void;
 }
 
-export const getWalletColumns = ({ onApprove, onReject }: WalletColumnsProps): GridColDef<WithdrawRequest>[] => [
+export const getWalletColumns = ({
+  onApprove,
+  onReject
+}: WalletColumnsProps): GridColDef<WithdrawRequest>[] => [
   {
     field: 'userId',
     headerName: 'User ID',

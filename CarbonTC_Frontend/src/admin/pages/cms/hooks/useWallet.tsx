@@ -16,8 +16,8 @@ export interface UseWalletReturn {
   setSearchTerm: (term: string) => void;
   setDateRange: (range: { start: string | null; end: string | null }) => void;
 
-  handleApprove: (requestId: string) => Promise<void>;
-  handleReject: (requestId: string) => Promise<void>;
+  handleApprove: (requestId: number) => Promise<void>;
+  handleReject: (requestId: number) => Promise<void>;
   refreshData: () => Promise<void>;
 
   stats: {
@@ -60,6 +60,7 @@ export const useWallet = (): UseWalletReturn => {
   }, [fetchRequests]);
 
   const filteredRequests = requests.filter((req) => {
+    // Filter by status
     if (selectedStatus !== 'All' && req.status !== selectedStatus) {
       return false;
     }
@@ -98,7 +99,7 @@ export const useWallet = (): UseWalletReturn => {
       .reduce((sum, r) => sum + r.amount, 0),
   };
 
-  const handleApprove = async (requestId: string) => {
+  const handleApprove = async (requestId: number) => {
     try {
       setLoading(true);
       await walletApi.approveRequest(requestId);
@@ -111,7 +112,7 @@ export const useWallet = (): UseWalletReturn => {
     }
   };
 
-  const handleReject = async (requestId: string) => {
+  const handleReject = async (requestId: number) => {
     try {
       setLoading(true);
       await walletApi.rejectRequest(requestId);

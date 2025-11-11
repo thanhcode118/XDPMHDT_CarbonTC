@@ -25,7 +25,7 @@ function Wallet() {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     type: 'approve' | 'reject' | null;
-    requestId: string | null;
+    requestId: number | null;
   }>({
     open: false,
     type: null,
@@ -42,11 +42,17 @@ function Wallet() {
     severity: 'success',
   });
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: WithdrawStatus) => {
+  const handleTabChange = (
+    _event: React.SyntheticEvent,
+    newValue: WithdrawStatus
+  ) => {
     setSelectedStatus(newValue);
   };
 
-  const openConfirmDialog = (type: 'approve' | 'reject', requestId: string) => {
+  const openConfirmDialog = (
+    type: 'approve' | 'reject',
+    requestId: number
+  ) => {
     setConfirmDialog({
       open: true,
       type,
@@ -152,7 +158,10 @@ function Wallet() {
 
       <ConfirmDialog
         open={confirmDialog.open}
-        title={confirmDialog.type === 'approve' ? 'Approve Request' : 'Reject Request'}
+        title={confirmDialog.type === 'approve'
+          ? 'Approve Request'
+          : 'Reject Request'
+        }
         message={
           confirmDialog.type === 'approve'
             ? 'Are you sure you want to approve this withdraw request?'
