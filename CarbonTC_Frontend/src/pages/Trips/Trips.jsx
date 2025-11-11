@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Topbar from '../../components/Topbar/Topbar';
-import TripCard from '../../components/TripCard/TripCard';
 import UploadJourneyModal from '../../components/UploadJourneyModal/UploadJourneyModal';
+import BatchDetailsModal from '../../components/BatchDetailsModal/BatchDetailsModal';
+import TripDetailModal from '../../components/TripDetailModal/TripDetailModal';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
-import { getMyJourneys, uploadJourney, uploadJourneyFile, createBatch } from '../../services/tripService';
+import { uploadJourney, uploadJourneyFile, getMyJourneys, createBatch } from '../../services/tripService';
+import { getMyBatches, submitVerificationRequest } from '../../services/verificationService';
 import styles from './Trips.module.css';
 
 const Trips = ({ showNotification: propShowNotification }) => {
@@ -13,13 +15,19 @@ const Trips = ({ showNotification: propShowNotification }) => {
   const { showNotification: hookShowNotification } = useNotification();
   const showNotification = propShowNotification || hookShowNotification;
   
-  const [trips, setTrips] = useState([]);
-  const [selectedTrips, setSelectedTrips] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [allJourneys, setAllJourneys] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pending'); // 'pending', 'history', or 'journeys'
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showJsonUpload, setShowJsonUpload] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [submittingBatchId, setSubmittingBatchId] = useState(null);
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [showBatchDetails, setShowBatchDetails] = useState(false);
+  const [selectedJourneys, setSelectedJourneys] = useState([]);
   const [isCreatingBatch, setIsCreatingBatch] = useState(false);
-  const [activeTab, setActiveTab] = useState('history'); // 'history' or 'batch'
+  const [selectedJourneyId, setSelectedJourneyId] = useState(null);
+  const [showJourneyDetails, setShowJourneyDetails] = useState(false);
   
   // JSON upload form state
   const [jsonFormData, setJsonFormData] = useState({
@@ -32,134 +40,283 @@ const Trips = ({ showNotification: propShowNotification }) => {
   });
   const [jsonError, setJsonError] = useState('');
 
-  // Load trips on mount
+  // Hàm format ngày thành dd/mm/yy
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return 'N/A';
+    
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2); // Lấy 2 số cuối của năm
+    
+    return `${day}/${month}/${year}`;
+  };
+
+
+  // Load batches on mount
   useEffect(() => {
-    loadTrips();
+    loadBatches();
   }, []);
 
-  const loadTrips = async () => {
+  // Load journeys when journeys tab is active
+  useEffect(() => {
+    if (activeTab === 'journeys') {
+      loadJourneys();
+    }
+  }, [activeTab]);
+
+  const loadBatches = async () => {
     try {
       setLoading(true);
-      const result = await getMyJourneys();
+      const result = await getMyBatches();
       if (result.success && result.data) {
-        const tripsData = Array.isArray(result.data) ? result.data : [];
-        // Transform and sort trips by date (newest first)
-        const transformedTrips = tripsData.map(trip => {
-          // Parse original startTime and endTime (could be string or Date)
+        const batchesData = Array.isArray(result.data) ? result.data : [];
+        // Transform batches data
+        const transformedBatches = batchesData.map(batch => {
+          // Get journey count from journeys array
+          const journeyCount = batch.journeys?.length || batch.journeys?.Count || 0;
+          
+          // Calculate total CO2 from journeys (sum of calculatedCarbonCredits or co2Reduced)
+          const totalCO2 = batch.journeys?.reduce((sum, journey) => {
+            return sum + (journey.calculatedCarbonCredits || journey.co2Reduced || journey.co2EstimateKg || 0);
+          }, 0) || 0;
+          
+          // Tín chỉ Carbon tham chiếu theo Tổng CO₂ (bằng với Tổng CO₂)
+          const carbonCredits = totalCO2;
+          
+          // Get creation date from CreationTime field (now provided by API)
+          const createdDate = batch.creationTime 
+            ? new Date(batch.creationTime) 
+            : null;
+          
+          // Get submitted date from verification request (if exists)
+          // This would need to come from VerificationRequests navigation property
+          // For now, we'll check if status is not Pending, we can use LastModifiedAt as approximation
+          const submittedDate = batch.verificationRequests?.[0]?.requestDate
+            ? new Date(batch.verificationRequests[0].requestDate)
+            : (batch.status && batch.status.toLowerCase() !== 'pending' && batch.lastModifiedAt)
+            ? new Date(batch.lastModifiedAt)
+            : null;
+          
+          return {
+            ...batch,
+            journeyCount: journeyCount,
+            totalCO2Reduced: totalCO2, // Tổng CO2 từ tất cả journeys
+            carbonCredits: carbonCredits, // Tín chỉ carbon đã phát hành
+            _createdDateObj: createdDate,
+            _submittedDateObj: submittedDate,
+            createdDateFormatted: formatDate(createdDate),
+            submittedDateFormatted: submittedDate ? formatDate(submittedDate) : null,
+            status: batch.status || 'Pending'
+          };
+        }).sort((a, b) => {
+          // Sort by created date descending (newest first)
+          const timeA = a._createdDateObj ? a._createdDateObj.getTime() : 0;
+          const timeB = b._createdDateObj ? b._createdDateObj.getTime() : 0;
+          return timeB - timeA;
+        });
+        setBatches(transformedBatches);
+        
+        // Extract all journeys from all batches for the journeys tab
+        const allJourneysList = [];
+        transformedBatches.forEach(batch => {
+          if (batch.journeys && Array.isArray(batch.journeys)) {
+            batch.journeys.forEach(journey => {
+              allJourneysList.push({
+                ...journey,
+                batchId: batch.id,
+                batchStatus: batch.status
+              });
+            });
+          }
+        });
+        
+        // Transform and sort journeys
+        const transformedJourneys = allJourneysList.map(trip => {
           const startTimeObj = trip.startTime ? new Date(trip.startTime) : null;
           const endTimeObj = trip.endTime ? new Date(trip.endTime) : null;
           
           return {
             ...trip,
-            // Store original date objects for sorting
             _startTimeObj: startTimeObj,
             _endTimeObj: endTimeObj,
-            // Formatted date and times
-            date: startTimeObj 
-              ? startTimeObj.toLocaleDateString('vi-VN')
-              : trip.date || 'N/A',
+            date: formatDate(startTimeObj),
             startTime: startTimeObj 
               ? startTimeObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-              : trip.startTime || 'N/A',
+              : 'N/A',
             endTime: endTimeObj 
               ? endTimeObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-              : trip.endTime || 'N/A',
+              : 'N/A',
             distance: trip.distanceKm || trip.distance || 0,
             credits: trip.calculatedCarbonCredits || trip.credits || 0,
             co2Reduced: trip.calculatedCarbonCredits || trip.co2Reduced || 0,
             startLocation: trip.origin || trip.startLocation || 'N/A',
             endLocation: trip.destination || trip.endLocation || 'N/A',
-            status: trip.status || 'completed', // Backend should always send status
+            status: trip.status || 'completed',
             vehicleType: trip.vehicleType || 'N/A'
           };
         }).sort((a, b) => {
-          // Sort by startTime descending (newest first)
           const timeA = a._startTimeObj ? a._startTimeObj.getTime() : 0;
           const timeB = b._startTimeObj ? b._startTimeObj.getTime() : 0;
           return timeB - timeA;
         });
-        setTrips(transformedTrips);
+        
+        setAllJourneys(transformedJourneys);
       } else {
-        // Hiển thị thông báo lỗi nếu có
-        const errorMessage = result.message || 'Không thể tải danh sách hành trình';
+        const errorMessage = result.message || 'Không thể tải danh sách lô';
         showNotification(errorMessage, 'error');
-        setTrips([]);
+        setBatches([]);
       }
     } catch (error) {
-      console.error('Error loading trips:', error);
-      const errorMessage = error.userMessage || error.message || 'Không thể tải danh sách hành trình';
+      console.error('Error loading batches:', error);
+      const errorMessage = error.userMessage || error.message || 'Không thể tải danh sách lô';
       showNotification(errorMessage, 'error');
-      setTrips([]);
+      setBatches([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter trips: only show trips with Pending status that can be batched
-  // According to backend, only journeys with Pending status can be batched
-  // Journeys are automatically assigned to a batch when uploaded, so we need to check status
-  const availableTripsForBatch = trips.filter(trip => {
-    const status = trip.status?.toLowerCase() || '';
-    // Show journeys with Pending status (these can be selected to create a new batch)
-    // Also show journeys without a batchId (though this shouldn't happen in normal flow)
-    return status === 'pending' || !trip.journeyBatchId || trip.journeyBatchId === '00000000-0000-0000-0000-000000000000' || trip.journeyBatchId === null;
-  });
-
-  // Group trips by date for history timeline
-  const tripsByDate = trips.reduce((acc, trip) => {
-    const dateKey = trip._startTimeObj 
-      ? trip._startTimeObj.toLocaleDateString('vi-VN', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })
-      : trip.date || 'Không xác định';
-    
-    if (!acc[dateKey]) {
-      acc[dateKey] = [];
-    }
-    acc[dateKey].push(trip);
-    return acc;
-  }, {});
-
-  const handleToggleTripSelection = (tripId) => {
-    setSelectedTrips(prev => {
-      if (prev.includes(tripId)) {
-        return prev.filter(id => id !== tripId);
+  const loadJourneys = async () => {
+    try {
+      const result = await getMyJourneys();
+      if (result.success && result.data) {
+        const journeysData = Array.isArray(result.data) ? result.data : [];
+        // Transform journeys data
+        const transformedJourneys = journeysData.map(trip => {
+          const startTimeObj = trip.startTime ? new Date(trip.startTime) : null;
+          const endTimeObj = trip.endTime ? new Date(trip.endTime) : null;
+          
+          return {
+            ...trip,
+            _startTimeObj: startTimeObj,
+            _endTimeObj: endTimeObj,
+            date: formatDate(startTimeObj),
+            startTime: startTimeObj 
+              ? startTimeObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+              : 'N/A',
+            endTime: endTimeObj 
+              ? endTimeObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+              : 'N/A',
+            distance: trip.distanceKm || trip.distance || 0,
+            credits: trip.calculatedCarbonCredits || trip.credits || 0,
+            co2Reduced: trip.calculatedCarbonCredits || trip.co2Reduced || 0,
+            startLocation: trip.origin || trip.startLocation || 'N/A',
+            endLocation: trip.destination || trip.endLocation || 'N/A',
+            status: trip.status || 'completed',
+            vehicleType: trip.vehicleType || 'N/A'
+          };
+        }).sort((a, b) => {
+          const timeA = a._startTimeObj ? a._startTimeObj.getTime() : 0;
+          const timeB = b._startTimeObj ? b._startTimeObj.getTime() : 0;
+          return timeB - timeA;
+        });
+        
+        setAllJourneys(transformedJourneys);
       } else {
-        return [...prev, tripId];
+        const errorMessage = result.message || 'Không thể tải danh sách hành trình';
+        showNotification(errorMessage, 'error');
+        setAllJourneys([]);
+      }
+    } catch (error) {
+      console.error('Error loading journeys:', error);
+      const errorMessage = error.userMessage || error.message || 'Không thể tải danh sách hành trình';
+      showNotification(errorMessage, 'error');
+      setAllJourneys([]);
+    }
+  };
+
+  const handleViewBatchDetails = (batch) => {
+    setSelectedBatch(batch);
+    setShowBatchDetails(true);
+  };
+
+  const handleViewJourneyDetails = (journeyId) => {
+    setSelectedJourneyId(journeyId);
+    setShowJourneyDetails(true);
+  };
+
+  const handleToggleJourneySelection = (journeyId) => {
+    setSelectedJourneys(prev => {
+      if (prev.includes(journeyId)) {
+        return prev.filter(id => id !== journeyId);
+      } else {
+        return [...prev, journeyId];
       }
     });
   };
 
-  const handleCreateBatch = async () => {
-    if (selectedTrips.length === 0) {
+  const handleCreateBatchFromJourneys = async () => {
+    if (selectedJourneys.length === 0) {
       showNotification('Vui lòng chọn ít nhất một hành trình', 'warning');
       return;
     }
 
     try {
       setIsCreatingBatch(true);
-      const result = await createBatch(selectedTrips);
+      const result = await createBatch(selectedJourneys);
       
       if (result.success) {
-        showNotification('Tạo batch thành công!', 'success');
-        setSelectedTrips([]);
-        // Reload trips to reflect changes (trips will be removed from available list)
-        await loadTrips();
-        // Switch to history tab to see the updated timeline
-        setActiveTab('history');
+        showNotification('Tạo lô hành trình thành công!', 'success');
+        setSelectedJourneys([]);
+        // Reload data
+        await loadBatches();
+        await loadJourneys();
+        // Switch to pending tab to see the new batch
+        setActiveTab('pending');
       } else {
-        showNotification(result.message || 'Không thể tạo batch', 'error');
+        showNotification(result.message || 'Không thể tạo lô', 'error');
       }
     } catch (error) {
       console.error('Error creating batch:', error);
       showNotification(
-        error.response?.data?.message || error.message || 'Không thể tạo batch',
+        error.response?.data?.message || error.message || 'Không thể tạo lô',
         'error'
       );
     } finally {
       setIsCreatingBatch(false);
+    }
+  };
+
+  // Filter journeys that can be selected for batch creation
+  // Only journeys with Pending status or without a batchId can be selected
+  const availableJourneysForBatch = allJourneys.filter(journey => {
+    const status = journey.status?.toLowerCase() || '';
+    // Allow selection if status is pending or journey doesn't have a batchId
+    return status === 'pending' || !journey.journeyBatchId || journey.journeyBatchId === '00000000-0000-0000-0000-000000000000';
+  });
+
+  // Filter batches by status
+  const pendingBatches = batches.filter(batch => {
+    const status = batch.status?.toLowerCase() || '';
+    return status === 'pending';
+  });
+
+  const historyBatches = batches.filter(batch => {
+    const status = batch.status?.toLowerCase() || '';
+    return status !== 'pending';
+  });
+
+  const handleSubmitVerification = async (batchId) => {
+    try {
+      setSubmittingBatchId(batchId);
+      const result = await submitVerificationRequest(batchId);
+      
+      if (result.success) {
+        showNotification('Gửi yêu cầu xác minh thành công!', 'success');
+        await loadBatches(); // Reload batches
+        // Switch to history tab to see the updated batch
+        setActiveTab('history');
+      } else {
+        showNotification(result.message || 'Không thể gửi yêu cầu xác minh', 'error');
+      }
+    } catch (error) {
+      console.error('Error submitting verification:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Không thể gửi yêu cầu xác minh';
+      showNotification(errorMessage, 'error');
+    } finally {
+      setSubmittingBatchId(null);
     }
   };
 
@@ -168,7 +325,9 @@ const Trips = ({ showNotification: propShowNotification }) => {
       const result = await uploadJourneyFile(file);
       if (result.success) {
         showNotification('Tải lên file thành công!', 'success');
-        await loadTrips(); // Reload trips
+        // Reload both batches and journeys
+        await loadBatches();
+        await loadJourneys();
       } else {
         showNotification(result.message || 'Tải lên file thất bại', 'error');
       }
@@ -247,7 +406,9 @@ const Trips = ({ showNotification: propShowNotification }) => {
           destination: ''
         });
         setShowJsonUpload(false);
-        await loadTrips(); // Reload trips
+        // Reload both batches and journeys
+        await loadBatches();
+        await loadJourneys();
       } else {
         showNotification(result.message || 'Tải lên hành trình thất bại', 'error');
       }
@@ -261,13 +422,33 @@ const Trips = ({ showNotification: propShowNotification }) => {
     }
   };
 
+  // Helper function to get status display and color
+  const getStatusDisplay = (status) => {
+    const statusLower = status?.toLowerCase() || '';
+    switch (statusLower) {
+      case 'pending':
+        return { text: 'Chờ Gửi', color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.2)' };
+      case 'submittedforverification':
+      case 'submitted':
+        return { text: 'Đã Gửi Xác Minh', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.2)' };
+      case 'verified':
+        return { text: 'Đã Xác Minh', color: '#4ade80', bg: 'rgba(74, 222, 128, 0.2)' };
+      case 'rejected':
+        return { text: 'Đã Từ Chối', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)' };
+      case 'creditsissued':
+        return { text: 'Đã Phát Hành Tín Chỉ', color: '#10b981', bg: 'rgba(16, 185, 129, 0.2)' };
+      default:
+        return { text: status || 'Không xác định', color: '#6b7280', bg: 'rgba(107, 114, 128, 0.2)' };
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.app}>
         <div className={styles.mainContent}>
           <div className={styles.loadingState}>
             <i className="bi bi-arrow-repeat"></i>
-            <p>Đang tải dữ liệu hành trình...</p>
+            <p>Đang tải dữ liệu lô hành trình...</p>
           </div>
         </div>
       </div>
@@ -287,9 +468,225 @@ const Trips = ({ showNotification: propShowNotification }) => {
       />
       
       <div className={styles.mainContent}>
-        <Topbar title="Hành trình" />
+        <Topbar title="Hành Trình Của Tôi" />
         
-        {/* Action Buttons */}
+        {/* Tabs Navigation */}
+        <div className={styles.card} style={{ marginBottom: '20px' }}>
+          <div className={styles.cardHeader}>
+            <div className={styles.tabContainer}>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'pending' ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab('pending')}
+              >
+                <i className="bi bi-inbox me-2"></i>Lô Chờ Gửi
+              </button>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'history' ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab('history')}
+              >
+                <i className="bi bi-clock-history me-2"></i>Lịch Sử Lô
+              </button>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'journeys' ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab('journeys')}
+              >
+                <i className="bi bi-map me-2"></i>Lịch Sử Hành Trình
+              </button>
+            </div>
+            <button 
+              className={`${styles.btnCustom} ${styles.btnPrimaryCustom} ${styles.btnSm}`}
+              onClick={loadBatches}
+            >
+              <i className="bi bi-arrow-clockwise me-2"></i>Làm mới
+            </button>
+          </div>
+        </div>
+
+        {/* Tab 1: Lô Chờ Gửi */}
+        {activeTab === 'pending' && (
+          <>
+            {/* Pending Batches List */}
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h3 className={styles.cardTitle}>Danh sách Lô Đang Chờ</h3>
+                <span className={styles.badge} style={{ background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
+                  {pendingBatches.length} lô
+                </span>
+              </div>
+              <div className={styles.cardBody}>
+                {pendingBatches.length > 0 ? (
+                  <div className={styles.batchTableContainer}>
+                    <table className={styles.batchTable}>
+                    <thead>
+                      <tr>
+                        <th>ID Lô</th>
+                        <th>Tổng CO₂ (kg)</th>
+                        <th>Tín chỉ Carbon</th>
+                        <th>Số Hành Trình</th>
+                        <th>Trạng Thái</th>
+                        <th>Thao Tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingBatches.map((batch) => (
+                        <tr key={batch.id}>
+                          <td>
+                            <span className={styles.batchId}>#{batch.id?.substring(0, 8) || 'N/A'}</span>
+                          </td>
+                          <td>
+                            <span className={styles.co2Amount}>
+                              {batch.totalCO2Reduced ? batch.totalCO2Reduced.toFixed(2) : '0.00'} kg
+                            </span>
+                          </td>
+                          <td>
+                            <span className={styles.co2Amount}>
+                              {batch.carbonCredits ? batch.carbonCredits.toFixed(2) : '0.00'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={styles.journeyCount}>
+                              <i className="bi bi-list-ol me-1"></i>
+                              {batch.journeyCount || 0}
+                            </span>
+                          </td>
+                          <td>
+                            <span 
+                              className={styles.statusBadge}
+                              style={{
+                                background: getStatusDisplay(batch.status).bg,
+                                color: getStatusDisplay(batch.status).color
+                              }}
+                            >
+                              {getStatusDisplay(batch.status).text}
+                            </span>
+                          </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                <button
+                                  className={`${styles.btnCustom}`}
+                                  style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)' }}
+                                  onClick={() => handleViewBatchDetails(batch)}
+                                >
+                                  <i className="bi bi-eye me-2"></i>Chi Tiết
+                                </button>
+                                <button
+                                  className={`${styles.btnCustom} ${styles.btnPrimaryCustom} ${styles.btnSm}`}
+                                  onClick={() => handleSubmitVerification(batch.id)}
+                                  disabled={submittingBatchId === batch.id}
+                                >
+                                  {submittingBatchId === batch.id ? (
+                                    <>
+                                      <span className="spinner-border spinner-border-sm me-2"></span>
+                                      Đang gửi...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <i className="bi bi-send me-2"></i>Gửi Xác Minh
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>
+                    <i className="bi bi-inbox"></i>
+                    <p>Chưa có lô nào đang chờ gửi. Hãy tải lên hành trình để tạo lô mới!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Tab 2: Lịch Sử Lô */}
+        {activeTab === 'history' && (
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h3 className={styles.cardTitle}>Lịch Sử Lô</h3>
+              <span className={styles.badge} style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}>
+                {historyBatches.length} lô
+              </span>
+            </div>
+            <div className={styles.cardBody}>
+              {historyBatches.length > 0 ? (
+                <div className={styles.batchTableContainer}>
+                  <table className={styles.batchTable}>
+                    <thead>
+                      <tr>
+                        <th>ID Lô</th>
+                        <th>Tổng CO₂ (kg)</th>
+                        <th>Tín chỉ Carbon</th>
+                        <th>Số Hành Trình</th>
+                        <th>Trạng Thái</th>
+                        <th>Thao Tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historyBatches.map((batch) => (
+                        <tr key={batch.id}>
+                          <td>
+                            <span className={styles.batchId}>#{batch.id?.substring(0, 8) || 'N/A'}</span>
+                          </td>
+                          <td>
+                            <span className={styles.co2Amount}>
+                              {batch.totalCO2Reduced ? batch.totalCO2Reduced.toFixed(2) : '0.00'} kg
+                            </span>
+                          </td>
+                          <td>
+                            <span className={styles.co2Amount}>
+                              {batch.carbonCredits ? batch.carbonCredits.toFixed(2) : '0.00'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={styles.journeyCount}>
+                              <i className="bi bi-list-ol me-1"></i>
+                              {batch.journeyCount || 0}
+                            </span>
+                          </td>
+                          <td>
+                            <span 
+                              className={styles.statusBadge}
+                              style={{
+                                background: getStatusDisplay(batch.status).bg,
+                                color: getStatusDisplay(batch.status).color
+                              }}
+                            >
+                              {getStatusDisplay(batch.status).text}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className={`${styles.btnCustom}`}
+                              style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)' }}
+                              onClick={() => handleViewBatchDetails(batch)}
+                            >
+                              <i className="bi bi-eye me-2"></i>Chi Tiết
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <i className="bi bi-clock-history"></i>
+                  <p>Chưa có lịch sử lô nào. Các lô đã gửi xác minh sẽ hiển thị ở đây.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Lịch Sử Hành Trình */}
+        {activeTab === 'journeys' && (
+          <>
+            {/* Upload Section */}
         <div className={styles.card} style={{ marginBottom: '20px' }}>
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Tải lên hành trình</h3>
@@ -306,7 +703,7 @@ const Trips = ({ showNotification: propShowNotification }) => {
                 className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
                 onClick={() => setShowJsonUpload(!showJsonUpload)}
               >
-                <i className="bi bi-code-square me-2"></i>Tải lên JSON
+                    <i className="bi bi-code-square me-2"></i>Tải lên Hành Trình Đơn Lẻ
               </button>
             </div>
             
@@ -447,25 +844,25 @@ const Trips = ({ showNotification: propShowNotification }) => {
         </div>
 
         {/* Batch Creation Section */}
-        {selectedTrips.length > 0 && (
-          <div className={`${styles.card} ${styles.createBatchSection}`} style={{ marginBottom: '20px' }}>
+            {selectedJourneys.length > 0 && (
+              <div className={styles.card} style={{ marginBottom: '20px' }}>
             <div className={styles.cardBody}>
               <div className={styles.createBatchTitle}>
-                Đã chọn {selectedTrips.length} hành trình
+                    Đã chọn {selectedJourneys.length} hành trình
               </div>
               <button 
                 className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
-                onClick={handleCreateBatch}
+                    onClick={handleCreateBatchFromJourneys}
                 disabled={isCreatingBatch}
               >
                 {isCreatingBatch ? (
                   <>
                     <span className="spinner-border spinner-border-sm me-2"></span>
-                    Đang tạo batch...
+                        Đang tạo lô...
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-box-seam me-2"></i>Tạo Batch
+                        <i className="bi bi-box-seam me-2"></i>Tạo Lô Hành Trình
                   </>
                 )}
               </button>
@@ -473,36 +870,36 @@ const Trips = ({ showNotification: propShowNotification }) => {
           </div>
         )}
         
-        {/* Tabs for History and Batch Selection */}
-        <div className={styles.card} data-aos="fade-up" data-aos-delay="500">
+            <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <div className={styles.tabContainer}>
-              <button
-                className={`${styles.tabButton} ${activeTab === 'history' ? styles.tabActive : ''}`}
-                onClick={() => setActiveTab('history')}
-              >
-                <i className="bi bi-clock-history me-2"></i>Lịch sử hành trình
-              </button>
-              <button
-                className={`${styles.tabButton} ${activeTab === 'batch' ? styles.tabActive : ''}`}
-                onClick={() => setActiveTab('batch')}
-              >
-                <i className="bi bi-box-seam me-2"></i>Danh sách hành trình (Chọn để tạo batch)
-              </button>
+                <h3 className={styles.cardTitle}>Lịch Sử Hành Trình</h3>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <span className={styles.badge} style={{ background: 'rgba(102, 126, 234, 0.2)', color: '#667eea' }}>
+                    {allJourneys.length} hành trình
+                  </span>
+                  {availableJourneysForBatch.length > 0 && (
+                    <span className={styles.badge} style={{ background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
+                      {availableJourneysForBatch.length} có thể tạo lô
+                    </span>
+                  )}
             </div>
-            <button 
-              className={`${styles.btnCustom} ${styles.btnPrimaryCustom} ${styles.btnSm}`}
-              onClick={loadTrips}
-            >
-              <i className="bi bi-arrow-clockwise me-2"></i>Làm mới
-            </button>
           </div>
           <div className={styles.cardBody}>
-            {activeTab === 'history' ? (
-              /* Lịch sử hành trình */
-              trips.length > 0 ? (
+              {allJourneys.length > 0 ? (
                 <div className={styles.timeline}>
-                  {Object.entries(tripsByDate).map(([date, dateTrips], dateIndex) => (
+                  {Object.entries(
+                    allJourneys.reduce((acc, trip) => {
+                      const dateKey = trip._startTimeObj 
+                        ? formatDate(trip._startTimeObj)
+                        : trip.date || 'Không xác định';
+                      
+                      if (!acc[dateKey]) {
+                        acc[dateKey] = [];
+                      }
+                      acc[dateKey].push(trip);
+                      return acc;
+                    }, {})
+                  ).map(([date, dateTrips], dateIndex) => (
                     <div key={date} className={styles.timelineGroup} data-aos="fade-up" data-aos-delay={dateIndex * 100}>
                       <div className={styles.timelineDate}>
                         <i className="bi bi-calendar-event me-2"></i>
@@ -510,11 +907,36 @@ const Trips = ({ showNotification: propShowNotification }) => {
                         <span className={styles.tripCount}>({dateTrips.length} hành trình)</span>
                       </div>
                       <div className={styles.timelineItems}>
-                        {dateTrips.map((trip, tripIndex) => (
-                          <div 
-                            key={trip.id || trip.journeyId || tripIndex} 
+                        {dateTrips.map((trip, tripIndex) => {
+                          // Use id (from EvJourneyResponseDto) as the primary identifier
+                          const tripId = trip.id || trip.journeyId;
+                          // Use tripIndex as fallback only for React key, not for API calls
+                          const tripKey = tripId || `trip-${tripIndex}`;
+                          const status = trip.status?.toLowerCase() || '';
+                          const canSelect = status === 'pending' || !trip.journeyBatchId || trip.journeyBatchId === '00000000-0000-0000-0000-000000000000';
+                          const isSelected = tripId && selectedJourneys.includes(tripId);
+                          
+                          return (
+                            <div 
+                              key={tripKey} 
                             className={styles.timelineItem}
-                          >
+                              style={isSelected ? { border: '2px solid var(--ev-owner-color)', borderRadius: '12px' } : {}}
+                            >
+                              {canSelect && tripId && (
+                                <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleToggleJourneySelection(tripId)}
+                                    style={{ 
+                                      width: '20px', 
+                                      height: '20px', 
+                                      cursor: 'pointer',
+                                      accentColor: 'var(--ev-owner-color)'
+                                    }}
+                                  />
+                                </div>
+                              )}
                             <div className={styles.timelineMarker}>
                               <i className="bi bi-circle-fill"></i>
                             </div>
@@ -524,9 +946,8 @@ const Trips = ({ showNotification: propShowNotification }) => {
                                   <i className="bi bi-clock me-1"></i>
                                   {trip.startTime} - {trip.endTime}
                                 </div>
-                                <div className={`${styles.timelineStatus} ${styles[trip.status?.toLowerCase()] || styles.completed}`}>
+                                  <div className={`${styles.timelineStatus} ${styles[status] || styles.completed}`}>
                                   {(() => {
-                                    const status = trip.status?.toLowerCase() || 'completed';
                                     switch(status) {
                                       case 'completed':
                                         return 'Đã hoàn thành';
@@ -569,59 +990,74 @@ const Trips = ({ showNotification: propShowNotification }) => {
                                   <span>{trip.vehicleType || 'N/A'}</span>
                                 </div>
                               </div>
+                              {tripId && (
+                                <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
+                                  <button
+                                    className={`${styles.btnCustom}`}
+                                    style={{ 
+                                      background: 'rgba(102, 126, 234, 0.2)', 
+                                      color: 'var(--ev-owner-color)',
+                                      fontSize: '0.85rem',
+                                      padding: '6px 12px'
+                                    }}
+                                    onClick={() => handleViewJourneyDetails(tripId)}
+                                  >
+                                    <i className="bi bi-eye me-1"></i>Xem Chi Tiết
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className={styles.emptyState}>
-                  <i className="bi bi-clock-history"></i>
+                  <i className="bi bi-map"></i>
                   <p>Chưa có lịch sử hành trình nào. Hãy tải lên hành trình đầu tiên của bạn!</p>
                 </div>
-              )
-            ) : (
-              /* Danh sách hành trình để chọn tạo batch */
-              availableTripsForBatch.length > 0 ? (
-                <div className={styles.tripList}>
-                  {availableTripsForBatch.map((trip) => (
-                    <div key={trip.id || trip.journeyId} style={{ marginBottom: '15px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                        <input
-                          type="checkbox"
-                          checked={selectedTrips.includes(trip.id || trip.journeyId)}
-                          onChange={() => handleToggleTripSelection(trip.id || trip.journeyId)}
-                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                        />
-                        <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                          Chọn để tạo batch
-                        </span>
-                      </div>
-                      <TripCard
-                        trip={trip}
-                        onViewDetails={() => {}}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className={styles.emptyState}>
-                  <i className="bi bi-box-seam"></i>
-                  <p>Không còn hành trình nào có thể chọn để tạo batch. Tất cả hành trình đã được thêm vào batch hoặc chưa có hành trình nào.</p>
-                </div>
-              )
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
       
       {/* Upload File Modal */}
       <UploadJourneyModal
         show={showUploadModal}
         onClose={() => setShowUploadModal(false)}
-        onUploadSuccess={loadTrips}
+        onUploadSuccess={async () => {
+          await loadBatches();
+          await loadJourneys();
+        }}
+      />
+
+      {/* Batch Details Modal */}
+      <BatchDetailsModal
+        show={showBatchDetails}
+        onClose={() => {
+          setShowBatchDetails(false);
+          setSelectedBatch(null);
+        }}
+        batch={selectedBatch}
+      />
+
+      {/* Journey Details Modal */}
+      <TripDetailModal
+        show={showJourneyDetails}
+        onClose={() => {
+          setShowJourneyDetails(false);
+          setSelectedJourneyId(null);
+        }}
+        journeyId={selectedJourneyId}
+        onExportReport={() => {
+          // TODO: Implement export report functionality
+          showNotification('Chức năng xuất báo cáo đang được phát triển', 'info');
+        }}
       />
     </div>
   );

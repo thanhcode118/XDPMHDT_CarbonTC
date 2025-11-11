@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CarbonTC.CarbonLifecycle.Domain.Entities;
+using CarbonTC.CarbonLifecycle.Domain.Enums;
 
 public interface IVerificationRequestRepository
 {
@@ -24,5 +25,14 @@ public interface IVerificationRequestRepository
     /// <param name="pageSize">Số lượng mục trên mỗi trang.</param>
     /// <returns>Tuple chứa danh sách các request trên trang và tổng số lượng request đang chờ.</returns>
     Task<(IEnumerable<VerificationRequest> Items, int TotalCount)> GetPendingWithPaginationAsync(int pageNumber, int pageSize);
+
+    /// <summary>
+    /// Lấy các yêu cầu theo status với phân trang.
+    /// </summary>
+    /// <param name="status">Status của request (Pending, Approved, Rejected, InProgress).</param>
+    /// <param name="pageNumber">Số trang (bắt đầu từ 1).</param>
+    /// <param name="pageSize">Số lượng mục trên mỗi trang.</param>
+    /// <returns>Tuple chứa danh sách các request trên trang và tổng số lượng request.</returns>
+    Task<(IEnumerable<VerificationRequest> Items, int TotalCount)> GetByStatusWithPaginationAsync(VerificationRequestStatus status, int pageNumber, int pageSize);
 
 }

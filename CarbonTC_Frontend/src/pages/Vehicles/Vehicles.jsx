@@ -61,9 +61,16 @@ const getVehicleImage = (vehicleType) => {
     'etron': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&h=400&fit=crop&auto=format',
     
     // Nissan
-    'nissan-leaf': 'https://images.unsplash.com/photo-1621007947382-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
-    'nissan': 'https://images.unsplash.com/photo-1621007947382-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
-    'leaf': 'https://images.unsplash.com/photo-1621007947382-bd46c24f2068?w=600&h=400&fit=crop&auto=format',
+    'nissan-leaf': 'https://www.dutchmillernissanofwytheville.com/static/dealer-22686/2024-nissan-leaf-cruising.png',
+    'nissan': 'https://www.dutchmillernissanofwytheville.com/static/dealer-22686/2024-nissan-leaf-cruising.png',
+    'leaf': 'https://www.dutchmillernissanofwytheville.com/static/dealer-22686/2024-nissan-leaf-cruising.png',
+    
+    // BYD
+    'byd-atto3': 'https://cdn.motor1.com/images/mgl/7ZLbZV/s3/byd-atto-3-austrlia.webp',
+    'byd-atto': 'https://cdn.motor1.com/images/mgl/7ZLbZV/s3/byd-atto-3-austrlia.webp',
+    'byd': 'https://cdn.motor1.com/images/mgl/7ZLbZV/s3/byd-atto-3-austrlia.webp',
+    'atto3': 'https://cdn.motor1.com/images/mgl/7ZLbZV/s3/byd-atto-3-austrlia.webp',
+    'atto': 'https://cdn.motor1.com/images/mgl/7ZLbZV/s3/byd-atto-3-austrlia.webp',
   };
   
   // First check for exact match (case-insensitive)
