@@ -78,14 +78,15 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
         }
 
         /// <summary>
-        /// Phát hành tín chỉ carbon
-        /// - EVOwner: Có thể phát hành từ batch đã được verified của mình (cần JourneyBatchId)
+        /// Phát hành tín chỉ carbon thủ công (bypass/sửa lỗi)
+        /// - CVA: Có thể phát hành thủ công để xử lý ngoại lệ
         /// - Admin: Có thể phát hành trực tiếp cho bất kỳ user nào (bypass verification)
+        /// - EVOwner: KHÔNG được phép gọi endpoint này (chỉ được phát hành qua luồng tự động khi CVA duyệt)
         /// </summary>
         /// <param name="issueDto">Thông tin để phát hành tín chỉ carbon</param>
         /// <returns>Tín chỉ carbon đã được phát hành</returns>
         [HttpPost("issue")]
-        [Authorize(Roles = "EVOwner,Admin")] // EVOwner và Admin có thể phát hành
+        [Authorize(Roles = "CVA,Admin")] // Chỉ CVA và Admin có thể phát hành thủ công (bypass/sửa lỗi)
         [ProducesResponseType(typeof(ApiResponse<CarbonCreditDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

@@ -51,7 +51,9 @@ namespace CarbonTC.CarbonLifecycle.Application.Mappings
                                ? src.CarbonCredits.Sum(cc => cc.AmountKgCO2e) 
                                : src.TotalCO2SavedKg))
 
-
+                // Ánh xạ CreationTime (Entity) sang CreationTime (DTO)
+                .ForMember(dest => dest.CreationTime,
+                           opt => opt.MapFrom(src => src.CreationTime))
 
                 // Chuyển Enum (Entity) sang string (DTO)
                 .ForMember(dest => dest.Status,

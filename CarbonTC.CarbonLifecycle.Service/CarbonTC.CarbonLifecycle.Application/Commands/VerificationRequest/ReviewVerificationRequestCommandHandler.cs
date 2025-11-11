@@ -174,27 +174,40 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
 
                 if (newCredit != null)
                 {
-                    // 1. Gửi CreditIssuedIntegrationEvent (Service Payment)
-                    var creditIssuedEvent = new CreditIssuedIntegrationEvent
+                    try
                     {
-                        OwnerUserId = newCredit.UserId,
-                        CreditAmount = newCredit.AmountKgCO2e,
-                        ReferenceId = verificationRequest.JourneyBatchId.ToString(), // Dùng Batch ID làm Reference
-                        IssuedAt = new DateTimeOffset(newCredit.IssueDate, TimeSpan.Zero),
-                    };
-                    // Routing Key: credit.issued
-                    _ = _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit.issued");
+                        // 1. Gửi CreditIssuedIntegrationEvent (Service Payment & Infrastructure)
+                        var creditIssuedEvent = new CreditIssuedIntegrationEvent
+                        {
+                            OwnerUserId = newCredit.UserId,
+                            CreditAmount = newCredit.AmountKgCO2e,
+                            ReferenceId = verificationRequest.JourneyBatchId.ToString(), // Dùng Batch ID làm Reference
+                            IssuedAt = new DateTimeOffset(newCredit.IssueDate, TimeSpan.Zero),
+                        };
+                        // Routing Key: credit.issued
+                        await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit.issued");
+                        _logger.LogInformation("Published CreditIssuedIntegrationEvent for Credit ID: {CreditId}, UserId: {UserId}, Amount: {Amount}",
+                            newCredit.Id, newCredit.UserId, newCredit.AmountKgCO2e);
 
-                    // 2. Gửi CreditInventoryUpdateIntegrationEvent (Service Marketplace/Trading)
-                    var inventoryUpdateEvent = new CreditInventoryUpdateIntegrationEvent
+                        // 2. Gửi CreditInventoryUpdateIntegrationEvent (Service Marketplace/Trading)
+                        var inventoryUpdateEvent = new CreditInventoryUpdateIntegrationEvent
+                        {
+                            CreditId = newCredit.Id,
+                            TotalAmount = newCredit.AmountKgCO2e,
+                        };
+                        // Routing Key: credit.inventory.update
+                        await _messagePublisher.PublishIntegrationEventAsync(inventoryUpdateEvent, "credit.inventory.update");
+                        _logger.LogInformation("Published CreditInventoryUpdateIntegrationEvent for Credit ID: {CreditId}, TotalAmount: {Amount}",
+                            newCredit.Id, newCredit.AmountKgCO2e);
+
+                        _logger.LogInformation("Integration events published successfully for Credit ID: {CreditId}", newCredit.Id);
+                    }
+                    catch (Exception ex)
                     {
-                        CreditId = newCredit.Id,
-                        TotalAmount = newCredit.AmountKgCO2e,
-                    };
-                    // Routing Key: credit.inventory.update
-                    _ = _messagePublisher.PublishIntegrationEventAsync(inventoryUpdateEvent, "credit.inventory.update"); 
-
-                    _logger.LogInformation("Integration events published successfully for Credit ID: {CreditId}", newCredit.Id);
+                        // Log lỗi nhưng không fail toàn bộ operation vì credit đã được tạo và lưu vào DB
+                        _logger.LogError(ex, "Error publishing integration events for Credit ID: {CreditId} after verification approval. Credit was created successfully but events may not have been sent.",
+                            newCredit.Id);
+                    }
                 }
                 else
                 {
