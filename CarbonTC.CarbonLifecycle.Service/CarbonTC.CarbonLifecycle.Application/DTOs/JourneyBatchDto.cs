@@ -20,6 +20,7 @@ namespace CarbonTC.CarbonLifecycle.Application.DTOs
 
         public decimal TotalCarbonCredits { get; set; } // <-- Đổi sang decimal
         public string Status { get; set; }
+        public DateTime CreationTime { get; set; } // Thêm trường ngày tạo
         public List<EvJourneyResponseDto> Journeys { get; set; } = new List<EvJourneyResponseDto>();
     }
 }

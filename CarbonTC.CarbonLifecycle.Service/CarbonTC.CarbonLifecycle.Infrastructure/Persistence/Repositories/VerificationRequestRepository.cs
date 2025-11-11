@@ -108,6 +108,24 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
             return (items, totalCount);
         }
 
+        public async Task<(IEnumerable<VerificationRequest>, int)> GetByStatusWithPaginationAsync(VerificationRequestStatus status, int pageNumber, int pageSize)
+        {
+            _logger.LogInformation("Fetching VerificationRequests with status {Status} - Page: {PageNumber}, Size: {PageSize}", status, pageNumber, pageSize);
+
+            var query = _context.VerificationRequests
+                .Where(vr => vr.Status == status);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(vr => vr.VerificationDate ?? vr.RequestDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         
     }
 }

@@ -57,17 +57,24 @@ namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
                 // 3. Gửi 2 sự kiện MỚI này qua IMessagePublisher
                 // Sử dụng PublishIntegrationEventAsync vì các events này không còn implement IDomainEvent
                 await _messagePublisher.PublishIntegrationEventAsync(walletEvent, "credit.issued");
+                _logger.LogInformation(
+                    "Published CreditIssuedIntegrationEvent for BatchId: {BatchId}, UserId: {UserId}, Amount: {Amount}, ReferenceId: {ReferenceId}",
+                    domainEvent.JourneyBatchId, walletEvent.OwnerUserId, walletEvent.CreditAmount, walletEvent.ReferenceId);
+
                 await _messagePublisher.PublishIntegrationEventAsync(marketplaceEvent, "credit.inventory.update");
+                _logger.LogInformation(
+                    "Published CreditInventoryUpdateIntegrationEvent for BatchId: {BatchId}, CreditId: {CreditId}, TotalAmount: {Amount}",
+                    domainEvent.JourneyBatchId, marketplaceEvent.CreditId, marketplaceEvent.TotalAmount);
 
                 _logger.LogInformation(
-                    "Đã gửi thành công 2 Integration Events cho BatchId: {BatchId}",
-                    domainEvent.JourneyBatchId);
+                    "Successfully published 2 Integration Events for BatchId: {BatchId}, CreditId: {CreditId}",
+                    domainEvent.JourneyBatchId, domainEvent.CreditId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Lỗi khi gửi Integration Events cho BatchId: {BatchId}",
-                    domainEvent.JourneyBatchId);
+                    "Error publishing Integration Events for BatchId: {BatchId}, CreditId: {CreditId}. Events may not have been sent.",
+                    domainEvent.JourneyBatchId, domainEvent.CreditId);
             }
         }
     }
