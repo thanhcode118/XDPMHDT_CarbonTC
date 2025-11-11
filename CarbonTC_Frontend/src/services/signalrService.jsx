@@ -14,7 +14,7 @@ const createConnection = () => {
     }
 
 
-    const connectionUrl = `https://localhost:5003/hubs/auction?access_token=${token}`;
+    const connectionUrl = `http://localhost:7000/hubs/auction?access_token=${token}`;
 
     const newConnection = new signalR.HubConnectionBuilder()
         .withUrl(connectionUrl, {

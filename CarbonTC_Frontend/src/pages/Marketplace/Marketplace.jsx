@@ -26,7 +26,8 @@ import {
   getCreditInventory, 
   createListing,
   buyListing,
-  placeBid  
+  placeBid,
+  getUserCredits
 } from '../../services/listingService';
 
 import { 
@@ -729,95 +730,87 @@ const handleBidSubmit = async (bidData) => {
   }, [editingListingId, isEditModalOpen]);
 
   useEffect(() => {
-    setCurrentInventory(null);
-    setInventoryError(null);
-    
-    if (selectedCreditId) {
-      const fetchInventory = async () => {
-        setIsInventoryLoading(true);
+    if (activeTab === 'sell' || activeTab === 'auction') {
+      const fetchUserCredits = async () => {
+        setIsCreditsLoading(true);
+        setCreditsError(null);
         try {
-          const response = await getCreditInventory(selectedCreditId);
-          if (response.data && response.data.success) {
-            setCurrentInventory(response.data.data); 
+          const userId = getUserIdFromToken(); 
+          if (!userId) {
+            throw new Error("Không tìm thấy User ID. Vui lòng đăng nhập lại.");
+          }
+
+          const response = await getUserCredits(userId); 
+
+          if (response.data && response.data.success && Array.isArray(response.data.data)) {
+            const mappedData = response.data.data.map(apiCredit => {
+              // Hàm nội tuyến để map status
+              const getCreditStatus = (status) => {
+                return status === 1 ? "Verified" : "Pending"; 
+              };
+              
+              const getVintage = (dateString) => {
+                try {
+                  return new Date(dateString).getFullYear();
+                } catch (e) {
+                  return null; 
+                }
+              };
+
+              return {
+                creditId: apiCredit.id,
+                ownerId: apiCredit.userId,
+                issuedByCVA: null, // API response không có
+                requestId: apiCredit.verificationRequestId || apiCredit.journeyBatchId, // Ưu tiên verificationRequestId
+                amount: apiCredit.amountKgCO2e, // Map từ amountKgCO2e
+                status: getCreditStatus(apiCredit.status), // Map từ status: 1
+                creditType: "Carbon Credit", // API không có, dùng giá trị mặc định
+                vintage: getVintage(apiCredit.issueDate), // Lấy năm từ issueDate
+                creditSerialNumber: apiCredit.transactionHash, // Dùng transactionHash
+                expiryDate: apiCredit.expiryDate,
+                issuedAt: apiCredit.issueDate,
+                createdAt: apiCredit.issueDate, // API không có createdAt, dùng tạm issueDate
+              };
+            });
+            setAvailableCredits(mappedData);
+            console.log(mappedData);
           } else {
-            setInventoryError(response.data.message || "Không thể lấy tồn kho.");
+            throw new Error(response.data.message || "Không thể tải danh sách tín chỉ.");
           }
         } catch (err) {
-          setInventoryError(err.message || "Lỗi server.");
+          console.error("Error fetching user credits:", err); // Thêm log
+          setCreditsError(`Không thể tải danh sách tín chỉ. ${err.message || "Lỗi không xác định."}`);
         } finally {
-          setIsInventoryLoading(false);
+          setIsCreditsLoading(false);
         }
       };
-      fetchInventory();
-    }
-  }, [selectedCreditId]);
 
-  useEffect(() => {
-    if (activeTab === 'sell' || activeTab === 'auction') {
-      setIsCreditsLoading(true);
-      setCreditsError(null);
-      try {
-        const MOCK_DATA = [
-          {
-            creditId: "a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
-            ownerId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            issuedByCVA: "cva-guid-123",
-            requestId: "request-guid-456",
-            amount: 150.75,
-            status: "Verified",
-            creditType: "Reforestation",
-            vintage: 2024,
-            creditSerialNumber: "VCS-2024-12345-XYZ",
-            expiryDate: "2034-10-27T00:00:00Z",
-            issuedAt: "2024-10-27T00:00:00Z",
-            createdAt: "2024-10-20T03:52:43Z"
-          },
-          {
-            creditId: "c7d8e9f0-a1b2-c3d4-e5f6-a7b8c9d0e1f2",
-            ownerId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            issuedByCVA: "cva-guid-123",
-            requestId: "request-guid-789",
-            amount: 500,
-            status: "Verified",
-            creditType: "Solar Energy", 
-            vintage: 2023,
-            creditSerialNumber: "VCS-2023-54321-ABC",
-            expiryDate: "2033-05-10T00:00:00Z",
-            issuedAt: "2023-05-10T00:00:00Z",
-            createdAt: "2023-05-01T10:00:00Z"
-          }
-        ];
-        setAvailableCredits(MOCK_DATA);
-      } catch (err) {
-        setCreditsError(`Không thể tải danh sách tín chỉ. ${err.message || "Lỗi không xác định."}`);
-      } finally {
-        setIsCreditsLoading(false);
-      }
+      fetchUserCredits(); // Gọi hàm async
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    setCurrentInventory(null);
-    setInventoryError(null);
-    if (selectedCreditId) {
-      const fetchInventory = async () => {
-        setIsInventoryLoading(true);
-        try {
-          const response = await getCreditInventory(selectedCreditId);
-          if (response.data && response.data.success) {
-            setCurrentInventory(response.data.data);
-          } else {
-            setInventoryError(response.data.message || "Không thể lấy tồn kho.");
-          }
-        } catch (err) {
-          setInventoryError(err.message || "Lỗi server.");
-        } finally {
-          setIsInventoryLoading(false);
-        }
-      };
-      fetchInventory();
-    }
-  }, [selectedCreditId]);
+  // useEffect(() => {
+  //   setCurrentInventory(null);
+  //   setInventoryError(null);
+  //   if (selectedCreditId) {
+  //     const fetchInventory = async () => {
+  //       setIsInventoryLoading(true);
+  //       try {
+  //         const response = await getCreditInventory(selectedCreditId);
+  //         if (response.data && response.data.success) {
+  //           setCurrentInventory(response.data.data);
+  //         } else {
+  //           setInventoryError(response.data.message || "Không thể lấy tồn kho.");
+  //         }
+  //       } catch (err) {
+  //         setInventoryError(err.message || "Lỗi server.");
+  //       } finally {
+  //         setIsInventoryLoading(false);
+  //       }
+  //     };
+  //     fetchInventory();
+  //   }
+  // }, [selectedCreditId]);
 
   const handleCloseModal = () => {
     setIsEditModalOpen(false);

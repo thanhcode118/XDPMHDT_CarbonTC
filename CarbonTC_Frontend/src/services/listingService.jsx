@@ -1,7 +1,7 @@
 import apiClientPD from './apiClientPD.jsx';
 
 export const getUserIdFromToken = () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("userToken");
     if (!token) return null;
 
     try {
@@ -156,4 +156,13 @@ export const getTransactionChartData = (period) => {
   return apiClientPD.get('/transactions/summary/chart', { 
     params: { period } 
   });
+};
+
+/**
+ * Lấy danh sách tín chỉ (credits) của một người dùng cụ thể
+ * @param {string} userId - ID của người dùng (từ token hoặc ID khác)
+ */
+export const getUserCredits = (userId) => {
+  // Sẽ gọi đến [BASE_URL]/api/CarbonCredits/user/{userId}
+  return apiClientPD.get(`/CarbonCredits/user/${userId}`);
 };

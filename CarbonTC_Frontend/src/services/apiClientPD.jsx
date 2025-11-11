@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClientPD = axios.create({
-  baseURL: 'https://localhost:5003/api', // Base URL của API
+  baseURL: 'http://localhost:7000/api', // Base URL của API
   headers: {
     'Content-Type': 'application/json',
     'accept': '*/*'

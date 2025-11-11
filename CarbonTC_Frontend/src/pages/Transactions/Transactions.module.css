@@ -6,6 +6,8 @@
   margin-left: var(--sidebar-width);
   padding: 30px;
   min-height: 100vh;
+  background: var(--dark-bg);
+  color: var(--text-primary);
 }
 
 .mobileToggle {
