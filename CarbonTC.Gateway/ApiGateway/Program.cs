@@ -23,6 +23,23 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOcelot(builder.Configuration);
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 
+var allowedOrigins = builder.Configuration
+    .GetSection("Frontend:AllowedOrigins")
+    .Get<string[]>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy
+                .WithOrigins(allowedOrigins ?? Array.Empty<string>())
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+});
+
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //    .AddJwtBearer("JwtBearer", options =>
 //    {
@@ -51,6 +68,8 @@ if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docke
         opt.PathToSwaggerGenerator = "/swagger/docs";
     });
 }
+
+app.UseCors("AllowFrontend");
 
 //app.UseHttpsRedirection();
 

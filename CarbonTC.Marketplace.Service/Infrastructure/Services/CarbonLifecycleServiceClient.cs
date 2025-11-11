@@ -26,7 +26,7 @@ namespace Infrastructure.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"/api/carbon-lifecycle/cva-standards?creditId={creditId}", cancellationToken);
+                var response = await _httpClient.GetAsync($"/api/CarbonCredits/{creditId}/standard", cancellationToken);
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync(cancellationToken);
