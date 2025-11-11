@@ -53,11 +53,16 @@ namespace CarbonTC.API
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
             });
 
+
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:SignalRPolicy:AllowedOrigins")
+                .Get<string[]>() ?? new[] { "http://localhost:5173" };
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("SignalRPolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173") 
+                    policy.WithOrigins(allowedOrigins) 
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials(); 

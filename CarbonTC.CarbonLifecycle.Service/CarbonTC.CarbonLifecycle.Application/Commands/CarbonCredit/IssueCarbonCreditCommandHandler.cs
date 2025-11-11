@@ -62,10 +62,11 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
 
             // Kiểm tra role của user
             var isAdmin = _identityService.IsInRole("Admin");
+            var isCVA = _identityService.IsInRole("CVA");
             var isEVOwner = _identityService.IsInRole("EVOwner");
 
-            _logger.LogInformation("Processing carbon credit issuance. CurrentUserId: {CurrentUserId}, IsAdmin: {IsAdmin}, IsEVOwner: {IsEVOwner}",
-                currentUserId, isAdmin, isEVOwner);
+            _logger.LogInformation("Processing carbon credit issuance. CurrentUserId: {CurrentUserId}, IsAdmin: {IsAdmin}, IsCVA: {IsCVA}, IsEVOwner: {IsEVOwner}",
+                currentUserId, isAdmin, isCVA, isEVOwner);
 
             // Xác định userId để phát hành credit
             var userId = issueData.UserId;
@@ -77,10 +78,10 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
             }
             else
             {
-                // Nếu có userId trong request, chỉ Admin mới được phát hành cho user khác
-                if (!isAdmin && userId != currentUserId)
+                // Nếu có userId trong request, chỉ Admin và CVA mới được phát hành cho user khác
+                if (!isAdmin && !isCVA && userId != currentUserId)
                 {
-                    throw new UnauthorizedAccessException("Only Admin can issue credits for other users. EVOwner can only issue credits for themselves.");
+                    throw new UnauthorizedAccessException("Only Admin and CVA can issue credits for other users.");
                 }
             }
 
@@ -101,7 +102,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
                 }
 
                 // Kiểm tra quyền sở hữu: EVOwner chỉ có thể phát hành từ batch của chính họ
-                if (isEVOwner && !isAdmin && batch.UserId != currentUserId)
+                // CVA và Admin có thể phát hành từ batch của bất kỳ user nào
+                if (isEVOwner && !isAdmin && !isCVA && batch.UserId != currentUserId)
                 {
                     throw new UnauthorizedAccessException(
                         $"You can only issue credits from your own batches. This batch belongs to user: {batch.UserId}.");
@@ -114,8 +116,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
                         $"Cannot issue credit for batch in status {batch.Status}. Batch must be Verified or CreditsIssued.");
                 }
 
-                // Đảm bảo userId khớp với batch owner (nếu không phải Admin)
-                if (!isAdmin && batch.UserId != userId)
+                // Đảm bảo userId khớp với batch owner (nếu không phải Admin hoặc CVA)
+                if (!isAdmin && !isCVA && batch.UserId != userId)
                 {
                     throw new UnauthorizedAccessException(
                         $"UserId {userId} does not match the batch owner {batch.UserId}.");
@@ -126,14 +128,15 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
             else
             {
                 // Nếu không có JourneyBatchId
-                if (isEVOwner && !isAdmin)
+                if (isEVOwner && !isAdmin && !isCVA)
                 {
                     // EVOwner phải có JourneyBatchId để phát hành từ batch đã verified
+                    // CVA và Admin có thể tạo batch mới để phát hành trực tiếp
                     throw new ArgumentException("JourneyBatchId is required for EVOwner. You can only issue credits from verified batches.");
                 }
 
-                // Admin có thể tạo batch mới để phát hành trực tiếp
-                _logger.LogInformation("No JourneyBatchId provided. Creating a new batch for direct credit issuance (Admin only).");
+                // Admin và CVA có thể tạo batch mới để phát hành trực tiếp
+                _logger.LogInformation("No JourneyBatchId provided. Creating a new batch for direct credit issuance (Admin/CVA only).");
                 batch = DomainEntities.JourneyBatch.Create(userId);
                 await _journeyBatchRepository.AddAsync(batch);
                 journeyBatchId = batch.Id;
@@ -193,6 +196,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
                 };
 
                 await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit.issued");
+                _logger.LogInformation("Published CreditIssuedIntegrationEvent for Credit ID: {CreditId}, UserId: {UserId}, Amount: {Amount}, ReferenceId: {ReferenceId}",
+                    newCarbonCredit.Id, newCarbonCredit.UserId, newCarbonCredit.AmountKgCO2e, referenceId);
 
                 // 2. Gửi CreditInventoryUpdateIntegrationEvent (Service Marketplace/Trading)
                 var inventoryUpdateEvent = new CreditInventoryUpdateIntegrationEvent
@@ -202,13 +207,16 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
                 };
 
                 await _messagePublisher.PublishIntegrationEventAsync(inventoryUpdateEvent, "credit.inventory.update");
+                _logger.LogInformation("Published CreditInventoryUpdateIntegrationEvent for Credit ID: {CreditId}, TotalAmount: {Amount}",
+                    newCarbonCredit.Id, newCarbonCredit.AmountKgCO2e);
 
                 _logger.LogInformation("Integration events published successfully for Credit ID: {CreditId}", newCarbonCredit.Id);
             }
             catch (Exception ex)
             {
-                // Log lỗi nhưng không fail toàn bộ operation vì credit đã được tạo
-                _logger.LogError(ex, "Error publishing integration events for Credit ID: {CreditId}", newCarbonCredit.Id);
+                // Log lỗi nhưng không fail toàn bộ operation vì credit đã được tạo và lưu vào DB
+                _logger.LogError(ex, "Error publishing integration events for Credit ID: {CreditId}. Credit was created successfully but events may not have been sent.",
+                    newCarbonCredit.Id);
             }
 
             // Map và trả về DTO

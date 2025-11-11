@@ -90,6 +90,56 @@ export const getVerificationRequestById = async (id) => {
 };
 
 /**
+ * Get all CVA standards
+ * GET /api/cva-standards?isActive=true
+ * @param {boolean} isActive - Filter by active status (optional)
+ */
+export const getCvaStandards = async (isActive = true) => {
+  try {
+    const response = await apiClientTH.get('/cva-standards', {
+      params: {
+        isActive: isActive
+      }
+    });
+    return {
+      success: response.data.success || true,
+      data: response.data.data || response.data,
+      message: response.data.message || 'CVA standards retrieved successfully'
+    };
+  } catch (error) {
+    console.error('Error fetching CVA standards:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get verification requests by status (with pagination)
+ * GET /api/VerificationRequests/by-status?status=1&PageNumber=1&PageSize=10
+ * @param {number} status - Status (0=Pending, 1=Approved, 2=Rejected, 3=InProgress)
+ * @param {number} pageNumber - Page number (default: 1)
+ * @param {number} pageSize - Page size (default: 10)
+ */
+export const getRequestsByStatus = async (status, pageNumber = 1, pageSize = 10) => {
+  try {
+    const response = await apiClientTH.get('/VerificationRequests/by-status', {
+      params: {
+        status: status,
+        PageNumber: pageNumber,
+        PageSize: pageSize
+      }
+    });
+    return {
+      success: response.data.success || true,
+      data: response.data.data || response.data,
+      message: response.data.message || 'Verification requests retrieved successfully'
+    };
+  } catch (error) {
+    console.error('Error fetching verification requests by status:', error);
+    throw error;
+  }
+};
+
+/**
  * Review (approve/reject) a verification request (CVA)
  * POST /api/VerificationRequests/review
  * @param {Object} reviewData - Review data containing:

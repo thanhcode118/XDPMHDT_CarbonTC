@@ -3,6 +3,7 @@ using CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest;
 using CarbonTC.CarbonLifecycle.Application.Common;
 using CarbonTC.CarbonLifecycle.Application.Queries.VerificationRequest;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
+using CarbonTC.CarbonLifecycle.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -143,6 +144,46 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             PagedResult<VerificationRequestSummaryDto> result = await Mediator.Send(query);
             // Trả về ApiResponse chứa PagedResult
             return Ok(ApiResponse<PagedResult<VerificationRequestSummaryDto>>.SuccessResponse(result, $"Found {result.TotalCount} pending requests."));
+        }
+
+        /// <summary>
+        /// Lấy danh sách các yêu cầu xác minh theo status (Approved, Rejected, etc.) cho CVA.
+        /// Hỗ trợ phân trang.
+        /// </summary>
+        /// <param name="status">Status của request (0=Pending, 1=Approved, 2=Rejected, 3=InProgress).</param>
+        /// <param name="pageNumber">Số trang (default: 1).</param>
+        /// <param name="pageSize">Số lượng mục trên mỗi trang (default: 10).</param>
+        /// <returns>Danh sách các yêu cầu theo status dạng tóm tắt.</returns>
+        [HttpGet("by-status")]
+        [Authorize(Roles = "CVA")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<VerificationRequestSummaryDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetRequestsByStatus([FromQuery] int status, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            _logger.LogInformation("Fetching verification requests with status {Status} for CVA. Page: {Page}, Size: {Size}", status, pageNumber, pageSize);
+            
+            if (!Enum.IsDefined(typeof(VerificationRequestStatus), status))
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse("Invalid status value."));
+            }
+
+            var query = new GetVerificationRequestsByStatusQuery
+            {
+                Status = (VerificationRequestStatus)status,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse("Invalid pagination parameters.",
+                   ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()));
+            }
+
+            var result = await Mediator.Send(query);
+            return Ok(ApiResponse<PagedResult<VerificationRequestSummaryDto>>.SuccessResponse(result, $"Found {result.TotalCount} requests with status {status}."));
         }
 
         /// <summary>
