@@ -216,6 +216,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
             }
 
             // 5. Ghi Audit Log (sau khi SaveChanges thành công)
+            // Sử dụng entity đã được tracked thay vì query lại để tránh DbContext threading issues
             var newValuesJson = JsonSerializer.Serialize(new { verificationRequest.Status, verificationRequest.Notes });
             var auditCommand = new CreateAuditReportCommand(new AuditReportCreateDto
             {
@@ -225,14 +226,21 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
                 OriginalValuesJson = originalValuesJson,
                 NewValuesJson = newValuesJson
             });
-            // Gửi command để tạo audit report (không cần await nếu không bắt buộc phải hoàn thành ngay)
-            _ = _mediator.Send(auditCommand, cancellationToken);
+            
+            // Await audit command để tránh DbContext threading issues
+            // Nếu audit fail, log nhưng không fail toàn bộ operation
+            try
+            {
+                await _mediator.Send(auditCommand, cancellationToken);
+            }
+            catch (Exception auditEx)
+            {
+                _logger.LogWarning(auditEx, "Failed to create audit report for VerificationRequest {VerificationRequestId}. Review operation completed successfully.", verificationRequest.Id);
+            }
 
-
-            // 6. Map kết quả trả về (lấy lại entity đã cập nhật nếu cần)
-            // Lấy lại để đảm bảo có trạng thái mới nhất và các quan hệ (nếu mapper cần)
-            var updatedVerificationRequest = await _verificationRequestRepository.GetByIdAsync(verificationRequest.Id);
-            return _mapper.Map<VerificationRequestDto>(updatedVerificationRequest);
+            // 6. Map kết quả trả về
+            // Sử dụng entity đã được tracked thay vì query lại để tránh DbContext threading issues
+            return _mapper.Map<VerificationRequestDto>(verificationRequest);
         }
     }
 }

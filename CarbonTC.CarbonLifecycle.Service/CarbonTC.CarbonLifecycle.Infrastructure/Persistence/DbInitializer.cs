@@ -14,25 +14,16 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
             // 1. Áp dụng các Migration (nếu cần)
             await context.Database.MigrateAsync();
 
-            // 2. XÓA TẤT CẢ DỮ LIỆU HIỆN CÓ (theo thứ tự để tránh foreign key constraint)
-            // Xóa theo thứ tự: AuditReports -> CarbonCredits -> VerificationRequests -> EVJourneys -> JourneyBatches -> CVAStandards
-            context.AuditReports.RemoveRange(context.AuditReports);
-            await context.SaveChangesAsync();
-            
-            context.CarbonCredits.RemoveRange(context.CarbonCredits);
-            await context.SaveChangesAsync();
-            
-            context.VerificationRequests.RemoveRange(context.VerificationRequests);
-            await context.SaveChangesAsync();
-            
-            context.EVJourneys.RemoveRange(context.EVJourneys);
-            await context.SaveChangesAsync();
-            
-            context.JourneyBatches.RemoveRange(context.JourneyBatches);
-            await context.SaveChangesAsync();
-            
-            context.CVAStandards.RemoveRange(context.CVAStandards);
-            await context.SaveChangesAsync();
+            // 2. KIỂM TRA XEM DATABASE ĐÃ CÓ DỮ LIỆU CHƯA
+            // Chỉ seed nếu database trống (chưa có CVAStandards)
+            var hasExistingData = await context.CVAStandards.AnyAsync();
+            if (hasExistingData)
+            {
+                // Database đã có dữ liệu, không seed lại
+                return;
+            }
+
+            // 3. CHỈ SEED KHI DATABASE TRỐNG
 
             // ==========================================
             // ===== HẰNG SỐ VÀ KHỞI TẠO ID CỐ ĐỊNH =====
