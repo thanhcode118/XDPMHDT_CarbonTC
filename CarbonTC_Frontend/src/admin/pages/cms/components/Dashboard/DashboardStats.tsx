@@ -1,10 +1,13 @@
 import { Box, Card, Grid, Typography } from '@mui/material';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+// import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
+import Co2RoundedIcon from '@mui/icons-material/Co2Rounded';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 // import EcoIcon from '@mui/icons-material/Eco';
 import EnergySavingsLeafRoundedIcon from '@mui/icons-material/EnergySavingsLeafRounded';
 import { formatNumber } from '../../../../utils';
 import type { SystemOverview } from '../../../../services/dashboard.service';
+import { brand, green, orange } from '../../../../../common/color';
 
 interface DashboardStatsProps {
   overview: SystemOverview;
@@ -15,33 +18,33 @@ export const DashboardStats = ({ overview }: DashboardStatsProps) => {
     {
       title: 'Total E-Wallets',
       value: overview.totalEWallets,
-      icon: <AccountBalanceWalletIcon />,
-      color: 'primary.main',
-      bgColor: 'primary.light',
+      icon: <AccountBalanceWalletRoundedIcon />,
+      color: brand[800],
+      // bgColor: 'primary.light',
       formatter: (val: number) => val.toString(),
     },
     {
-      title: 'Total Balance (VND)',
+      title: 'Total Carbon Wallets',
       value: overview.totalCarbonWallets,
-      icon: <AttachMoneyIcon />,
-      color: 'success.main',
-      bgColor: 'success.light',
-      formatter: (val: number) => `${formatNumber(val)} VND`,
+      icon: <Co2RoundedIcon />,
+      color: green[800],
+      // bgColor: 'info.light',
+      formatter: (val: number) => val.toString(),
     },
     {
       title: 'Total Money Balance',
       value: overview.totalMoneyBalance,
       icon: <AttachMoneyIcon />,
-      color: 'success.main',
-      bgColor: 'success.light',
+      color: green[700],
+      // bgColor: 'success.light',
       formatter: (val: number) => `${formatNumber(val)} VND`,
     },
     {
       title: 'Total Carbon Balance',
       value: overview.totalCarbonBalance,
       icon: <EnergySavingsLeafRoundedIcon />,
-      color: 'info.main',
-      bgColor: 'info.light',
+      color: orange[800],
+      // bgColor: 'warning.light',
       formatter: (val: number) => `${formatNumber(val)} Credits`,
     },
   ];
@@ -65,20 +68,21 @@ export const DashboardStats = ({ overview }: DashboardStatsProps) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: 56,
-                  height: 56,
-                  borderRadius: '12px',
-                  bgcolor: card.bgColor,
+                  width: 50,
+                  height: 50,
+                  border: 2,
+                  borderRadius: 2,
+                  // bgcolor: card.bgColor,
                   color: card.color,
                 }}
               >
                 {card.icon}
               </Box>
               <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <Typography variant="body1" color="text.secondary" gutterBottom>
                   {card.title}
                 </Typography>
-                <Typography variant="h4" fontWeight={700}>
+                <Typography variant="h5" fontWeight={700}>
                   {card.formatter(card.value)}
                 </Typography>
               </Box>

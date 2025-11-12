@@ -1,8 +1,10 @@
 import { Box, Typography, Alert, IconButton } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
+// import RefreshIcon from '@mui/icons-material/Refresh';
+import CachedRoundedIcon from '@mui/icons-material/CachedRounded';
 import { useDashboard } from './hooks/useDashboard';
 import { DashboardStats } from './components/Dashboard';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { gray } from '../../../common/color';
 
 function Dashboard() {
   const { overview, loading, error, refreshData } = useDashboard();
@@ -12,11 +14,11 @@ function Dashboard() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 0 }}>
       <Box
         sx={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           alignItems: 'center',
           mb: 3,
         }}
@@ -29,16 +31,24 @@ function Dashboard() {
             Welcome to Admin Service - Carbon Credit Marketplace
           </Typography>
         </Box>
+      </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
         <IconButton
           onClick={refreshData}
           disabled={loading}
-          color="primary"
           sx={{
-            bgcolor: 'primary.light',
-            '&:hover': { bgcolor: 'primary.main', color: 'white' },
+            color: gray[900],
+            border: 2,
+            height: 40,
+            width: 55,
+            // transition: 'background-color 0.3s',
+            '&:hover': {
+              bgcolor: gray[100],
+              border: gray[100]
+            },
           }}
         >
-          <RefreshIcon />
+          <CachedRoundedIcon />
         </IconButton>
       </Box>
 

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { dashboardApi, type SystemOverview } from "../../../services/dashboard.service";
 
 export interface UseDashboardReturn {
@@ -26,6 +26,10 @@ export const useDashboard = (): UseDashboardReturn => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchOverview();
+  }, [fetchOverview]);
 
   return {
     overview,

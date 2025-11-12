@@ -108,7 +108,7 @@ function Wallet() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 0 }}>
       <Typography variant="h4" gutterBottom>
         Wallet Management
       </Typography>
