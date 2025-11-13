@@ -4,24 +4,44 @@ using CarbonTC.CarbonLifecycle.Domain.Enums;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
 {
     public static class DbInitializer
     {
-        public static async Task Initialize(AppDbContext context)
+        public static async Task Initialize(AppDbContext context, ILogger? logger = null, bool forceSeed = false)
         {
             // 1. Áp dụng các Migration (nếu cần)
             await context.Database.MigrateAsync();
+            logger?.LogInformation("Database migrations applied successfully");
 
             // 2. KIỂM TRA XEM DATABASE ĐÃ CÓ DỮ LIỆU CHƯA
-            // Chỉ seed nếu database trống (chưa có CVAStandards)
-            var hasExistingData = await context.CVAStandards.AnyAsync();
-            if (hasExistingData)
+            // Kiểm tra nhiều bảng để đảm bảo database đã được seed
+            var hasCVAStandards = await context.CVAStandards.AnyAsync();
+            var hasJourneyBatches = await context.JourneyBatches.AnyAsync();
+            var hasEVJourneys = await context.EVJourneys.AnyAsync();
+            var hasVerificationRequests = await context.VerificationRequests.AnyAsync();
+            var hasCarbonCredits = await context.CarbonCredits.AnyAsync();
+            
+            // Nếu có ít nhất 2 trong số các bảng chính đã có dữ liệu, coi như database đã được seed
+            var existingDataCount = new[] { hasCVAStandards, hasJourneyBatches, hasEVJourneys, hasVerificationRequests, hasCarbonCredits }
+                .Count(x => x);
+            
+            // Nếu forceSeed = false và database đã có dữ liệu, không seed lại
+            if (!forceSeed && existingDataCount >= 2)
             {
                 // Database đã có dữ liệu, không seed lại
+                logger?.LogInformation($"Database already contains data ({existingDataCount} tables have data). Skipping seed operation.");
                 return;
             }
+            
+            if (forceSeed)
+            {
+                logger?.LogWarning("Force seed is enabled. Seeding database even if data exists.");
+            }
+            
+            logger?.LogInformation("Database appears to be empty. Starting seed operation...");
 
             // 3. CHỈ SEED KHI DATABASE TRỐNG
 
@@ -359,6 +379,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
 
             // 3. Lưu tất cả thay đổi vào cơ sở dữ liệu
             await context.SaveChangesAsync();
+            logger?.LogInformation("Database seed operation completed successfully.");
         }
 
         /// <summary>
