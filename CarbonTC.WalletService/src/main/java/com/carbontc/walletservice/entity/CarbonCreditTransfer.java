@@ -1,6 +1,7 @@
 package com.carbontc.walletservice.entity;
 
 
+import com.carbontc.walletservice.entity.status.TransferStatus;
 import com.carbontc.walletservice.entity.status.TransferType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -24,6 +25,13 @@ public class CarbonCreditTransfer {
     @ManyToOne
     @JoinColumn(name = "to_wallet_id")
     private CarbonWallets toWallet;
+
+    @Column(name = "total_price")
+    private BigDecimal totalPrice;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private TransferStatus status;
 
     private BigDecimal amount;
 
