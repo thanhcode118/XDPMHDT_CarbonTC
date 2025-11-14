@@ -85,7 +85,10 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
         {
             _logger.LogInformation("Fetching all pending VerificationRequests.");
             return await _context.VerificationRequests
-                .Where(vr => vr.Status == VerificationRequestStatus.Pending)
+                .Include(vr => vr.JourneyBatch)
+                .Where(vr => vr.Status == VerificationRequestStatus.Pending 
+                    && vr.JourneyBatch != null 
+                    && vr.JourneyBatch.Status == JourneyBatchStatus.SubmittedForVerification)
                 .OrderByDescending(vr => vr.RequestDate)
                 .ToListAsync();
         }
@@ -94,8 +97,13 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
         {
             _logger.LogInformation("Fetching pending VerificationRequests - Page: {PageNumber}, Size: {PageSize}", pageNumber, pageSize);
 
+            // Chỉ lấy các VerificationRequest có Status = Pending VÀ JourneyBatch.Status = SubmittedForVerification
+            // Điều này đảm bảo chỉ hiển thị các batch có thể được verify
             var query = _context.VerificationRequests
-                .Where(vr => vr.Status == VerificationRequestStatus.Pending);
+                .Include(vr => vr.JourneyBatch)
+                .Where(vr => vr.Status == VerificationRequestStatus.Pending 
+                    && vr.JourneyBatch != null 
+                    && vr.JourneyBatch.Status == JourneyBatchStatus.SubmittedForVerification);
 
             var totalCount = await query.CountAsync(); // Đếm tổng số lượng trước khi phân trang
 
@@ -113,7 +121,15 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
             _logger.LogInformation("Fetching VerificationRequests with status {Status} - Page: {PageNumber}, Size: {PageSize}", status, pageNumber, pageSize);
 
             var query = _context.VerificationRequests
+                .Include(vr => vr.JourneyBatch)
                 .Where(vr => vr.Status == status);
+
+            // Đối với pending requests, chỉ lấy những batch có thể verify được
+            if (status == VerificationRequestStatus.Pending)
+            {
+                query = query.Where(vr => vr.JourneyBatch != null 
+                    && vr.JourneyBatch.Status == JourneyBatchStatus.SubmittedForVerification);
+            }
 
             var totalCount = await query.CountAsync();
 

@@ -11,7 +11,6 @@ using CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories;
 using CarbonTC.CarbonLifecycle.Infrastructure.Services.FileStorage;
 using Microsoft.Extensions.Options;
 using CarbonTC.CarbonLifecycle.Domain.Abstractions;
-using CarbonTC.CarbonLifecycle.Infrastructure.BackgroundServices;
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure
 {
@@ -67,11 +66,6 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure
             // Domain Event Dispatcher
             services.AddScoped<IDomainEventDispatcher, // <-- Interface từ Domain.Abstractions
                               CarbonTC.CarbonLifecycle.Infrastructure.Services.Events.DomainEventDispatcher>();
-
-            // ===== BẮT ĐẦU CẬP NHẬT =====
-            // Đăng ký dịch vụ consumer chạy nền
-            services.AddHostedService<RabbitMQConsumerService>();
-            // ===== KẾT THÚC CẬP NHẬT =====
 
             return services;
         }

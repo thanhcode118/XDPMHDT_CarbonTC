@@ -249,8 +249,14 @@ const Verification = ({ showNotification: propShowNotification }) => {
           const standardsResult = await getCvaStandards(true);
           if (standardsResult.success && standardsResult.data) {
             const standardsData = Array.isArray(standardsResult.data) ? standardsResult.data : [];
-            setCvaStandards(standardsData);
-            console.log('✅ Loaded CVA standards:', standardsData.length);
+            
+            // Filter duplicate standards by StandardName - chỉ lấy unique để tránh hiển thị trùng lặp
+            const uniqueStandards = standardsData.filter((standard, index, self) =>
+              index === self.findIndex((s) => s.standardName === standard.standardName)
+            );
+            
+            setCvaStandards(uniqueStandards);
+            console.log('✅ Loaded CVA standards:', uniqueStandards.length, '(filtered from', standardsData.length, 'total)');
           } else {
             console.warn('⚠️ Failed to fetch CVA standards:', standardsResult.message);
             setCvaStandards([]);
@@ -341,6 +347,8 @@ const Verification = ({ showNotification: propShowNotification }) => {
           isApproved ? 'Duyệt yêu cầu thành công!' : 'Từ chối yêu cầu thành công!',
           'success'
         );
+        
+        // Đóng modal và reset form ngay lập tức
         setShowRequestDetails(false);
         setSelectedRequest(null);
         setReviewNotes('');
@@ -349,8 +357,17 @@ const Verification = ({ showNotification: propShowNotification }) => {
         setReasonForRejection('');
         setSelectedCvaStandardId('');
         setShowCvaStandardDropdown(false);
-        await loadRequests(); // Reload requests
-        await loadStats(); // Reload stats
+        
+        // Reload data sau khi đóng modal
+        try {
+          await Promise.all([
+            loadRequests(),
+            loadStats()
+          ]);
+        } catch (reloadError) {
+          console.error('❌ Error reloading data:', reloadError);
+          // Không hiển thị lỗi vì đã duyệt thành công
+        }
       } else {
         showNotification(result.message || 'Không thể xử lý yêu cầu', 'error');
       }

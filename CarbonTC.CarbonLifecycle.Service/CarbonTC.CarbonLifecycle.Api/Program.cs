@@ -184,8 +184,23 @@ public class Program
                 try
                 {
                     var context = services.GetRequiredService<AppDbContext>();
-                    // Gọi hàm khởi tạo dữ liệu
-                    await DbInitializer.Initialize(context);
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    var configuration = services.GetRequiredService<IConfiguration>();
+                    
+                    // Kiểm tra biến môi trường để quyết định có seed dữ liệu hay không
+                    // Mặc định là false (chỉ seed khi database trống)
+                    var forceSeed = configuration.GetValue<bool>("Database:ForceSeed", false);
+                    var skipSeed = configuration.GetValue<bool>("Database:SkipSeed", false);
+                    
+                    if (skipSeed)
+                    {
+                        logger.LogInformation("Database seed is disabled via configuration. Skipping seed operation.");
+                    }
+                    else
+                    {
+                        // Gọi hàm khởi tạo dữ liệu với logger để theo dõi quá trình
+                        await DbInitializer.Initialize(context, logger, forceSeed);
+                    }
                 }
                 catch (Exception ex)
                 {

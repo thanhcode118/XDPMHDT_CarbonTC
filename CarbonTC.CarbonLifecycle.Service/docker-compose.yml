@@ -15,6 +15,9 @@ services:
       RabbitMQ__Password: "admin123"
       RabbitMQ__VirtualHost: "/carbonlifecycle"
       FileStorage__RootPath: "/app/uploaded_files"
+      # Database seed configuration (optional)
+      # Database__SkipSeed: "false"  # Set to "true" to completely disable seed
+      # Database__ForceSeed: "false"  # Set to "true" to force seed even if data exists
     depends_on:
       mysql_db:
         condition: service_healthy
