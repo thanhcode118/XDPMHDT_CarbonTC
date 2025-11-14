@@ -120,15 +120,25 @@ public class EWalletServiceImpl implements EWalletService {
 
     @Override
     public List<TransactionLogResponse> getTransactionHistoryByUserId(String userId) throws BusinessException {
-       EWallet eWallet = findWalletByUserId(userId);
-
+        EWallet eWallet = findWalletByUserId(userId);
         Long walletId = eWallet.getWalletId();
 
-        // 2. Tìm log bằng walletId (Long)
+        // Tìm log từ DB
         List<TransactionLog> logs = transactionLogRepository.findByWallet_WalletIdOrderByCreatedAtDesc(walletId);
 
         return logs.stream()
-                .map(log -> modelMapper.map(log, TransactionLogResponse.class))
+                .map(log -> {
+                    // 1. Để ModelMapper map các trường giống tên (amount, type, status...)
+                    TransactionLogResponse response = modelMapper.map(log, TransactionLogResponse.class);
+
+                    // 2. THỦ CÔNG map trường walletId
+                    // Lấy object Wallet -> Lấy ID -> Gán vào DTO
+                    if (log.getWallet() != null) {
+                        response.setWalletId(log.getWallet().getWalletId());
+                    }
+
+                    return response;
+                })
                 .toList();
     }
 

@@ -63,3 +63,7 @@ cloudinary:
 
 wallet-config:
   admin-user-id: ${ADMIN_USER_ID}
+
+web:
+  returnUrl: ${RETURN_URL}
+  returnFailUrl : ${RETURN_FAIL_URL}

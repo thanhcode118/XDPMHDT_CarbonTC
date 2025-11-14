@@ -8,6 +8,7 @@ import com.carbontc.walletservice.util.AuthencationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,12 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     private final AuthencationUtil authencationUtil;
+
+    @Value("${web.returnUrl}")
+    private String returnUrl;
+
+    @Value("${web.returnFailUrl}")
+    private String returnFailUrl;
 
     @PostMapping("/deposit")
     public ResponseEntity<ApiResponse<String>> createDepositPayment(
@@ -49,8 +56,12 @@ public class PaymentController {
     @GetMapping("/vnpay-return")
     public RedirectView vnpayReturn(@RequestParam Map<String, String> allParams) {
 
+
+
         // 1. URL của trang Frontend (FE) bạn vừa cung cấp
-        String feReturnUrl = "http://localhost:5173/payment/return";
+        String feReturnUrl = returnUrl;
+
+        String feReturnFailUrl = returnFailUrl;
 
         String vnp_TxnRef = allParams.get("vnp_TxnRef");
         String vnp_ResponseCode = allParams.get("vnp_ResponseCode");
@@ -78,13 +89,14 @@ public class PaymentController {
 
         } catch (Exception e) {
 
-            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(feReturnUrl)
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(feReturnFailUrl)
                     .queryParam("success", "false")
                     .queryParam("vnp_TxnRef", vnp_TxnRef)
                     .queryParam("vnp_ResponseCode", "99") // Mã lỗi hệ thống
                     .queryParam("message", "He_thong_dang_ban_vui_long_thu_lai_sau");
 
             return new RedirectView(urlBuilder.toUriString());
+
         }
     }
 
