@@ -14,6 +14,8 @@ import { Line } from 'react-chartjs-2';
 import styles from './MarketplaceModal.module.css';
 import { useCountdown } from '../../hooks/useCountdown';
 import { convertUTCToVnTime } from '../../utils/formatters';
+import { getUserIdFromToken } from '../../services/listingService';
+import { toast } from 'react-toastify';
 
 ChartJS.register(
     CategoryScale,
@@ -34,12 +36,16 @@ const PlaceBidModal = ({
     isLoading,    
     isSubmitting, 
     error,        
-    auctionRealtimeData // <-- PROP MỚI: { latestBid: {...}, isEnded: false, winnerInfo: {...}, currentPrice: ... }
+    auctionRealtimeData
 }) => {
 
     const [localError, setLocalError] = useState('');
     const processedBidsRef = useRef(new Set());
 
+    // 🆕 THÊM: Kiểm tra chủ sở hữu
+    const currentUserId = getUserIdFromToken();
+    const isOwner = listingData?.ownerId === currentUserId;
+    
     const isEnded = auctionRealtimeData?.isEnded || false;
     const winnerInfo = auctionRealtimeData?.winnerInfo;
 
@@ -88,7 +94,7 @@ const PlaceBidModal = ({
     const currentPrice = realtimePrice || basePrice;
     const minBidAmount = currentPrice + stepBid;
 
-    // Chart options
+    // Chart options (giữ nguyên)
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -144,23 +150,23 @@ const PlaceBidModal = ({
     };
 
     const bidSuggestions = [
-    { 
-        amount: minBidAmount, 
-        label: 'Tối thiểu' 
-    },
-    { 
-        amount: minBidAmount + 1000, 
-        label: 'Tăng 2K' 
-    },
-    { 
-        amount: minBidAmount + 4000, 
-        label: 'Tăng 5K' 
-    },
-    { 
-        amount: minBidAmount + 9000, 
-        label: 'Tăng 10K' 
-    }
-];
+        { 
+            amount: minBidAmount, 
+            label: 'Tối thiểu' 
+        },
+        { 
+            amount: minBidAmount + 1000, 
+            label: 'Tăng 2K' 
+        },
+        { 
+            amount: minBidAmount + 4000, 
+            label: 'Tăng 5K' 
+        },
+        { 
+            amount: minBidAmount + 9000, 
+            label: 'Tăng 10K' 
+        }
+    ];
 
     const useDebounce = (value, delay) => {
         const [debouncedValue, setDebouncedValue] = useState(value);
@@ -196,11 +202,10 @@ const PlaceBidModal = ({
                 .sort((a, b) => new Date(b.bidTime) - new Date(a.bidTime))
                 .map((bid) => {
                     const entry = createHistoryEntry(bid);
-                    // Đánh dấu các bid từ API đã được xử lý
                     processedBidsRef.current.add(entry.id);
                     return entry;
                 })
-                .slice(0, 5); // Chỉ lấy 5 bid gần nhất
+                .slice(0, 5);
             
             setBidHistory(formattedHistory);
 
@@ -217,7 +222,7 @@ const PlaceBidModal = ({
             }
 
             setChartData({
-                labels: chartLabels.slice(-10), // Giữ 10 điểm dữ liệu cuối
+                labels: chartLabels.slice(-10),
                 datasets: [
                     {
                         label: 'Giá đấu giá',
@@ -233,57 +238,44 @@ const PlaceBidModal = ({
         }
     }, [isOpen, listingData, minBidAmount]);
 
-    // Xử lý realtime bid updates cho cả Bid History và Price Chart
+    // Xử lý realtime bid updates (giữ nguyên)
     useEffect(() => {
         const latestBid = debouncedLatestBid;
         if (latestBid) {
-            // Tạo unique ID cho bid
             const bidUniqueId = `bid_${latestBid.bidderId}_${latestBid.bidTime}_${latestBid.bidAmount}`;
             
-            // Kiểm tra xem bid này đã được xử lý chưa
             if (processedBidsRef.current.has(bidUniqueId)) {
-                console.log(`🔄 Bid ${bidUniqueId} đã được xử lý, bỏ qua`);
                 return;
             }
 
-            // Đánh dấu bid này đã xử lý
             processedBidsRef.current.add(bidUniqueId);
-            console.log(`✅ Xử lý bid mới: ${bidUniqueId}`);
 
-            // 1. Cập nhật Lịch sử Bid - CHỈ THÊM NẾU CHƯA CÓ
             const newHistoryEntry = createHistoryEntry(latestBid);
             setBidHistory(prev => {
-                // Kiểm tra xem bid này đã có trong history chưa
                 const isAlreadyInHistory = prev.some(item => 
                     item.id === newHistoryEntry.id || 
                     (item.name === newHistoryEntry.name && item.amount === newHistoryEntry.amount)
                 );
                 
                 if (isAlreadyInHistory) {
-                    console.log(`⚠️ Bid đã có trong history, không thêm lại`);
                     return prev;
                 }
                 
-                // Thêm bid mới và giới hạn 5 bid gần nhất
                 return [newHistoryEntry, ...prev.slice(0, 4)];
             });
 
-            // 2. Cập nhật Biểu đồ - CHỈ THÊM NẾU CHƯA CÓ
             setChartData(prev => {
                 const currentLabels = prev.labels || [];
                 const currentData = prev.datasets?.[0]?.data || [];
                 
-                // Kiểm tra xem bid này đã có trong biểu đồ chưa
                 const isAlreadyInChart = currentLabels.some((label, index) => 
                     label === newHistoryEntry.time && currentData[index] === latestBid.bidAmount
                 );
                 
                 if (isAlreadyInChart) {
-                    console.log(`⚠️ Bid đã có trong biểu đồ, không thêm lại`);
                     return prev;
                 }
                 
-                // Thêm điểm dữ liệu mới và giới hạn 10 điểm gần nhất
                 const newLabels = [...currentLabels.slice(-9), newHistoryEntry.time];
                 const newData = [...currentData.slice(-9), latestBid.bidAmount];
                 
@@ -294,7 +286,6 @@ const PlaceBidModal = ({
                 };
             });
 
-            // 3. Cập nhật form nếu giá hiện tại vượt giá đang nhập
             if (bidAmount && parseFloat(bidAmount) < minBidAmount) {
                 setBidAmount(minBidAmount.toString());
                 setBidError(`Giá đã tăng. Giá tối thiểu mới: ${minBidAmount.toLocaleString()} VNĐ`);
@@ -305,12 +296,10 @@ const PlaceBidModal = ({
     // Cleanup khi đóng modal
     useEffect(() => {
         if (!isOpen) {
-            // Reset processed bids khi modal đóng
             processedBidsRef.current.clear();
         }
     }, [isOpen]);
 
-    // Các useEffect khác giữ nguyên
     useEffect(() => {
         if (isOpen) {
             setLocalError('');
@@ -354,12 +343,28 @@ const PlaceBidModal = ({
         return true;
     };
 
+    // 🆕 SỬA: Thêm toast thông báo khi chưa chấp nhận điều khoản
     const handleSubmit = (e) => {
         e.preventDefault();
         
         if (isSubmitting || auctionIsFinished) return;
+        console.log("🔄 handleSubmit called");
+        // 🆕 KIỂM TRA CHỦ SỞ HỮU
+        if (isOwner) {
+            toast.warning('Bạn là chủ sở hữu, không thể đặt giá trên sản phẩm của mình!', {
+                position: "top-right",
+                autoClose: 3000,
+            });
+            return;
+        }
 
+        // 🆕 THÊM TOAST CHO ĐIỀU KHOẢN
         if (!agreeAuctionTerms) {
+            console.log("🎯 Showing terms toast");
+            toast.error('Vui lòng đồng ý với điều khoản đấu giá trước khi đặt giá!', {
+                position: "top-right",
+                autoClose: 3000,
+            });
             setBidError('Vui lòng đồng ý với điều khoản đấu giá.');
             return;
         }
@@ -380,13 +385,14 @@ const PlaceBidModal = ({
 
     if (!isOpen) return null;
 
-    
-
     return (
         <div className={styles.modalOverlay} onClick={onClose}>
             <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.modalHeader}>
-                    <h5 className={styles.modalTitle}>Đặt giá cho phiên đấu giá</h5>
+                    {/* 🆕 SỬA: Tiêu đề khác cho chủ sở hữu */}
+                    <h5 className={styles.modalTitle}>
+                        {isOwner ? 'Theo dõi đấu giá của bạn' : 'Đặt giá cho phiên đấu giá'}
+                    </h5>
                     <button 
                         type="button" 
                         className={styles.btnClose} 
@@ -402,6 +408,19 @@ const PlaceBidModal = ({
                 {error && !isSubmitting && (
                     <div className={styles.errorAlert}>
                         Lỗi: {error}
+                    </div>
+                )}
+
+                {/* 🆕 THÊM: Thông báo cho chủ sở hữu */}
+                {isOwner && (
+                    <div className={styles.ownerNotice}>
+                        <div className={styles.ownerNoticeIcon}>
+                            <i className="bi bi-person-check-fill"></i>
+                        </div>
+                        <div className={styles.ownerNoticeContent}>
+                            <strong>Bạn là chủ sở hữu phiên đấu giá này</strong>
+                            <p>Theo dõi diễn biến đấu giá và lịch sử trả giá của người tham gia.</p>
+                        </div>
                     </div>
                 )}
 
@@ -514,7 +533,6 @@ const PlaceBidModal = ({
                                 </div>
                             ) : (
                                 <div className={styles.auctionEndedMessage}>
-                                    {/* Confetti decorations */}
                                     <span className={styles.confetti} style={{left: '10%', animationDelay: '0s'}}></span>
                                     <span className={styles.confetti} style={{left: '30%', animationDelay: '0.5s'}}></span>
                                     <span className={styles.confetti} style={{left: '50%', animationDelay: '1s'}}></span>
@@ -536,8 +554,8 @@ const PlaceBidModal = ({
                                 </div>
                             </div>
 
-                            {/* Bid Form */}
-                            {!auctionIsFinished && (
+                            {/* 🆕 SỬA: Ẩn Bid Form nếu là chủ sở hữu */}
+                            {!auctionIsFinished && !isOwner && (
                                 <form id="placeBidForm" onSubmit={handleSubmit}>
                                     <div className={styles.bidInputGroup}>
                                         <input
@@ -582,33 +600,48 @@ const PlaceBidModal = ({
                                     </div>
 
                                     {/* Bid Suggestions */}
-                                    {!auctionIsFinished && (
-                                        <div className={styles.bidSuggestions}>
-                                            <h6 className={styles.suggestionTitle}>
-                                                <i className="bi bi-lightbulb"></i>
-                                                Mức giá đề xuất
-                                            </h6>
-                                            <div className={styles.suggestionGrid}>
-                                                {bidSuggestions.map((suggestion, index) => (
-                                                    <div 
-                                                        key={index}
-                                                        className={`${styles.suggestionCard} ${
-                                                            bidAmount === suggestion.amount.toString() ? styles.suggestionCardActive : ''
-                                                        }`}
-                                                        onClick={() => setBidAmountSuggestion(suggestion.amount)}
-                                                    >
-                                                        <div className={styles.suggestionHeader}>
-                                                            <span className={styles.suggestionLabel}>{suggestion.label}</span>
-                                                        </div>
-                                                        <div className={styles.suggestionAmount}>
-                                                            {suggestion.amount.toLocaleString()} VNĐ
-                                                        </div>
+                                    <div className={styles.bidSuggestions}>
+                                        <h6 className={styles.suggestionTitle}>
+                                            <i className="bi bi-lightbulb"></i>
+                                            Mức giá đề xuất
+                                        </h6>
+                                        <div className={styles.suggestionGrid}>
+                                            {bidSuggestions.map((suggestion, index) => (
+                                                <div 
+                                                    key={index}
+                                                    className={`${styles.suggestionCard} ${
+                                                        bidAmount === suggestion.amount.toString() ? styles.suggestionCardActive : ''
+                                                    }`}
+                                                    onClick={() => setBidAmountSuggestion(suggestion.amount)}
+                                                >
+                                                    <div className={styles.suggestionHeader}>
+                                                        <span className={styles.suggestionLabel}>{suggestion.label}</span>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                    <div className={styles.suggestionAmount}>
+                                                        {suggestion.amount.toLocaleString()} VNĐ
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    )}
+                                    </div>
                                 </form>
+                            )}
+
+                            {/* 🆕 THÊM: Thông báo cho chủ sở hữu khi auction kết thúc */}
+                            {auctionIsFinished && isOwner && winnerInfo && (
+                                <div className={styles.ownerResult}>
+                                    <div className={styles.ownerResultIcon}>
+                                        <i className="bi bi-trophy-fill"></i>
+                                    </div>
+                                    <div className={styles.ownerResultContent}>
+                                        <h6>Phiên đấu giá đã kết thúc!</h6>
+                                        <p>
+                                            Người thắng: <strong>...{winnerInfo.winningBidderId?.slice(-6)}</strong>
+                                            <br />
+                                            Giá thắng: <strong>{winnerInfo.winningBidAmount?.toLocaleString()} VNĐ</strong>
+                                        </p>
+                                    </div>
+                                </div>
                             )}
                         </div>
                 
@@ -640,9 +673,10 @@ const PlaceBidModal = ({
                                 onClick={onClose}
                                 disabled={isSubmitting}
                             >
-                                Hủy
+                                Đóng
                             </button>
-                            {!auctionIsFinished && (
+                            {/* 🆕 SỬA: Ẩn nút đặt giá nếu là chủ sở hữu */}
+                            {!auctionIsFinished && !isOwner && (
                                 <button 
                                     type="submit" 
                                     form="placeBidForm"

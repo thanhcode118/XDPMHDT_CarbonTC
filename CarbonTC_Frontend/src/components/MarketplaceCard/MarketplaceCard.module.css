@@ -131,3 +131,118 @@
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
+
+.btnCustom {
+  padding: 8px 12px !important; 
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px; 
+  font-size: 0.85rem; 
+  min-width: auto; 
+}
+
+.btnBuy {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.btnBuy:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+}
+
+/* Nút Đặt giá */
+.btnBid {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.btnBid:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-1px);
+}
+
+/* Nút Xem cho chủ sở hữu */
+.btnViewAuction {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white;
+}
+
+.btnViewAuction:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+  transform: translateY(-1px);
+}
+
+/* Nút disabled */
+.btnCustom:disabled {
+  background: #6c757d !important;
+  color: #adb5bd !important;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Badge chủ sở hữu - nhỏ gọn hơn */
+.ownerBadge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2px 6px; /* 🆕 GIẢM padding */
+  border-radius: 10px;
+  font-size: 10px; /* 🆕 GIẢM font size */
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px; /* 🆕 GIẢM khoảng cách */
+}
+
+/* Marketplace Footer - căn chỉnh lại */
+.marketplaceFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 8px; /* 🆕 THÊM gap để responsive */
+}
+
+.marketplaceSeller {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1; /* 🆕 CHO PHÉP co giãn */
+  min-width: 0; /* 🆕 QUAN TRỌNG: cho phép text truncate */
+}
+
+.marketplaceSeller small {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .btnCustom {
+    padding: 6px 10px !important;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+  
+  .btnCustom span {
+    display: none; 
+  }
+  
+  .marketplaceSeller small {
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .btnCustom {
+    min-width: 90px; 
+  }
+}

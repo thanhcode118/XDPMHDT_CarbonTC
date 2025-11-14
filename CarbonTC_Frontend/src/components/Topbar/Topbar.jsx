@@ -5,6 +5,7 @@ import styles from './Topbar.module.css';
 // !!! IMPORT CUSTOM COMPONENTS !!!
 import AlertBox from '../../components/AlertBox/AlertBox'; 
 import CustomModal from '../../components/CustomModal/CustomModal'; 
+import { getUserIdFromToken } from '../../services/listingService';
 
 const Topbar = ({ title }) => {
   const navigate = useNavigate();
@@ -119,7 +120,7 @@ const Topbar = ({ title }) => {
               }}
             >
               <img 
-                src={user?.avatar || "https://picsum.photos/seed/user123/35/35.jpg"} 
+                src={user?.avatar || `https://i.pravatar.cc/30?u=${getUserIdFromToken() || 'default'}`} 
                 alt="User Avatar" 
                 className={styles.userAvatar} 
               />

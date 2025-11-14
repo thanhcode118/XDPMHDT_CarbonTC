@@ -112,9 +112,6 @@ export const placeBid = (listingId, bidAmount) => {
 };
 
 
-
-
-
 /**
  * Lấy danh sách giao dịch BÁN của user
  * @param {object} params - Các tham số query (status, pageNumber, sortBy, ...)
@@ -165,4 +162,25 @@ export const getTransactionChartData = (period) => {
 export const getUserCredits = (userId) => {
   // Sẽ gọi đến [BASE_URL]/api/CarbonCredits/user/{userId}
   return apiClientPD.get(`/CarbonCredits/user/${userId}`);
+};
+
+
+/**
+ * Gửi báo cáo khiếu nại (dispute)
+ * @param {object} disputeData - Dữ liệu khiếu nại
+ * @param {string} disputeData.transactionId - ID của giao dịch
+ * @param {string} disputeData.reason - Lý do khiếu nại
+ * @param {string} disputeData.description - Mô tả chi tiết
+ */
+export const submitDispute = (disputeData) => {
+  return apiClientPD.post('/admin/disputes', disputeData);
+};
+
+/**
+ * Kiểm tra xem một giao dịch đã có khiếu nại hay chưa.
+ * @param {string} transactionId - Mã giao dịch (ví dụ: 'TXN-2024-010')
+ * @returns {Promise<Object>} - Toàn bộ phản hồi từ API
+ */
+export const getDisputeByTransactionId = (transactionId) => {
+  return apiClientPD.get(`/admin/disputes/transaction/${transactionId}`);
 };
