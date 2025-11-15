@@ -3,6 +3,7 @@ import styles from './Sidebar.module.css';
 import { Link } from 'react-router-dom';
 import authService from '../../services/authService'; // 👈 thêm dòng này
 import { useAuth } from '../../hooks/useAuth'; 
+import { getUserIdFromToken } from '../../services/listingService';
 
 const Sidebar = ({ activePage, className }) => {
     const { user } = useAuth();
@@ -62,7 +63,7 @@ const filteredMenuItems = menuItems.filter(item =>
       <div className={styles.sidebarProfile}>
         <div className={styles.profileInfo}>
           <img 
-            src={user?.avatar || "https://picsum.photos/seed/user123/40/40.jpg"} 
+            src={user?.avatar || `https://i.pravatar.cc/30?u=${getUserIdFromToken() || 'default'}`} 
             alt="User Avatar" 
             className={styles.profileAvatar} 
           />

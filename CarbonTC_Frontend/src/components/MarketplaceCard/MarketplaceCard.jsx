@@ -1,6 +1,9 @@
 import React from 'react';
 import styles from './MarketplaceCard.module.css';
 import { useCountdown } from '../../hooks/useCountdown'; 
+import { 
+  getUserIdFromToken
+} from '../../services/listingService';
 
 const MarketplaceCard = ({
   type,
@@ -15,9 +18,15 @@ const MarketplaceCard = ({
   totalLabel = "Tổng giá", 
   seller,
   auctionEndTime,
+  rawData,
   onBuyClick, 
   onBidClick  
 }) => {
+
+  const currentUserId = getUserIdFromToken();
+  const isOwner = rawData?.ownerId === currentUserId;
+  const isAuction = type === 'auction';
+
   const { days, hours, minutes, seconds, isOver } = useCountdown(auctionEndTime);
 
   const CountdownDisplay = () => {
@@ -44,6 +53,42 @@ const MarketplaceCard = ({
     }
   };
 
+  // 🆕 TỐI ƯU: Dùng icon và text ngắn gọn
+  const getButtonConfig = () => {
+    if (isAuction) {
+      if (isOver) {
+        return { 
+          text: 'Kết thúc', 
+          icon: 'bi-clock-history',
+          disabled: true, 
+          action: null 
+        };
+      }
+      if (isOwner) {
+        return { 
+          text: 'Xem', // 🆕 CHỈ "Xem" thay vì "Xem đấu giá"
+          icon: 'bi-eye',
+          disabled: false, 
+          action: onBidClick 
+        };
+      }
+      return { 
+        text: 'Đặt giá', 
+        icon: 'bi-hammer',
+        disabled: false, 
+        action: onBidClick 
+      };
+    }
+    return { 
+      text: 'Mua ngay', 
+      icon: 'bi-cart',
+      disabled: false, 
+      action: onBuyClick 
+    };
+  };
+
+  const buttonConfig = getButtonConfig();
+
   return (
     <div className={styles.marketplaceCard} data-aos="fade-up" data-aos-delay="300">
       <div className={styles.marketplaceHeader}>
@@ -56,7 +101,9 @@ const MarketplaceCard = ({
           {type === 'auction' ? <CountdownDisplay /> : (trendText || 'N/A')}
         </div>
       </div>
+      
       <h4 className={styles.marketplaceTitle}>{title}</h4>
+      
       <div className={styles.marketplaceDetails}>
         <div className={styles.marketplaceDetailItem}>
           <div className={styles.marketplaceDetailValue}>{quantity.toLocaleString()}</div>
@@ -71,16 +118,29 @@ const MarketplaceCard = ({
           <div className={styles.marketplaceDetailLabel}>{totalLabel}</div>
         </div>
       </div>
+      
       <div className={styles.marketplaceFooter}>
         <div className={styles.marketplaceSeller}>
           <small>Người bán: {seller}</small>
+          {isOwner && (
+            <span className={styles.ownerBadge} title="Sản phẩm của bạn">
+              <i className="bi bi-person-check"></i>
+            </span>
+          )}
         </div>
+        
+        {/* 🆕 TỐI ƯU: Nút nhỏ gọn với icon + text ngắn */}
         <button 
-          className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
-          onClick={() => type === 'auction' ? onBidClick() : onBuyClick()}
-          disabled={type === 'auction' && isOver} 
+          className={`${styles.btnCustom} ${
+            isOwner && isAuction ? styles.btnViewAuction : 
+            isAuction ? styles.btnBid : styles.btnBuy
+          }`}
+          onClick={buttonConfig.action}
+          disabled={buttonConfig.disabled}
+          title={isOwner && isAuction ? "Xem diễn biến đấu giá" : ""}
         >
-          {type === 'auction' ? 'Đặt giá' : 'Mua ngay'}
+          <i className={`bi ${buttonConfig.icon}`}></i>
+          <span>{buttonConfig.text}</span>
         </button>
       </div>
     </div>

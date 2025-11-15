@@ -13,6 +13,7 @@ import CreditSelector from '../../components/CreditSelector/CreditSelector';
 import PlaceBidModal from '../../components/PlaceBidModal/PlaceBidModal'; 
 import BuyNowModal from '../../components/BuyNowModal/BuyNowModal'; 
 import PurchaseSuccessModal from '../../components/PurchaseSuccessModal/PurchaseSuccessModal'; 
+import Pagination from '../../components/Pagination/Pagination';
 import styles from './Marketplace.module.css';
 
 import { 
@@ -103,8 +104,7 @@ const Marketplace = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState({});
 
-  const [auctionUpdates, setAuctionUpdates] = useState({});
-  
+  const [auctionUpdates, setAuctionUpdates] = useState({});  
 
   const [filterInputs, setFilterInputs] = useState({
     type: '',    
@@ -114,6 +114,8 @@ const Marketplace = () => {
     ownerId: ''
   });
   
+  const [totalPages, setTotalPages] = useState(1);
+
   const [queryParams, setQueryParams] = useState({
     pageNumber: 1,
     pageSize: 20,
@@ -123,6 +125,15 @@ const Marketplace = () => {
     maxPrice: null,
     ownerId: null
   });
+
+  const handlePageChange = (newPage) => {
+    setQueryParams(prev => ({
+      ...prev,
+      pageNumber: newPage
+    }));
+    // useEffect [queryParams] sẽ tự động gọi lại API
+  };
+
 
   const handleBuyClick = async (listingFromList) => {
     setActionModalError(null);       
@@ -163,8 +174,26 @@ const Marketplace = () => {
   const handleBidClick = async (listingFromList) => {
     const currentUserId = getUserIdFromToken();
     if (listingFromList.ownerId === currentUserId) {
-        setActionModalError("Bạn không thể đặt giá trên sản phẩm của chính mình");
+        // setActionModalError("Bạn là chủ sở hữu - có thể xem nhưng không thể đặt giá");
         setShowBidModal(true);
+        setSelectedListing(null); 
+        setIsActionModalLoading(true); 
+
+        try {
+            const response = await getListingById(listingFromList.id);
+            if (response.data && response.data.success) {
+                const listingDetails = response.data.data;
+                setSelectedListing(listingDetails);
+                joinAuctionGroup(listingDetails.id); 
+            } else {
+                setActionModalError(response.data.message || "Không thể tải chi tiết auction.");
+            }
+        } catch (err) {
+            setActionModalError(err.message || "Lỗi kết nối máy chủ.");
+            console.error("❌ Lỗi khi chủ sở hữu xem auction:", err);
+        } finally {
+            setIsActionModalLoading(false);
+        }
         return;
     }
 
@@ -280,13 +309,11 @@ const handleBidSubmit = async (bidData) => {
               console.log("Đặt giá thành công! Chờ cập nhật từ SignalR...");
               setSuccessData({
                 type: 'bid',
-                quantity: 50,
-                pricePerUnit: 14500,
-                totalAmount: 725000,
-                sellerName: 'Công ty ABC',
-                creditType: 'Carbon Credit từ xe điện',
-                transactionId: 'TX-2024-001234',
-                estimatedDelivery: '2-3 ngày làm việc'
+                quantity: selectedListing?.quantity || 0,
+                pricePerUnit: bidData.bidAmount,
+                totalAmount: response.data.bidAmount * (selectedListing?.quantity || 0),
+                bidTime: response.data.bidTime,
+                listingId: selectedListing.id,
               });
               setShowSuccessModal(true);
               setActionModalError(null);
@@ -514,12 +541,15 @@ const handleBidSubmit = async (bidData) => {
           const response = await getListings(cleanParams);
           if (response.data && response.data.success) {
             setListings(response.data.data.items);
+            setTotalPages(response.data.data.totalPages || 1);
           } else {
             setError(response.data.message || 'Không thể tải dữ liệu.');
+            setTotalPages(1);
           }
         } catch (err) {
           setError(err.message || 'Đã xảy ra lỗi khi kết nối server.');
           console.error(err);
+          setTotalPages(1);
         } finally {
           setIsLoading(false);
         }
@@ -948,6 +978,7 @@ const handleBidSubmit = async (bidData) => {
         draggable
         pauseOnHover
         theme="light"
+        style={{ zIndex: 99999999999 }}
       />
       
       <Sidebar 
@@ -1054,6 +1085,7 @@ const handleBidSubmit = async (bidData) => {
                     <MarketplaceCard 
                       key={item.id} 
                       {...cardProps}
+                      rawData={item}
                       onBuyClick={() => handleBuyClick(cardProps.rawData)}
                       onBidClick={() => handleBidClick(cardProps.rawData)}
                     />
@@ -1061,6 +1093,13 @@ const handleBidSubmit = async (bidData) => {
                 })
               )}
             </div>
+            {!isLoading && totalPages > 1 && (
+              <Pagination
+                currentPage={queryParams.pageNumber}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
           </div>
         )}
         {activeTab === 'sell' && (
