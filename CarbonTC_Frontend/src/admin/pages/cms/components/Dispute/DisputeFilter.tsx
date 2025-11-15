@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -48,14 +48,14 @@ export const DisputeFilters: React.FC<DisputeFiltersProps> = ({
   };
 
   // Update filters when debounced search changes
-  useState(() => {
+  useEffect(() => {
     if (debouncedSearch !== filters.search) {
       onFiltersChange({
         ...filters,
         search: debouncedSearch || undefined,
       });
     }
-  });
+  }, [debouncedSearch]);
 
   return (
     <Box sx={{ mb: 3 }}>

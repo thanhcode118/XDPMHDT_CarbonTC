@@ -185,7 +185,7 @@ export const useDispute = () => {
   // Update filters
   const updateFilters = useCallback((newFilters: DisputeFilters) => {
     setFilters(newFilters);
-    setCurrentPage(0); // Reset to first page when filters change
+    setCurrentPage(0);
   }, []);
 
   // Pagination handlers
@@ -194,14 +194,46 @@ export const useDispute = () => {
     setPageSize(size);
   }, []);
 
-  // Initial load
   useEffect(() => {
-    void fetchDisputes();
-  }, [fetchDisputes]);
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await disputeService.getAll(
+          filters,
+          currentPage,
+          pageSize,
+        );
+
+        setDisputes(response.data);
+        setTotalCount(response.pagination.total);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch disputes');
+        console.error('Error fetching disputes:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchData();
+  }, [filters, currentPage, pageSize]);
 
   useEffect(() => {
-    void fetchStatistics();
-  }, [fetchStatistics]);
+    const fetchStats = async () => {
+      try {
+        setIsStatsLoading(true);
+        const stats = await disputeService.getStatistics();
+        setStatistics(stats);
+      } catch (err) {
+        console.error('Error fetching statistics:', err);
+      } finally {
+        setIsStatsLoading(false);
+      }
+    };
+
+    void fetchStats();
+  }, []);
 
   return {
     // Data

@@ -95,7 +95,7 @@ export const StatisticsCards: React.FC<StatisticsCardsProps> = ({
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
           title="Pending"
-          value={statistics?.byStatus.pending || 0}
+          value={statistics?.byStatus?.pending || 0}
           icon={Pending}
           color="#ff9800"
           isLoading={isLoading}
@@ -105,7 +105,7 @@ export const StatisticsCards: React.FC<StatisticsCardsProps> = ({
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
           title="Resolved"
-          value={statistics?.byStatus.resolved || 0}
+          value={statistics?.byStatus?.resolved || 0}
           icon={CheckCircle}
           color="#4caf50"
           isLoading={isLoading}
@@ -115,7 +115,7 @@ export const StatisticsCards: React.FC<StatisticsCardsProps> = ({
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
           title="Rejected"
-          value={statistics?.byStatus.rejected || 0}
+          value={statistics?.byStatus?.rejected || 0}
           icon={Cancel}
           color="#f44336"
           isLoading={isLoading}
@@ -130,7 +130,7 @@ export const StatisticsCards: React.FC<StatisticsCardsProps> = ({
                 Average Resolution Time
               </Typography>
               <Typography variant="h5" fontWeight="bold">
-                {statistics.avgResolutionTime.toFixed(1)} hours
+                {statistics.avgResolutionTime?.toFixed(1) || '0.0'} hours
               </Typography>
             </CardContent>
           </Card>
