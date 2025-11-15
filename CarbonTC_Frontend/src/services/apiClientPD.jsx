@@ -1,7 +1,13 @@
 import axios from 'axios';
 
+const envApiUrl = import.meta.env.VITE_APIGATEWAY_BASE_URL;
+const defaultApiUrl = 'http://localhost:7000/api';
+const baseURL = envApiUrl || defaultApiUrl;
+
+console.log("API Base URL:", baseURL);
+
 const apiClientPD = axios.create({
-  baseURL: 'http://localhost:7000/api', // Base URL của API
+  baseURL: baseURL, 
   headers: {
     'Content-Type': 'application/json',
     'accept': '*/*'
