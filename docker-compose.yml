@@ -193,6 +193,9 @@ services:
       - SPRING_RABBITMQ_TEMPLATE_RETRY_ENABLED=false
       - SPRING_RABBITMQ_LISTENER_SIMPLE_AUTO_DECLARE=true
       - SPRING_RABBITMQ_LISTENER_DIRECT_AUTO_DECLARE=true
+      - RETURN_URL=http://frontend:5173/payment/return
+      - RETURN_FAIL_URL=http://frontend:5173/payment/fail
+      - LISTING_URL=http://marketplace-service:5003
     depends_on:
       mysql-db: 
         condition: service_healthy

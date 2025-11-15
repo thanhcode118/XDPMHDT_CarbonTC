@@ -80,7 +80,7 @@ namespace Infrastructure.Services
 
         public async Task<WalletDto?> GetBalanceAsync(CancellationToken cancellationToken = default)
         {
-            /*try
+            try
             {
                 var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
 
@@ -146,15 +146,6 @@ namespace Infrastructure.Services
                 _logger.LogError(ex, "JSON error deserializing wallet response");
                 return null;
             }
-        */
-            return new WalletDto
-            {
-                WalletId = 12345,
-                UserId = "d5190e3a-e1bd-4e82-8571-38097c3a9652",
-                Balance = 20000000.00m,
-                Currency = "VND",
-                UpdatedAt = DateTime.UtcNow
-            };
         }
     }
 }
