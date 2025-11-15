@@ -1,6 +1,7 @@
 package com.carbontc.walletservice.consumer;
 
 import com.carbontc.walletservice.config.RabbitMQConfig;
+import com.carbontc.walletservice.dto.event.BalanceUpdateCommand;
 import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
 import com.carbontc.walletservice.dto.event.TransactionCompletedEvent;
 import com.carbontc.walletservice.dto.event.TransactionCreatedEvent;
@@ -8,6 +9,7 @@ import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.entity.Certificate;
 import com.carbontc.walletservice.entity.EWallet;
 import com.carbontc.walletservice.entity.status.FeeType;
+import com.carbontc.walletservice.entity.status.TransferStatus;
 import com.carbontc.walletservice.entity.status.TransferType;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.service.CarbonWalletsService;
@@ -81,6 +83,8 @@ public class RabbitMQConsumerService {
             transferRequest.setAmount(event.getCreditAmount());
             transferRequest.setTransferType(TransferType.SALE);
             transferRequest.setReferenceId(event.getTransactionId());
+            transferRequest.setTotalPrice(event.getMoneyAmount());
+            transferRequest.setStatus(TransferStatus.COMPLETED);
             carbonWalletsService.transferCredits(event.getSellerUserId(), transferRequest);
 
             // 6. Ghi nhận phí giao dịch

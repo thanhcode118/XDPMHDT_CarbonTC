@@ -1,5 +1,6 @@
 package com.carbontc.walletservice.dto.request;
 
+import com.carbontc.walletservice.entity.status.TransferStatus;
 import com.carbontc.walletservice.entity.status.TransferType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +19,10 @@ public class CreditTransferRequestForConsumer {
 
     @NotNull(message = "Loại chuyển khoản không được trống")
     private TransferType transferType;
+
+    private BigDecimal totalPrice;
+
+    private TransferStatus status;
 
     private String referenceId;
 }

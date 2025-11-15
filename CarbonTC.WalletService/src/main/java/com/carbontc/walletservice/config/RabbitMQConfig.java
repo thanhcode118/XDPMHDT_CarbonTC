@@ -52,6 +52,25 @@ public class RabbitMQConfig {
                 .with(CREDIT_ROUTING_KEY);
     }
 
+    public static final String BALANCE_EXCHANGE = "balance_exchange";
+    public static final String BALANCE_UPDATE_QUEUE = "balance.update.command.queue";
+    public static final String BALANCE_UPDATE_ROUTING_KEY = "balance.update.command";
+
+    @Bean
+    public Queue balanceUpdateQueue() {
+        return new Queue(BALANCE_UPDATE_QUEUE);
+    }
+
+    @Bean
+    public TopicExchange balanceExchange() {
+        return new TopicExchange(BALANCE_EXCHANGE);
+    }
+
+    @Bean
+    public Binding balanceUpdateBinding(Queue balanceUpdateQueue, TopicExchange balanceExchange) {
+        return BindingBuilder.bind(balanceUpdateQueue).to(balanceExchange).with(BALANCE_UPDATE_ROUTING_KEY);
+    }
+
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
