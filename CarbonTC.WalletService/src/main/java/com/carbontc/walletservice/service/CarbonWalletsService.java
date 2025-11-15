@@ -17,5 +17,5 @@ public interface CarbonWalletsService {
     void issueNewCredits(CreditIssuedEvent event) throws BusinessException;
     CarbonWallets findWalletByOwnerId(String userId) throws BusinessException ;
     CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequestForConsumer request) throws BusinessException;
-    public List<TransactionHistoryDto> getTransactionHistory(String currentUserId);
+    List<TransactionHistoryDto> getTransactionHistory(String currentUserId);
 }

@@ -64,6 +64,8 @@ services:
       RETURN_URL: "http://localhost:5173/payment/return"
       RETURN_FAIL_URL: "http://localhost:5173/payment/fail"
 
+      LISTING_URL: "http://localhost:5003"
+
     depends_on:
       - mysql
       - rabbitmq
