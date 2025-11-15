@@ -150,7 +150,7 @@ export const getWalletSummary = () => {
  * @param {number} period - 0 = Tuần, 1 = Tháng, 2 = Năm
  */
 export const getTransactionChartData = (period) => {
-  return apiClientPD.get('/transactions/summary/chart', { 
+  return apiClientPD.get('/Transaction/summary/chart', { 
     params: { period } 
   });
 };
