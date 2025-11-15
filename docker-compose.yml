@@ -1,0 +1,290 @@
+version: '3.8'
+
+services:
+  # ==============================
+  # 1️⃣ Shared MySQL Database
+  # ==============================
+  mysql-db:
+    image: mysql:8.0
+    container_name: carbontc-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: phucdai011
+      MYSQL_DATABASE: wallet_service_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - carbontc-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pphucdai011"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mongo-db:
+    image: mongo:6
+    container_name: carbontc-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - carbontc-network
+
+  # ==============================
+  # 2️⃣ Redis Cache
+  # ==============================
+  redis-cache:
+    image: redis:7.0-alpine
+    container_name: carbontc-redis
+    restart: always
+    ports:
+      - "6389:6379"
+    networks:
+      - carbontc-network
+
+  # ==============================
+  # 3️⃣ RabbitMQ Message Broker
+  # ==============================
+  rabbitmq-server:
+    image: rabbitmq:3-management
+    container_name: carbontc-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - carbontc-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # ==============================
+  # 4️⃣ API Gateway
+  # ==============================
+  api-gateway:
+    build:
+      context: ./CarbonTC.Gateway 
+      dockerfile: Dockerfile
+    container_name: carbontc-gateway
+    restart: always
+    ports:
+      - "7000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker 
+      - ASPNETCORE_URLS=http://+:80
+      - Frontend__AllowedOrigins__0=http://localhost:5173
+      - Frontend__AllowedOrigins__1=http://frontend:5173
+    depends_on:
+      - marketplace-service
+      - auth-service
+      - lifecycle-service
+      - admin-service
+    networks:
+      - carbontc-network
+
+  # ==============================
+  # 5️⃣ Microservices (5 service)
+  # ==============================
+
+  # --- Auth Service ---
+  auth-service:
+    build:
+      context: ./CarbonTC.Auth.Service
+      dockerfile: Dockerfile
+    container_name: carbontc-auth-service
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=CarbonTC_Auth;User=root;Password=phucdai011;
+      - Jwt__Secret=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - Jwt__Issuer=CarbonTC.Auth
+      - Jwt__Audience=CarbonTC.Services
+      - Jwt__ExpirationInMinutes=60
+      - Jwt__RefreshTokenExpirationInDays=7
+      - RabbitMQ__Host=rabbitmq-server
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+      - ASPNETCORE_URLS=http://+:5001
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      rabbitmq-server:
+        condition: service_healthy
+    networks:
+      - carbontc-network
+
+  # --- Marketplace Service ---
+  marketplace-service:
+    build:
+      context: .  
+      dockerfile: CarbonTC.Marketplace.Service/Dockerfile
+    container_name: carbontc-marketplace-service
+    restart: always
+    ports: 
+      - "5003:5003"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=CarbonTC_Marketplace;User=root;Password=phucdai011;
+      - ConnectionStrings__Redis=redis-cache:6379
+      - RabbitMQ__HostName=rabbitmq-server
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__VirtualHost=/
+      - Services__WalletService=http://wallet-service:5004
+      - Services__CarbonLifecycleService=http://lifecycle-service:5002
+      - ASPNETCORE_URLS=http://+:5003
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Cors__SignalRPolicy__AllowedOrigins__0=http://localhost:5173
+      - Cors__SignalRPolicy__AllowedOrigins__1=http://frontend:5173
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      rabbitmq-server:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+    networks:
+      - carbontc-network
+
+  wallet-service:
+    build:
+      context: ./CarbonTC.WalletService
+      dockerfile: Dockerfile
+    container_name: wallet-service 
+    restart: always
+    ports:
+      - "5004:5004"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/wallet_service_db?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=phucdai011 
+      - SPRING_RABBITMQ_HOST=rabbitmq-server 
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - SERVER_PORT=5004
+      - VNPAY_TMN_CODE=JTWT0WYG
+      - VNPAY_HASH_SECRET=TGMEKWOC5FCMO8NH3CEK4CB4ZHH3SQUY
+      - VNPAY_RETURN_URL=http://localhost:5004/api/payments/vnpay-return
+      - VNPAY_IPN_URL=https://a32fea6d8c0c.ngrok-free.app/api/payments/vnpay-ipn
+      - JWT_SECRET=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - JWT_ISSUER=CarbonTC.Auth
+      - JWT_AUDIENCE=CarbonTC.Services
+      - CLOUDINARY_CLOUD_NAME=dxzk5p80d
+      - CLOUDINARY_API_KEY=144885277356732
+      - CLOUDINARY_API_SECRET=UzqKa5b-EjwkqUCtGaNaRBfBFU0
+      - ADMIN_USER_ID=uuid-cua-admin-vi-du-12345
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_MISSING_QUEUES_FATAL=false
+      - SPRING_RABBITMQ_LISTENER_DIRECT_MISSING_QUEUES_FATAL=false
+      - SPRING_RABBITMQ_TEMPLATE_DEFAULT_RECEIVE_QUEUE=wallet_service_transaction_queue
+      - SPRING_RABBITMQ_TEMPLATE_RETRY_ENABLED=false
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_AUTO_DECLARE=true
+      - SPRING_RABBITMQ_LISTENER_DIRECT_AUTO_DECLARE=true
+    depends_on:
+      mysql-db: 
+        condition: service_healthy
+      rabbitmq-server: 
+        condition: service_healthy
+    networks:
+      - carbontc-network
+
+  lifecycle-service:
+    build:
+      context: ./CarbonTC.CarbonLifecycle.Service
+      dockerfile: Dockerfile
+    container_name: lifecycle-service
+    restart: always
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_URLS=http://+:5002
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Port=3306;Database=carbon_lifecycle_db;User=root;Password=phucdai011;
+      - RabbitMQ__HostName=rabbitmq-server
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__VirtualHost=/
+      - FileStorage__RootPath=/app/uploaded_files
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      rabbitmq-server:
+        condition: service_healthy
+    volumes:
+      - carbon_lifecycle_files:/app/uploaded_files
+    networks:
+      - carbontc-network
+
+  admin-service:
+    build:
+      context: ./CarbonTC.Admin.Service/admin-backend
+      dockerfile: Dockerfile
+    container_name: carbontc-admin-service
+    restart: always
+    ports:
+      - "5005:5005"
+    environment:
+      - PORT=5005
+      - MONGODB_URI=mongodb://mongo-db:27017/admin_service
+      - MONGODB_TEST_URI=mongodb://mongo-db:27017/admin_service_test
+      - RABBITMQ_URL=amqp://rabbitmq-server:5672
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - MARKETPLACE_SERVICE_URL=http://marketplace-service:5003
+      - WALLET_SERVICE_URL=http://wallet-service:5004
+      - LIFECYCLE_SERVICE_URL=http://lifecycle-service:5002
+      - NODE_ENV=production
+      - JWT_SECRET=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - JWT_PUBLIC_KEY=your_jwt_public_key_here
+      - AUTH_ISS=CarbonTC.Auth
+      - AUTH_AUD=CarbonTC.Services
+      - LOG_LEVEL=info
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - SERVICE_TIMEOUT=5000
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:5005
+    depends_on:
+      - mongo-db
+      - rabbitmq-server
+    networks:
+      - carbontc-network
+
+  frontend:
+    build:
+      context: ./CarbonTC_Frontend
+      dockerfile: Dockerfile
+    container_name: carbontc-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./CarbonTC_Frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+
+# ==============================
+# 6️⃣ Network & Volumes
+# ==============================
+networks:
+  carbontc-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
+  carbon_lifecycle_files:
+  mongo_data:

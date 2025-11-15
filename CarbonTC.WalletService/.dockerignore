@@ -1,0 +1,29 @@
+# Bỏ qua thư mục build của Maven
+target/
+
+# Bỏ qua thư mục Git
+.git/
+
+# Bỏ qua các file của Git
+.gitignore
+.gitattributes
+
+# Bỏ qua các file Docker, chúng không cần thiết bên trong image
+Dockerfile
+docker-compose.yml
+
+# Bỏ qua thư mục .mvn (nếu bạn không dùng wrapper bên trong Docker)
+# Nếu bạn DÙNG mvnw trong Dockerfile thì HÃY XÓA DÒNG NÀY
+.mvn/
+
+# Bỏ qua các file log
+*.log
+logs/
+
+# Bỏ qua các file cấu hình của IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project

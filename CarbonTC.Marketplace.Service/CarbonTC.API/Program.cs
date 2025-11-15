@@ -8,6 +8,7 @@ using Infrastructure.BackgroundJobs;
 using Infrastructure.BackgroundJobs.Consumer;
 using Infrastructure.SignalR.Hubs;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SharedLibrary.Extensions;
 using System.Diagnostics;
@@ -52,11 +53,16 @@ namespace CarbonTC.API
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
             });
 
+
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:SignalRPolicy:AllowedOrigins")
+                .Get<string[]>() ?? new[] { "http://localhost:5173" };
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("SignalRPolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173") 
+                    policy.WithOrigins(allowedOrigins) 
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials(); 
@@ -100,8 +106,46 @@ namespace CarbonTC.API
             builder.Services.AddHostedService<AuctionStatusUpdaterService>();
             builder.Services.AddHostedService<TransactionCompletedConsumerHostedService>();
             builder.Services.AddHostedService<TransactionFailedConsumerHostedService>();
+            builder.Services.AddHostedService<UpdateBalanceConsumerHostedService>();
 
             var app = builder.Build();
+
+            ApplyMigrations();
+            void ApplyMigrations()
+
+            {
+
+                using (var scope = app.Services.CreateScope())
+
+                {
+
+                    var services = scope.ServiceProvider;
+
+                    try
+
+                    {
+
+                        var context = services.GetRequiredService<ApplicationDbContext>();
+
+                        context.Database.Migrate();
+
+                        Console.WriteLine("Migrations applied successfully.");
+
+                    }
+
+                    catch (Exception ex)
+
+                    {
+
+                        var logger = services.GetRequiredService<ILogger<Program>>();
+
+                        logger.LogError(ex, "An error occurred while applying migrations.");
+
+                    }
+
+                }
+
+            }
 
             app.UseExceptionHandler();
 

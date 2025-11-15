@@ -137,7 +137,7 @@ builder.Services.AddCors(options =>
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8080); // Khớp với port container trong docker-compose
+    options.ListenAnyIP(5001); // Khớp với port container trong docker-compose
 });
 
 // ========================

@@ -1,0 +1,294 @@
+﻿{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/api/CreditInventory/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/CreditInventory/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "marketplace-service",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "market-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/Listing/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/Listing/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "marketplace-service",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "market-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/Transaction",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/api/Transaction",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "marketplace-service",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "market-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/listings/{listingId}/transactions",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/api/listings/{listingId}/transactions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "marketplace-service",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "market-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/users/me/transactions{catchAll}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/api/users/me/transactions{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "marketplace-service",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "market-service"
+    },
+    {
+      "UpstreamPathTemplate": "/hubs/auction{catchAll}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamPathTemplate": "/hubs/auction{catchAll}",
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "marketplace-service",
+          "Port": 5003
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/Auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/Auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth-service",
+          "Port": 5001
+        }
+      ],
+      "SwaggerKey": "auth-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/Users/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/Users/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth-service",
+          "Port": 5001
+        }
+      ],
+      "SwaggerKey": "auth-service"
+    },
+    {
+      "UpstreamPathTemplate": "/health",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/health",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth-service",
+          "Port": 5001
+        }
+      ],
+      "SwaggerKey": "auth-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admin/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "DownstreamPathTemplate": "/api/admin/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "admin-service",
+          "Port": 5005
+        }
+      ],
+      "SwaggerKey": "admin-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/AuditReports/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "DownstreamPathTemplate": "/api/AuditReports/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lifecycle-service",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "carbon-lifecycle-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/CarbonCredits/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "DownstreamPathTemplate": "/api/CarbonCredits/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lifecycle-service",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "carbon-lifecycle-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/cva-standards/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "DownstreamPathTemplate": "/api/cva-standards/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lifecycle-service",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "carbon-lifecycle-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/EvJourneys/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "DownstreamPathTemplate": "/api/EvJourneys/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lifecycle-service",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "carbon-lifecycle-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/JourneyBatches/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "DownstreamPathTemplate": "/api/JourneyBatches/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lifecycle-service",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "carbon-lifecycle-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/VerificationRequests/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+      "DownstreamPathTemplate": "/api/VerificationRequests/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lifecycle-service",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "carbon-lifecycle-service"
+    },
+
+
+    {
+      "UpstreamPathTemplate": "/api/wallet/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamPathTemplate": "/api/wallet/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "wallet-service",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "wallet-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/carbon-wallet/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamPathTemplate": "/api/carbon-wallet/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "wallet-service",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "wallet-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/withdraw-requests",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/api/withdraw-requests",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "wallet-service",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "wallet-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/payments/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamPathTemplate": "/api/payments/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "wallet-service",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "wallet-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admin-dashboard/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamPathTemplate": "/api/admin-dashboard/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "wallet-service",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "wallet-service"
+    },
+    {
+      "UpstreamPathTemplate": "/api/certificates/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/api/certificates/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "wallet-service",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "wallet-service"
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:7000"
+  }
+}

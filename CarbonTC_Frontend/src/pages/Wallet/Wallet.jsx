@@ -7,6 +7,7 @@ import StatCard from '../../components/StatCard/StatCard';
 import WalletChart from '../../components/WalletChart/WalletChart';
 import TransactionItem from '../../components/TransactionItem/TransactionItem';
 import WithdrawModal from '../../components/WithdrawModal/WithdrawModal';
+import TokenTestHelper from '../../components/TokenTestHelper/TokenTestHelper';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
 import { getWalletSummary , getTransactionChartData} from '../../services/listingService';
@@ -19,7 +20,7 @@ import {
   createDepositPayment,
   createWithdrawRequest,
   getMyEWallet
-} from '../../utils/walletApi.jsx';
+} from '../../services/walletService.jsx';
 
 const Wallet = () => {
   const { sidebarActive, toggleSidebar } = useSidebar();
@@ -398,6 +399,9 @@ const Wallet = () => {
         availableBalance={withdrawMode === 'money' ? (eWallet?.balance ?? 0) : (carbonWallet?.balance ?? 0)}
         mode={withdrawMode}
       />
+      
+      {/* Token Test Helper - Chỉ hiển thị trong dev mode */}
+      <TokenTestHelper />
     </div>
   );
 };

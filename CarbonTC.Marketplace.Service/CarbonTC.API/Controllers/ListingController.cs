@@ -6,6 +6,7 @@ using Application.Common.Features.Listings.Commands.CreateListing;
 using Application.Common.Features.Listings.Commands.DeleteListing;
 using Application.Common.Features.Listings.Commands.UpdateListing;
 using Application.Common.Features.Listings.DTOs;
+using Application.Common.Features.Listings.Queries.CanWithdraw;
 using Application.Common.Features.Listings.Queries.GetAllListings;
 using Application.Common.Features.Listings.Queries.GetByIdListing;
 using Application.Common.Features.Listings.Queries.GetMyListings;
@@ -248,5 +249,11 @@ namespace CarbonTC.API.Controllers
             }
         }
 
+        [HttpPost("canwithdraw")]
+        public async Task<IActionResult> CanWithdraw([FromBody]CanWithdrawQuery canWithdrawQuery, CancellationToken cancellationToken)
+        {
+            var query = await _mediator.Send(canWithdrawQuery, cancellationToken);
+            return Ok(ApiResponse<bool>.SuccessResponse(query.Value));
+        }
     }
 }

@@ -14,5 +14,11 @@ namespace CarbonTC.CarbonLifecycle.Application.Services
 
         // Lấy email (hoặc username) của người dùng
         string? GetUserEmail();
+
+        // Lấy role của người dùng đang đăng nhập
+        string? GetUserRole();
+
+        // Kiểm tra người dùng có role cụ thể không
+        bool IsInRole(string role);
     }
 }

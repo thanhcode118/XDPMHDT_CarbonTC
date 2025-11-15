@@ -1,15 +1,30 @@
-import { Box, Typography } from '@mui/material';
+import { Container, Stack } from '@mui/material';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useProfile } from './hooks/useProfile';
+import {
+  ProfileHeader,
+  SecurityCard,
+} from './components/Profile';
 
 function Profile() {
+  const {
+    profileData,
+    updateProfile,
+    loading,
+    changePassword,
+  } = useProfile();
+
+  if (loading || !profileData) {
+    return <LoadingSpinner />;
+  }
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Admin Profile
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        View and edit your profile information
-      </Typography>
-    </Box>
+    <Container maxWidth="lg" sx={{ py: 2 }}>
+      <ProfileHeader profileData={profileData} onUpdate={updateProfile} />
+      <Stack spacing={3}>
+        <SecurityCard onChangePassword={changePassword} />
+      </Stack>
+    </Container>
   );
 }
 

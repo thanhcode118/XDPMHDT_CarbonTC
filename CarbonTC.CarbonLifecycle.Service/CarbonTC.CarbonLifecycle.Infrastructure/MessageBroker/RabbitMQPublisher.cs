@@ -75,6 +75,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                     arguments: null
                 );
 
+                DeclareQueuesAndBindings();
+
                 _logger.LogInformation(
                     "RabbitMQ connection established. Exchange: {Exchange}, Type: {Type}",
                     _settings.ExchangeName,
@@ -88,6 +90,40 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             }
         }
 
+        private void DeclareQueuesAndBindings()
+        {
+            // Queue cho credit.issued
+            _channel.QueueDeclare(
+                queue: "credit.issued.queue",
+                durable: _settings.Durable,
+                exclusive: false,
+                autoDelete: _settings.AutoDelete,
+                arguments: null
+            );
+            
+            _channel.QueueBind(
+                queue: "credit.issued.queue",
+                exchange: _settings.ExchangeName,
+                routingKey: "credit.issued",
+                arguments: null
+            );
+
+            // Queue cho credit.inventory.update
+            _channel.QueueDeclare(
+                queue: "credit.inventory.update.queue",
+                durable: _settings.Durable,
+                exclusive: false,
+                autoDelete: _settings.AutoDelete,
+                arguments: null
+            );
+            
+            _channel.QueueBind(
+                queue: "credit.inventory.update.queue",
+                exchange: _settings.ExchangeName,
+                routingKey: "credit.inventory.update",
+                arguments: null
+            );
+        }
         public async Task PublishAsync<TEvent>(TEvent @event, string? routingKey = null)
             where TEvent : IDomainEvent
         {
@@ -140,8 +176,9 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                     PublishGenericMessage(@event, routingKey);
 
                     _logger.LogInformation(
-                        "Published integration event: {EventType}, RoutingKey: {RoutingKey}",
+                        "Published integration event: {EventType} to Exchange: {Exchange}, RoutingKey: {RoutingKey}",
                         @event.GetType().Name,
+                        _settings.ExchangeName,
                         routingKey ?? GenerateGenericRoutingKey(@event) // Dùng fallback mới
                     );
 
@@ -206,6 +243,14 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                 routingKey: finalRoutingKey,
                 basicProperties: properties,
                 body: body
+            );
+
+            _logger.LogDebug(
+                "Message published successfully. Exchange: {Exchange}, RoutingKey: {RoutingKey}, MessageId: {MessageId}, MessageSize: {Size} bytes",
+                _settings.ExchangeName,
+                finalRoutingKey,
+                properties.MessageId,
+                body.Length
             );
         }
 

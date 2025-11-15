@@ -23,7 +23,8 @@ services:
       RABBITMQ_DEFAULT_PASS : guest
 
   wallet-service:
-    build: .
+    image: tkhan2004/wallet-service:1.0
+
     container_name: wallet_service
     ports:
       - "5004:5004"
@@ -33,32 +34,31 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
 
       # Kết nối RabbitMQ
-      # Quan trọng: Host là "rabbitmq" (tên service)
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
 
-        # Cổng Server
+      # Cổng Server
       SERVER_PORT: 5004
 
-        # VNPAY (localhost:5004 vì trình duyệt của user gọi)
+      # VNPAY
       VNPAY_TMN_CODE: JTWT0WYG
       VNPAY_HASH_SECRET: TGMEKWOC5FCMO8NH3CEK4CB4ZHH3SQUY
       VNPAY_RETURN_URL: http://localhost:5004/api/payments/vnpay-return
-      VNPAY_IPN_URL: https://a32fea6d8c0c.ngrok-free.app/api/payments/vnpay-ipn # (Phải dùng ngrok)
+      VNPAY_IPN_URL: https://a32fea6d8c0c.ngrok-free.app/api/payments/vnpay-ipn
 
-        # Secrets
+      # Secrets
       JWT_SECRET: "YourSuperSecretKeyThatIsAtLeast32CharactersLong!"
       JWT_ISSUER: "CarbonTC.Auth"
       JWT_AUDIENCE: "CarbonTC.Services"
 
-        # Cloudinary
+      # Cloudinary
       CLOUDINARY_CLOUD_NAME: dxzk5p80d
       CLOUDINARY_API_KEY: 144885277356732
       CLOUDINARY_API_SECRET: UzqKa5b-EjwkqUCtGaNaRBfBFU0
 
-        # Config
+      # Config
       ADMIN_USER_ID: "uuid-cua-admin-vi-du-12345"
 
     depends_on:

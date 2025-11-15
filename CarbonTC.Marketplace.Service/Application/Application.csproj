@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\Features\Transactions\DTOs\**" />
+    <EmbeddedResource Remove="Common\Features\Transactions\DTOs\**" />
+    <None Remove="Common\Features\Transactions\DTOs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
@@ -22,7 +28,6 @@
   <ItemGroup>
     <Folder Include="Common\Features\CreditInventories\DTOs\" />
     <Folder Include="Common\Features\CreditInventories\EventHandlers\" />
-    <Folder Include="Common\Features\Transactions\DTOs\" />
   </ItemGroup>
 
 </Project>

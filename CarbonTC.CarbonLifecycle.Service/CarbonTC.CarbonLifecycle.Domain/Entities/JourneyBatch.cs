@@ -152,5 +152,24 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
             Status = JourneyBatchStatus.CreditsIssued;
             LastModifiedAt = DateTime.UtcNow;
         }
+
+        // Behavior Method 6: Đánh dấu đã phát hành tín chỉ trực tiếp (bỏ qua verification process)
+        // Dùng cho trường hợp Admin/CVA phát hành trực tiếp mà không qua verification
+        public void MarkAsCreditsIssuedDirectly()
+        {
+            // Cho phép chuyển từ bất kỳ trạng thái nào (trừ Rejected) sang CreditsIssued
+            // Đặc biệt cho phép từ Pending (phát hành trực tiếp)
+            if (Status == JourneyBatchStatus.Rejected)
+            {
+                throw new InvalidOperationException($"Cannot issue credits for a rejected batch.");
+            }
+
+            Status = JourneyBatchStatus.CreditsIssued;
+            if (VerificationTime == null)
+            {
+                VerificationTime = DateTime.UtcNow; // Set verification time nếu chưa có
+            }
+            LastModifiedAt = DateTime.UtcNow;
+        }
     }
 }

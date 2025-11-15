@@ -4,9 +4,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "7207:80"
+      - "5002:80"
     environment:
       ASPNETCORE_URLS: http://+:80
+      ASPNETCORE_ENVIRONMENT: "Development"
       ConnectionStrings__DefaultConnection: "Server=mysql_db;Port=3306;Database=carbon_lifecycle_db;Uid=root;Pwd=thienhao2206;"
       RabbitMQ__HostName: "rabbitmq_broker"
       RabbitMQ__Port: "5672"
@@ -14,6 +15,9 @@ services:
       RabbitMQ__Password: "admin123"
       RabbitMQ__VirtualHost: "/carbonlifecycle"
       FileStorage__RootPath: "/app/uploaded_files"
+      # Database seed configuration (optional)
+      # Database__SkipSeed: "false"  # Set to "true" to completely disable seed
+      # Database__ForceSeed: "false"  # Set to "true" to force seed even if data exists
     depends_on:
       mysql_db:
         condition: service_healthy
@@ -21,7 +25,6 @@ services:
         condition: service_healthy
     volumes:
       - uploaded_files:/app/uploaded_files
-      - ~/.nuget/packages:/root/.nuget/packages
     networks:
       - carbon_network
     restart: unless-stopped
@@ -40,10 +43,11 @@ services:
       - carbon_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pthienhao2206"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pthienhao2206"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   rabbitmq_broker:
     image: rabbitmq:3-management
@@ -67,32 +71,33 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 40s
 
-      # --- THÊM SERVICE MỚI CHO API GATEWAY ---
-  api_gateway:
-    build:
-      context: ../CarbonTC.Gateway/ApiGateway # Đường dẫn đến thư mục chứa Dockerfile của Gateway (nếu có) hoặc project Gateway
-      dockerfile: Dockerfile # Tên Dockerfile của Gateway (nếu có, nếu không Docker tự tìm)
-    container_name: carbontc-apigateway
-    ports:
-      - "7000:8080"  # Ánh xạ cổng 7000 (HTTPS) của máy bạn vào cổng 8080 (HTTP) của container Gateway
-      - "7001:8081"  # Ánh xạ cổng 7001 (HTTP) của máy bạn vào cổng 8081 (HTTPS) của container Gateway
-                     # Lưu ý: Cổng 8080/8081 là cổng mặc định ASP.NET Core nghe trong container.
-                     # Bạn có thể cần điều chỉnh nếu Dockerfile Gateway của bạn EXPOSE cổng khác.
-                     # Hoặc bạn có thể dùng biến môi trường ASPNETCORE_URLS để chỉ định.
-    environment:
-      ASPNETCORE_URLS: https://+:8081;http://+:8080 # Bảo container nghe trên cả HTTP và HTTPS
-      ASPNETCORE_HTTPS_PORTS: 8081 # Chỉ định cổng HTTPS
-      ASPNETCORE_Kestrel__Certificates__Default__Password: "your_dev_cert_password" # Mật khẩu của chứng chỉ dev (nếu cần cho HTTPS)
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx # Đường dẫn đến chứng chỉ dev trong container (nếu cần cho HTTPS)
-    volumes:
-       - ~/.aspnet/https:/https/:ro # Map thư mục chứa chứng chỉ dev vào container (nếu cần cho HTTPS)
-       - ../CarbonTC.Gateway/ApiGateway:/app # (Optional) Map code để debug nóng, chỉ dùng khi dev
-    networks:
-      - carbon_network
-    depends_on: # Gateway nên khởi động sau khi service kia sẵn sàng
-      - carbon_lifecycle_service
-    restart: unless-stopped
+  # --- API GATEWAY SERVICE (COMMENTED OUT - UNCOMMENT IF GATEWAY EXISTS) ---
+  # api_gateway:
+  #   build:
+  #     context: ../CarbonTC.Gateway/ApiGateway # Đường dẫn đến thư mục chứa Dockerfile của Gateway (nếu có) hoặc project Gateway
+  #     dockerfile: Dockerfile # Tên Dockerfile của Gateway (nếu có, nếu không Docker tự tìm)
+  #   container_name: carbontc-apigateway
+  #   ports:
+  #     - "7000:8080"  # Ánh xạ cổng 7000 (HTTPS) của máy bạn vào cổng 8080 (HTTP) của container Gateway
+  #     - "7001:8081"  # Ánh xạ cổng 7001 (HTTP) của máy bạn vào cổng 8081 (HTTPS) của container Gateway
+  #                    # Lưu ý: Cổng 8080/8081 là cổng mặc định ASP.NET Core nghe trong container.
+  #                    # Bạn có thể cần điều chỉnh nếu Dockerfile Gateway của bạn EXPOSE cổng khác.
+  #                    # Hoặc bạn có thể dùng biến môi trường ASPNETCORE_URLS để chỉ định.
+  #   environment:
+  #     ASPNETCORE_URLS: https://+:8081;http://+:8080 # Bảo container nghe trên cả HTTP và HTTPS
+  #     ASPNETCORE_HTTPS_PORTS: 8081 # Chỉ định cổng HTTPS
+  #     ASPNETCORE_Kestrel__Certificates__Default__Password: "your_dev_cert_password" # Mật khẩu của chứng chỉ dev (nếu cần cho HTTPS)
+  #     ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx # Đường dẫn đến chứng chỉ dev trong container (nếu cần cho HTTPS)
+  #   volumes:
+  #      - ~/.aspnet/https:/https/:ro # Map thư mục chứa chứng chỉ dev vào container (nếu cần cho HTTPS)
+  #      - ../CarbonTC.Gateway/ApiGateway:/app # (Optional) Map code để debug nóng, chỉ dùng khi dev
+  #   networks:
+  #     - carbon_network
+  #   depends_on: # Gateway nên khởi động sau khi service kia sẵn sàng
+  #     - carbon_lifecycle_service
+  #   restart: unless-stopped
 
 volumes:
   mysql_data:

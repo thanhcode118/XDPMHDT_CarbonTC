@@ -341,5 +341,161 @@ namespace Infrastructure.Redis
                 values: new RedisValue[] { amountToCommit.ToString(CultureInfo.InvariantCulture) }
             );
         }
+
+        public async Task<bool> CanWithdrawAsync(Guid userId, decimal amountToWithdraw)
+        {
+            var balanceKey = GetBalanceKey(userId);
+
+            var balanceExists = await _db.KeyExistsAsync(balanceKey);
+
+            if (!balanceExists)
+            {
+                _logger.LogInformation(
+                    "No active balance in cache for user {UserId}. Allowing withdrawal of {Amount}",
+                    userId, amountToWithdraw);
+                return true;
+            }
+
+            var canWithdraw = await CheckBalanceInRedisAsync(balanceKey, amountToWithdraw);
+
+            if (canWithdraw)
+            {
+                _logger.LogInformation(
+                    "User {UserId} has sufficient available balance to withdraw {Amount}",
+                    userId, amountToWithdraw);
+                return true;
+            }
+
+            _logger.LogWarning(
+                "User {UserId} has insufficient available balance to withdraw {Amount}. Has locked funds.",
+                userId, amountToWithdraw);
+            return false;
+        }
+
+        private async Task<bool> CheckBalanceInRedisAsync(string balanceKey, decimal amountToWithdraw)
+        {
+            var script = @"
+                local balance_key = KEYS[1]
+                local amount_to_withdraw = tonumber(ARGV[1])
+        
+                local available = redis.call('HGET', balance_key, 'available')
+                local locked = redis.call('HGET', balance_key, 'locked')
+        
+                if not available then
+                    return {0, 'Balance not found'}
+                end
+        
+                available = tonumber(available)
+                locked = locked and tonumber(locked) or 0
+        
+                if available >= amount_to_withdraw then
+                    return {1, 'Sufficient', available, locked}
+                else
+                    return {0, 'Insufficient', available, locked}
+                end
+            ";
+
+            try
+            {
+                var result = (RedisResult[])await _db.ScriptEvaluateAsync(
+                    script,
+                    keys: new RedisKey[] { balanceKey },
+                    values: new RedisValue[] { amountToWithdraw.ToString(CultureInfo.InvariantCulture) }
+                );
+
+                var success = (int)result[0] == 1;
+
+                if (!success)
+                {
+                    var available = (double)result[2];
+                    var locked = (double)result[3];
+                    _logger.LogInformation(
+                        "Balance check: Available={Available}, Locked={Locked}, Requested={Requested}",
+                        available, locked, amountToWithdraw);
+                }
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking balance in Redis");
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateBalanceAfterDepositOrWithdrawAsync(Guid userId, decimal newTotalBalance)
+        {
+            var script = @"
+                local balance_key = KEYS[1]
+                local new_total_from_wallet = tonumber(ARGV[1])
+        
+                -- Kiểm tra xem có cache hay không
+                local exists = redis.call('EXISTS', balance_key)
+        
+                if exists == 0 then
+                    -- Chưa có cache, khởi tạo mới (user chưa tham gia đấu giá/mua hàng)
+                    redis.call('HSET', balance_key, 'available', new_total_from_wallet)
+                    redis.call('HSET', balance_key, 'locked', 0)
+                    redis.call('EXPIRE', balance_key, 600) -- 10 phút
+                    return {1, 'Initialized', new_total_from_wallet, 0, new_total_from_wallet}
+                end
+        
+                -- Đã có cache, tính toán cẩn thận
+                local old_available = redis.call('HGET', balance_key, 'available')
+                local locked = redis.call('HGET', balance_key, 'locked')
+        
+                old_available = tonumber(old_available) or 0
+                locked = tonumber(locked) or 0
+        
+                -- Tính tổng cũ trong cache
+                local old_total_in_cache = old_available + locked
+        
+                -- Tính chênh lệch (nạp thêm hoặc rút đi)
+                local difference = new_total_from_wallet - old_total_in_cache
+        
+                -- Cập nhật available bằng cách cộng/trừ difference
+                -- QUAN TRỌNG: Giữ nguyên locked!
+                local new_available = old_available + difference
+        
+                -- Đảm bảo available không âm
+                if new_available < 0 then
+                    new_available = 0
+                end
+        
+                -- Cập nhật
+                redis.call('HSET', balance_key, 'available', new_available)
+                -- locked GIỮ NGUYÊN!
+        
+                return {1, 'Updated', new_available, locked, difference}
+            ";
+
+            var balanceKey = GetBalanceKey(userId);
+
+            try
+            {
+                var result = (RedisResult[])await _db.ScriptEvaluateAsync(
+                    script,
+                    keys: new RedisKey[] { balanceKey },
+                    values: new RedisValue[] { newTotalBalance.ToString(CultureInfo.InvariantCulture) }
+                );
+
+                var success = (int)result[0] == 1;
+                var action = (string)result[1];
+                var newAvailable = (double)result[2];
+                var locked = (double)result[3];
+                var difference = (double)result[4];
+
+                _logger.LogInformation(
+                    "Balance updated for user {UserId}. Action: {Action}, New Total: {Total}, Available: {Available}, Locked: {Locked}, Difference: {Diff}",
+                    userId, action, newTotalBalance, newAvailable, locked, difference);
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update balance after deposit/withdraw for user {UserId}", userId);
+                return false;
+            }
+        }
     }
 }
