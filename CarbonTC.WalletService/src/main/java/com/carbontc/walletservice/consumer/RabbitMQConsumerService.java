@@ -1,6 +1,7 @@
 package com.carbontc.walletservice.consumer;
 
 import com.carbontc.walletservice.config.RabbitMQConfig;
+import com.carbontc.walletservice.dto.event.BalanceUpdateCommand;
 import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
 import com.carbontc.walletservice.dto.event.TransactionCompletedEvent;
 import com.carbontc.walletservice.dto.event.TransactionCreatedEvent;
