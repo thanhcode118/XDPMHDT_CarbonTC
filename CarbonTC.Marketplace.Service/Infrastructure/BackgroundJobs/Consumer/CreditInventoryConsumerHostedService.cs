@@ -1,9 +1,10 @@
 ﻿using Application.Common.Features.CreditInventories.Commands.CreateCreditInventory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SharedLibrary.Interfaces;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
+using SharedLibrary.Interfaces;
 
 namespace Infrastructure.BackgroundJobs.Consumer
 {
@@ -25,7 +26,7 @@ namespace Infrastructure.BackgroundJobs.Consumer
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await _consumer.Subscribe<CreateCreditInventoryCommand>("credit_inventory_queue", async (message) =>
+            await _consumer.Subscribe<CreateCreditInventoryCommand>("carbonlifecycle.events", ExchangeType.Topic, "credit.inventory.update", "credit.inventory.update.queue", async (message) =>
             {
                 using var scope = _scopeFactory.CreateScope();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();

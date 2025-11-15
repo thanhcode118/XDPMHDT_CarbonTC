@@ -106,6 +106,7 @@ namespace CarbonTC.API
             builder.Services.AddHostedService<AuctionStatusUpdaterService>();
             builder.Services.AddHostedService<TransactionCompletedConsumerHostedService>();
             builder.Services.AddHostedService<TransactionFailedConsumerHostedService>();
+            builder.Services.AddHostedService<UpdateBalanceConsumerHostedService>();
 
             var app = builder.Build();
 
