@@ -1,5 +1,7 @@
 package com.carbontc.walletservice.service.Impl;
 
+import com.carbontc.walletservice.config.RabbitMQConfig;
+import com.carbontc.walletservice.dto.event.BalanceUpdateCommand;
 import com.carbontc.walletservice.entity.EWallet;
 import com.carbontc.walletservice.entity.TransactionLog;
 import com.carbontc.walletservice.exception.BusinessException;
@@ -9,6 +11,7 @@ import com.carbontc.walletservice.service.PaymentService;
 import com.carbontc.walletservice.service.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final EWalletRepository eWalletRepository;
     private final TransactionLogRepository transactionLogRepository;
     private final VNPayService vnPayService;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @Transactional
@@ -93,11 +97,21 @@ public class PaymentServiceImpl implements PaymentService {
             EWallet eWallet = eWalletRepository.findById(log.getWallet().getWalletId())
                     .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
             eWallet.setBalance(eWallet.getBalance().add(log.getAmount()));
-            eWalletRepository.save(eWallet);
+            EWallet savedWallet = eWalletRepository.save(eWallet);
 
             log.setStatus("SUCCESS");
             log.setDescription("Nạp tiền thành công qua VNPay");
             transactionLogRepository.save(log);
+
+            BalanceUpdateCommand event = new BalanceUpdateCommand();
+            event.setUserId(savedWallet.getUserId());
+            event.setNewTotalBalance(savedWallet.getBalance()); // Gửi số dư MỚI NHẤT
+
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.BALANCE_EXCHANGE,
+                    RabbitMQConfig.BALANCE_UPDATE_ROUTING_KEY,
+                    event
+            );
 
             response.put("RspCode", "00");
             response.put("Message", "Confirm Success");

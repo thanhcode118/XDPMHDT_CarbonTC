@@ -4,6 +4,7 @@ import com.carbontc.walletservice.dto.request.CreditTransferRequest;
 import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.dto.response.CarbonWalletResponse;
 import com.carbontc.walletservice.dto.response.CreditTransferResponse;
+import com.carbontc.walletservice.dto.response.TransactionHistoryDto;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.payload.ApiResponse;
 import com.carbontc.walletservice.service.CarbonWalletsService;
@@ -17,6 +18,8 @@ import org.springframework.security.access.prepost.PreAuthorize; // Thêm PreAut
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/carbon-wallet")
@@ -55,6 +58,14 @@ public class CarbonWalletController {
 
         CreditTransferResponse response = carbonWalletsService.transferCredits(fromUserId, request);
         return ResponseEntity.ok(ApiResponse.success("Chuyển tín chỉ thành công", response));
+    }
+
+    @Operation(summary = "Lấy lịch sử giao dịch")
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<List<TransactionHistoryDto>>> getHistory() throws BusinessException {
+        String userId = authencationUtil.getAuthenticatedUserId();
+        List<TransactionHistoryDto> history = carbonWalletsService.getTransactionHistory(userId);
+        return ResponseEntity.ok(ApiResponse.success("Lấy lịch sử thành công", history));
     }
 
 }

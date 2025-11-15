@@ -4,8 +4,10 @@ import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
 import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.dto.response.CarbonWalletResponse;
 import com.carbontc.walletservice.dto.response.CreditTransferResponse;
+import com.carbontc.walletservice.dto.response.TransactionHistoryDto;
 import com.carbontc.walletservice.entity.CarbonCreditTransfer;
 import com.carbontc.walletservice.entity.CarbonWallets;
+import com.carbontc.walletservice.entity.status.TransferStatus;
 import com.carbontc.walletservice.entity.status.TransferType;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.CarbonCreditTransferRepository;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -110,11 +113,51 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
         carbonCreditTransfer.setAmount(request.getAmount());
         carbonCreditTransfer.setTransferType(request.getTransferType());
         carbonCreditTransfer.setReferenceId(request.getReferenceId());
+        carbonCreditTransfer.setTotalPrice(request.getTotalPrice());
+        if (request.getStatus() != null) {
+            carbonCreditTransfer.setStatus(request.getStatus());
+        } else {
+            carbonCreditTransfer.setStatus(TransferStatus.COMPLETED);
+        }
+
         carbonCreditTransfer.setCreatedAt(LocalDateTime.now());
 
         CarbonCreditTransfer saved = carbonCreditTransferRepository.save(carbonCreditTransfer);
 
         return mapToTransferResponse(saved);
+    }
+
+    @Override
+    public List<TransactionHistoryDto> getTransactionHistory(String currentUserId) { // ID người đang xem
+
+        List<CarbonCreditTransfer> rawData = carbonCreditTransferRepository.findAllHistoryByUserId(currentUserId);
+
+        return rawData.stream().map(t -> {
+
+            // --- LOGIC QUYẾT ĐỊNH "LOẠI" ---
+            String calculatedType;
+
+            if (t.getTransferType() == TransferType.ISSUE) {
+                calculatedType = "EARN"; // Kiếm được
+            } else {
+                // Kiểm tra xem người đang xem (currentUserId) là người gửi hay người nhận
+                if (t.getFromWallet().getOwnerId().equals(currentUserId)) {
+                    calculatedType = "SELL"; // Mình là người gửi -> Tức là mình Bán
+                } else {
+                    calculatedType = "BUY";  // Mình là người nhận -> Tức là mình Mua
+                }
+            }
+
+            return TransactionHistoryDto.builder()
+                    .date(t.getCreatedAt())
+                    .type(calculatedType)
+                    .amount(t.getAmount())
+                    .price(t.getTotalPrice())
+                    .co2Reduced(t.getAmount().multiply(BigDecimal.valueOf(1000)))
+                    .status(t.getStatus())
+                    .build();
+
+        }).toList();
     }
 
     // HELPER METHOD MAP
