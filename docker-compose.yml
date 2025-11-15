@@ -274,6 +274,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_APIGATEWAY_BASE_URL=http://api-gateway:80/api
     restart: unless-stopped
 
 # ==============================
