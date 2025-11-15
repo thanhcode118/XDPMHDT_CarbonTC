@@ -67,3 +67,7 @@ wallet-config:
 web:
   returnUrl: ${RETURN_URL}
   returnFailUrl : ${RETURN_FAIL_URL}
+
+listing:
+  service:
+    url: ${LISTING_URL}
