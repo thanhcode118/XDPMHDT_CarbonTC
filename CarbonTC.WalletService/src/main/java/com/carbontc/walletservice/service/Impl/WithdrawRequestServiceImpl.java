@@ -1,6 +1,9 @@
 package com.carbontc.walletservice.service.Impl;
 
+import com.carbontc.walletservice.config.RestTemplateConfig;
+import com.carbontc.walletservice.dto.request.CanWithdrawRequest;
 import com.carbontc.walletservice.dto.request.CreateWithdrawRequest;
+import com.carbontc.walletservice.dto.response.CanWithdrawResponse;
 import com.carbontc.walletservice.dto.response.WithdrawRequestResponse;
 import com.carbontc.walletservice.entity.EWallet;
 import com.carbontc.walletservice.entity.WithdrawRequest;
@@ -13,8 +16,10 @@ import com.carbontc.walletservice.service.WithdrawRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,11 +39,36 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
 
     private final EWalletService eWalletService;
 
+    private final RestTemplate resTemplate;
+
+    @Value("${listing.service.url}")
+    private String listingServiceUrl;
+
     @Override
     @Transactional
     public WithdrawRequestResponse createRequest(CreateWithdrawRequest request) throws BusinessException {
         EWallet eWallet = eWalletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của khách hàng"));
+
+        log.info("Bắt đầu gọi ListingService để kiểm tra quyền rút tiền cho user: {}", request.getUserId());
+        String checkUrl = listingServiceUrl + "/api/Listing/canwithdraw";
+        CanWithdrawRequest apiRequest = new CanWithdrawRequest(request.getUserId(), request.getAmount());
+
+        try {
+            CanWithdrawResponse apiResponse = resTemplate.postForObject(checkUrl, apiRequest, CanWithdrawResponse.class);
+
+            // Kiểm tra kết quả trả về
+            if (apiResponse == null || !apiResponse.isSuccess() || !apiResponse.isData()) {
+                log.warn("User {} bị từ chối rút tiền bởi ListingService", request.getUserId());
+                throw new BusinessException("Không thể tạo yêu cầu rút tiền. Tiền của bạn có thể đang bị khoá trong một giao dịch.");
+            }
+
+            log.info("ListingService đã cho phép user {} rút tiền.", request.getUserId());
+
+        } catch (Exception e) {
+            log.error("Lỗi khi gọi ListingService: {}", e.getMessage());
+            throw new BusinessException("Lỗi hệ thống khi kiểm tra quyền rút tiền.");
+        }
 
         if (eWallet.getBalance().compareTo(request.getAmount()) < 0) {
             throw new BusinessException("Số dư của quý khách không đủ thực hiện giao dịch");

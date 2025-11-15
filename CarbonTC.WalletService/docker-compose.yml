@@ -23,8 +23,8 @@ services:
       RABBITMQ_DEFAULT_PASS : guest
 
   wallet-service:
+    build: .
     image: tkhan2004/wallet-service:1.0
-
     container_name: wallet_service
     ports:
       - "5004:5004"
@@ -60,6 +60,11 @@ services:
 
       # Config
       ADMIN_USER_ID: "uuid-cua-admin-vi-du-12345"
+
+      RETURN_URL: "http://localhost:5173/payment/return"
+      RETURN_FAIL_URL: "http://localhost:5173/payment/fail"
+
+      LISTING_URL: "http://localhost:5003"
 
     depends_on:
       - mysql

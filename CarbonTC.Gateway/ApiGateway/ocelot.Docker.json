@@ -27,9 +27,9 @@
       "SwaggerKey": "market-service"
     },
     {
-      "UpstreamPathTemplate": "/api/Transaction",
+      "UpstreamPathTemplate": "/api/Transaction/{everything}",
       "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/Transaction",
+      "DownstreamPathTemplate": "/api/Transaction/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -53,9 +53,9 @@
       "SwaggerKey": "market-service"
     },
     {
-      "UpstreamPathTemplate": "/api/users/me/transactions{catchAll}",
+      "UpstreamPathTemplate": "/api/users/me/transactions/{everything}",
       "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/users/me/transactions{catchAll}",
+      "DownstreamPathTemplate": "/api/users/me/transactions/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

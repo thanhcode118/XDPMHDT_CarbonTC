@@ -1,5 +1,6 @@
 package com.carbontc.walletservice.service.Impl;
 
+import com.carbontc.walletservice.consumer.RabbitMQConsumerService;
 import com.carbontc.walletservice.dto.request.EWalletRequest;
 import com.carbontc.walletservice.dto.response.EWalletResponse;
 import com.carbontc.walletservice.dto.response.TransactionLogResponse;
@@ -11,6 +12,8 @@ import com.carbontc.walletservice.repository.TransactionLogRepository;
 import com.carbontc.walletservice.service.EWalletService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +30,6 @@ public class EWalletServiceImpl implements EWalletService {
     private final ModelMapper modelMapper;
 
     private final TransactionLogRepository transactionLogRepository;
-
 
     // TẠO VÍ
     @Override
@@ -120,15 +122,25 @@ public class EWalletServiceImpl implements EWalletService {
 
     @Override
     public List<TransactionLogResponse> getTransactionHistoryByUserId(String userId) throws BusinessException {
-       EWallet eWallet = findWalletByUserId(userId);
-
+        EWallet eWallet = findWalletByUserId(userId);
         Long walletId = eWallet.getWalletId();
 
-        // 2. Tìm log bằng walletId (Long)
+        // Tìm log từ DB
         List<TransactionLog> logs = transactionLogRepository.findByWallet_WalletIdOrderByCreatedAtDesc(walletId);
 
         return logs.stream()
-                .map(log -> modelMapper.map(log, TransactionLogResponse.class))
+                .map(log -> {
+                    // 1. Để ModelMapper map các trường giống tên (amount, type, status...)
+                    TransactionLogResponse response = modelMapper.map(log, TransactionLogResponse.class);
+
+                    // 2. THỦ CÔNG map trường walletId
+                    // Lấy object Wallet -> Lấy ID -> Gán vào DTO
+                    if (log.getWallet() != null) {
+                        response.setWalletId(log.getWallet().getWalletId());
+                    }
+
+                    return response;
+                })
                 .toList();
     }
 
