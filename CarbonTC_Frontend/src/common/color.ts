@@ -27,16 +27,54 @@ export const gray = {
   900: '#212121',
 };
 
+export const green = {
+  50:  '#E8F5E9',
+  100: '#C8E6C9',
+  200: '#A5D6A7',
+  300: '#81C784',
+  400: '#66BB6A',
+  500: '#4CAF50', // main
+  600: '#43A047',
+  700: '#388E3C',
+  800: '#2E7D32',
+  900: '#1B5E20',
+}
+
+export const red = {
+  50:  '#FFEBEE',
+  100: '#FFCDD2',
+  200: '#EF9A9A',
+  300: '#E57373',
+  400: '#EF5350',
+  500: '#F44336', // main
+  600: '#E53935',
+  700: '#D32F2F',
+  800: '#C62828',
+  900: '#B71C1C',
+}
+
+export const orange = {
+  50:  '#FFF3E0',
+  100: '#FFE0B2',
+  200: '#FFCC80',
+  300: '#FFB74D',
+  400: '#FFA726',
+  500: '#FF9800', // main
+  600: '#FB8C00',
+  700: '#F57C00',
+  800: '#EF6C00',
+  900: '#E65100',
+}
 // Semantic Colors
-export const errorColor = '#d32f2f';
-export const warningColor = '#ed6c02';
-export const successColor = '#2e7d32';
+export const errorColor = red[700];
+export const warningColor = orange[800];
+export const successColor = green[800];
 export const infoTextColor = '#0288d1';
 
 // Text Colors
-export const primaryTextColor = '#212121';
-export const secondaryTextColor = '#757575';
-export const labelColor = '#424242';
+export const primaryTextColor = gray[900];
+export const secondaryTextColor = gray[600];
+export const labelColor = gray[800];
 
 export const borderLine = gray[400];
 

@@ -31,7 +31,7 @@ axiosInstance.interceptors.request.use(
     // Log request details in development
     if (import.meta.env.DEV) {
       console.group('📤 [Axios Request]');
-      console.log('URL:', config.baseURL + config.url);
+      // console.log('URL:', config.baseURL + config.url);
       console.log('Method:', config.method?.toUpperCase());
       console.log('Has Token:', !!token);
       console.log('User Role:', user?.role);

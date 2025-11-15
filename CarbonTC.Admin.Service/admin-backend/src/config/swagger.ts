@@ -526,10 +526,16 @@ const swaggerDefinition = {
   ],
 };
 
+const isProduction = process.env.NODE_ENV === 'production';
 const options: swaggerJsdoc.Options = {
   definition: swaggerDefinition,
   // Path to API docs (routes with JSDoc comments)
-  apis: [
+  apis: isProduction ? 
+  [
+    './dist/routes/*.js',
+    './dist/app.js',
+  ] :
+  [
     './src/routes/*.ts',
     './src/app.ts',
   ],

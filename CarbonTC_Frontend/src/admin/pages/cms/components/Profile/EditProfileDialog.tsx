@@ -8,16 +8,19 @@ import {
   Typography,
   Alert,
 } from '@mui/material';
-// import { Close as CloseIcon } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { Input } from '../../../../components/fields';
-import type { ProfileData, UpdateProfileData } from '../../hooks/useProfile';
+import type { ProfileData } from '../../hooks/useProfile';
 
+interface UpdateProfileInput {
+  fullName: string;
+  phoneNumber: string;
+}
 interface EditProfileDialogProps {
   open: boolean;
   onClose: () => void;
   profileData: ProfileData;
-  onUpdate: (data: UpdateProfileData) => Promise<{
+  onUpdate: (data: UpdateProfileInput) => Promise<{
     success: boolean;
     message: string;
   }>;
@@ -29,7 +32,7 @@ function EditProfileDialog({
   profileData,
   onUpdate,
 }: EditProfileDialogProps) {
-  const [formData, setFormData] = useState<UpdateProfileData>({
+  const [formData, setFormData] = useState<UpdateProfileInput>({
     fullName: profileData.fullName,
     phoneNumber: profileData.phoneNumber || '',
   });
@@ -61,7 +64,7 @@ function EditProfileDialog({
     }
   }, [open, profileData]);
 
-  const handleChange = (field: keyof UpdateProfileData) => (
+  const handleChange = (field: keyof UpdateProfileInput) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = e.target.value;
@@ -159,7 +162,7 @@ function EditProfileDialog({
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, py: 1 }}>
           <Input
-            label="Họ tên (*)"
+            label="Full Name"
             name="fullName"
             value={formData.fullName}
             isError={errors.fullName}
@@ -167,11 +170,11 @@ function EditProfileDialog({
             onChange={handleChange('fullName')}
             disabled={submitting}
             size="small"
-            placeholder="Nhập họ tên đầy đủ"
+            // placeholder="Nhập họ tên đầy đủ"
           />
 
           <Input
-            label="Số điện thoại"
+            label="Phone Number"
             name="phoneNumber"
             value={formData.phoneNumber}
             isError={errors.phoneNumber}
@@ -179,7 +182,7 @@ function EditProfileDialog({
             onChange={handleChange('phoneNumber')}
             disabled={submitting}
             size="small"
-            placeholder="+84 xxx xxx xxx"
+            // placeholder="+84 xxx xxx xxx"
           />
 
           {alert.show && (

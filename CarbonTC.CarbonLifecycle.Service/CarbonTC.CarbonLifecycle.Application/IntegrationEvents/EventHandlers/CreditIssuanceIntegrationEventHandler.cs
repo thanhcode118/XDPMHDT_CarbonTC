@@ -2,11 +2,11 @@
 using CarbonTC.CarbonLifecycle.Domain.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CarbonTC.CarbonLifecycle.Application.IntegrationEvents;
-using CarbonTC.CarbonLifecycle.Application.Common; // <-- Thêm 1
-using CarbonTC.CarbonLifecycle.Domain.Abstractions; // <-- Thêm 2
+using CarbonTC.CarbonLifecycle.Application.Common;
 
 namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
 {
@@ -14,15 +14,15 @@ namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
     public class CreditIssuanceIntegrationEventHandler
         : INotificationHandler<DomainEventNotification<CarbonCreditsApprovedEvent>> // <-- Sửa 3
     {
-        // Sửa: Dùng IDomainEventDispatcher để gửi Integration Events mới
-        private readonly IDomainEventDispatcher _eventDispatcher; // <-- Sửa 4
+        // Sửa: Dùng IMessagePublisher để gửi Integration Events (vì chúng không còn implement IDomainEvent)
+        private readonly IMessagePublisher _messagePublisher; 
         private readonly ILogger<CreditIssuanceIntegrationEventHandler> _logger;
 
         public CreditIssuanceIntegrationEventHandler(
-            IDomainEventDispatcher eventDispatcher, // <-- Sửa 5
+            IMessagePublisher messagePublisher,
             ILogger<CreditIssuanceIntegrationEventHandler> logger)
         {
-            _eventDispatcher = eventDispatcher; // <-- Sửa 6
+            _messagePublisher = messagePublisher;
             _logger = logger;
         }
 
@@ -30,7 +30,7 @@ namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
         public async Task Handle(DomainEventNotification<CarbonCreditsApprovedEvent> notification, CancellationToken cancellationToken)
         {
             // Mở bọc để lấy sự kiện Domain gốc
-            var domainEvent = notification.DomainEvent; // <-- Sửa 7
+            var domainEvent = notification.DomainEvent;
 
             _logger.LogInformation(
                 "Đã bắt sự kiện CarbonCreditsApprovedEvent (wrapped) cho BatchId: {BatchId}. Đang chuẩn bị gửi Integration Events...",
@@ -42,7 +42,7 @@ namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
                 OwnerUserId = domainEvent.UserId,
                 CreditAmount = (decimal)domainEvent.ApprovedCreditAmount.Value, // Chuyển từ ValueObject
                 ReferenceId = domainEvent.JourneyBatchId.ToString(), // Dùng BatchId làm tham chiếu
-                IssuedAt = domainEvent.OccurredOn
+                IssuedAt = new DateTimeOffset(domainEvent.OccurredOn, TimeSpan.Zero) // Chuyển DateTime sang DateTimeOffset
             };
 
             // 2. Tạo DTO sự kiện cho Service 3 (Marketplace)
@@ -54,21 +54,27 @@ namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
 
             try
             {
-                // 3. Gửi 2 sự kiện MỚI này qua Dispatcher
-                // Dispatcher sẽ publish chúng ra RabbitMQ và KHÔNG publish lại
-                // lên MediatR (nhờ logic `IsPureDomainEvent` đã thêm ở Bước 2)
-                await _eventDispatcher.Dispatch(walletEvent); // <-- Sửa 8
-                await _eventDispatcher.Dispatch(marketplaceEvent); // <-- Sửa 9
+                // 3. Gửi 2 sự kiện MỚI này qua IMessagePublisher
+                // Sử dụng PublishIntegrationEventAsync vì các events này không còn implement IDomainEvent
+                await _messagePublisher.PublishIntegrationEventAsync(walletEvent, "credit.issued");
+                _logger.LogInformation(
+                    "Published CreditIssuedIntegrationEvent for BatchId: {BatchId}, UserId: {UserId}, Amount: {Amount}, ReferenceId: {ReferenceId}",
+                    domainEvent.JourneyBatchId, walletEvent.OwnerUserId, walletEvent.CreditAmount, walletEvent.ReferenceId);
+
+                await _messagePublisher.PublishIntegrationEventAsync(marketplaceEvent, "credit.inventory.update");
+                _logger.LogInformation(
+                    "Published CreditInventoryUpdateIntegrationEvent for BatchId: {BatchId}, CreditId: {CreditId}, TotalAmount: {Amount}",
+                    domainEvent.JourneyBatchId, marketplaceEvent.CreditId, marketplaceEvent.TotalAmount);
 
                 _logger.LogInformation(
-                    "Đã gửi thành công 2 Integration Events cho BatchId: {BatchId}",
-                    domainEvent.JourneyBatchId);
+                    "Successfully published 2 Integration Events for BatchId: {BatchId}, CreditId: {CreditId}",
+                    domainEvent.JourneyBatchId, domainEvent.CreditId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Lỗi khi gửi Integration Events cho BatchId: {BatchId}",
-                    domainEvent.JourneyBatchId);
+                    "Error publishing Integration Events for BatchId: {BatchId}, CreditId: {CreditId}. Events may not have been sent.",
+                    domainEvent.JourneyBatchId, domainEvent.CreditId);
             }
         }
     }

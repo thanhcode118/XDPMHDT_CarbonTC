@@ -36,7 +36,6 @@ namespace Application.Common.Features.Listings.Queries.GetPriceSuggestion
             int vintage;
             float quantity;
 
-            // chung 111
             if (request.CreditId == null || request.CreditId == Guid.Empty)
             {
                 verificationStandard = "VERRA";

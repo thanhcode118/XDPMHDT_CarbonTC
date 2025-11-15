@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import styles from './UploadJourneyModal.module.css';
 import Button from '../Button/Button';
 // --- Import service ---
-import { uploadJourneyFile } from '../../services/journeyService';
+import { uploadJourneyFile } from '../../services/tripService';
 // --- Import hook thông báo ---
 import { useNotification } from '../../hooks/useNotification'; // Đảm bảo đường dẫn đúng
 

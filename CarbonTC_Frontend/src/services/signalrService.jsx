@@ -4,6 +4,11 @@ let connection = null;
 let connectionCount = 0;
 let connectionPromise = null;
 
+const envApiUrl = import.meta.env.VITE_APIGATEWAY_BASE_URL; 
+const defaultApiUrl = 'http://localhost:7000/api';
+const apiBaseUrl = envApiUrl || defaultApiUrl;
+const serverBaseUrl = apiBaseUrl.replace(/\/api$/, '');
+
 const createConnection = () => {
     // Ưu tiên accessToken, fallback về userToken để tương thích ngược
     const token = localStorage.getItem('accessToken') || localStorage.getItem('userToken');
@@ -14,7 +19,7 @@ const createConnection = () => {
     }
 
 
-    const connectionUrl = `https://localhost:5003/hubs/auction?access_token=${token}`;
+    const connectionUrl = `${serverBaseUrl}/hubs/auction?access_token=${token}`;
 
     const newConnection = new signalR.HubConnectionBuilder()
         .withUrl(connectionUrl, {

@@ -49,6 +49,17 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<CarbonCredit>> GetByVerificationRequestIdAsync(Guid verificationRequestId)
+        {
+            _logger.LogInformation("Fetching CarbonCredits for VerificationRequestId: {VerificationRequestId}", verificationRequestId);
+            return await _context.CarbonCredits
+                .Where(cc => cc.VerificationRequestId == verificationRequestId)
+                .Include(cc => cc.JourneyBatch)
+                .Include(cc => cc.VerificationRequest)
+                .OrderByDescending(cc => cc.IssueDate)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(CarbonCredit carbonCredit)
         {
             if (carbonCredit == null)

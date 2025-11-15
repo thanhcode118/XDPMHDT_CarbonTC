@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0Nqlfz3yuMM=",
+  "dgSpecHash": "ZmNnjgrvhBM=",
   "success": true,
-  "projectFilePath": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\s3\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj",
+  "projectFilePath": "D:\\UTH\\HK-7\\XDPMHDT\\Cuoiki\\DuAn\\test\\XDPMHDT_CarbonTC\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service\\CarbonTC.CarbonLifecycle.Service.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\hongu\\.nuget\\packages\\automapper\\12.0.0\\automapper.12.0.0.nupkg.sha512",
     "C:\\Users\\hongu\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.0\\automapper.extensions.microsoft.dependencyinjection.12.0.0.nupkg.sha512",

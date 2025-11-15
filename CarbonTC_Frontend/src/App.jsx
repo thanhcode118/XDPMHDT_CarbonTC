@@ -12,6 +12,7 @@ import Dashboard from './pages/dashboard/Dashboard.jsx';
 import Marketplace from './pages/Marketplace/Marketplace.jsx';
 import Vehicles from './pages/Vehicles/Vehicles.jsx';
 import Trips from './pages/Trips/Trips.jsx';
+import Verification from './pages/Verification/Verification.jsx';
 import Wallet from './pages/Wallet/Wallet.jsx';
 import Transactions from './pages/Transactions/Transactions.jsx';
 import Reports from './pages/Reports/Reports.jsx';
@@ -54,11 +55,11 @@ function App() {
 
         {/* =================== NHÓM 2: DASHBOARD =================== */}
       <Route 
-          element={
-            <PrivateRoute 
-              roles={['EVOwner', 'CVA']} // Chỉ định các vai trò được phép
-            />
-          }
+          // element={
+          //   <PrivateRoute 
+          //     roles={['EVOwner', 'CVA']} // Chỉ định các vai trò được phép
+          //   />
+          // }
         ></Route>
           <Route
             path="/dashboard"
@@ -79,6 +80,10 @@ function App() {
           <Route
             path="/dashboard/vehicles"
             element={<Vehicles showNotification={showNotification} />}
+          />
+          <Route
+            path="/dashboard/verification"
+            element={<Verification showNotification={showNotification} />}
           />
           <Route
             path="/dashboard/transactions"

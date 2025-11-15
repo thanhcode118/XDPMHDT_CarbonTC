@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Linq;
 using CarbonTC.CarbonLifecycle.Application.Queries.CarbonCredit;
+using CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit;
+using Microsoft.AspNetCore.Http;
 
 namespace CarbonTC.CarbonLifecycle.Api.Controllers
 {
@@ -72,6 +75,71 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
             }
 
             return Ok(ApiResponse<IEnumerable<CarbonCreditDto>>.SuccessResponse(result, "Carbon Credits retrieved successfully."));
+        }
+
+        /// <summary>
+        /// Phát hành tín chỉ carbon thủ công (bypass/sửa lỗi)
+        /// - CVA: Có thể phát hành thủ công để xử lý ngoại lệ
+        /// - Admin: Có thể phát hành trực tiếp cho bất kỳ user nào (bypass verification)
+        /// - EVOwner: KHÔNG được phép gọi endpoint này (chỉ được phát hành qua luồng tự động khi CVA duyệt)
+        /// </summary>
+        /// <param name="issueDto">Thông tin để phát hành tín chỉ carbon</param>
+        /// <returns>Tín chỉ carbon đã được phát hành</returns>
+        [HttpPost("issue")]
+        [Authorize(Roles = "CVA,Admin")] // Chỉ CVA và Admin có thể phát hành thủ công (bypass/sửa lỗi)
+        [ProducesResponseType(typeof(ApiResponse<CarbonCreditDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> IssueCarbonCredit([FromBody] IssueCarbonCreditDto issueDto)
+        {
+            _logger.LogInformation("Attempting to issue carbon credit. Amount: {Amount} kg CO2e, UserId: {UserId}, JourneyBatchId: {JourneyBatchId}",
+                issueDto.AmountKgCO2e, issueDto.UserId ?? "will be taken from token", issueDto.JourneyBatchId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiResponse<object>.FailureResponse("Invalid request data.", 
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()));
+            }
+
+            var command = new IssueCarbonCreditCommand(issueDto);
+
+            try
+            {
+                var result = await Mediator.Send(command);
+                return CreatedAtAction(
+                    nameof(GetCarbonCreditsByUserId),
+                    new { userId = result.UserId },
+                    ApiResponse<CarbonCreditDto>.SuccessResponse(result, "Carbon credit issued successfully."));
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid data provided for carbon credit issuance: {Message}", ex.Message);
+                return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Resource not found during carbon credit issuance: {Message}", ex.Message);
+                return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation during carbon credit issuance: {Message}", ex.Message);
+                return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized access during carbon credit issuance: {Message}", ex.Message);
+                return StatusCode(StatusCodes.Status403Forbidden, ApiResponse<object>.FailureResponse(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during carbon credit issuance");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    ApiResponse<object>.FailureResponse("An error occurred while issuing carbon credit."));
+            }
         }
     }
 }

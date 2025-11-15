@@ -1325,3 +1325,65 @@
         right: 8px;
     }
 }
+
+/* Thêm vào MarketplaceModal.module.css */
+
+/* Thông báo cho chủ sở hữu */
+.ownerNotice {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ownerNoticeIcon {
+    font-size: 24px;
+    opacity: 0.9;
+}
+
+.ownerNoticeContent {
+    flex: 1;
+}
+
+.ownerNoticeContent strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.ownerNoticeContent p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+/* Kết quả cho chủ sở hữu */
+.ownerResult {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.ownerResultIcon {
+    font-size: 28px;
+    opacity: 0.9;
+}
+
+.ownerResultContent h6 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+}
+
+.ownerResultContent p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}

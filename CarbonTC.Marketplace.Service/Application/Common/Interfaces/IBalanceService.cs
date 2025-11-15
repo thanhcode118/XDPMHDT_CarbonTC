@@ -47,5 +47,19 @@
         Task<bool> ReserveBalanceForPurchaseAsync(Guid userId, decimal amountToReserve);
         Task ReleaseBalanceForPurchaseAsync(Guid userId, decimal amountToRelease);
         Task CommitPurchaseAsync(Guid userId, decimal amountToCommit);
+        /// <summary>
+        /// Kiểm tra người dung có thể rút số tiền amountToWithdraw hay không
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="amountToWithdraw"></param>
+        /// <returns></returns>
+        Task<bool> CanWithdrawAsync(Guid userId, decimal amountToWithdraw);
+        /// <summary>
+        /// Nạp số tiền mới + khoản chênh lệch vào available
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="newTotalBalance"></param>
+        /// <returns></returns>
+        Task<bool> UpdateBalanceAfterDepositOrWithdrawAsync(Guid userId, decimal newTotalBalance);
     }
 }

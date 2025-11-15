@@ -27,10 +27,8 @@ namespace Application.Common.Features.Transactions.EventHandlers
                 PlatformFee = notification.PlatformFee,    
                 CreatedAt = DateTime.UtcNow.ToString("o")
             };
-
-            // chung 111
-
-            //await _integrationEventService.PublishAsync<TransactionWalletDto>(transactionWalletDto, "transactions_exchange", ExchangeType.Direct, "transaction.created");
+            
+            await _integrationEventService.PublishAsync<TransactionWalletDto>(transactionWalletDto, "transactions_exchange", ExchangeType.Direct, "transaction.created");
         }
     }
 }
