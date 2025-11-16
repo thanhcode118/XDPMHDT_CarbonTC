@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Topbar from '../../components/Topbar/Topbar';
 import VehicleCard from '../../components/VehicleCard/VehicleCard';
@@ -93,6 +94,7 @@ const getVehicleImage = (vehicleType) => {
 };
 
 const Vehicles = ({ showNotification: propShowNotification }) => {
+  const navigate = useNavigate();
   const { sidebarActive, toggleSidebar } = useSidebar();
   const { showNotification: hookShowNotification } = useNotification();
   const showNotification = propShowNotification || hookShowNotification;
@@ -183,6 +185,16 @@ const Vehicles = ({ showNotification: propShowNotification }) => {
     setSelectedVehicle(null);
   };
 
+  const handleAddTrip = () => {
+    // Navigate to Trips page with state to open journeys tab and upload form
+    navigate('/dashboard/trips', { 
+      state: { 
+        openJourneysTab: true, 
+        openUploadForm: true 
+      } 
+    });
+  };
+
 
   if (loading) {
     return (
@@ -233,7 +245,9 @@ const Vehicles = ({ showNotification: propShowNotification }) => {
           <EmptyState
             icon="bi-ev-station"
             title="Chưa có xe điện nào"
-            description="Bạn chưa có xe điện nào trong hệ thống. Hãy thêm xe điện để bắt đầu theo dõi hành trình và kiếm tín chỉ carbon."
+            description="Bạn chưa có xe điện nào trong hệ thống. Hãy thêm hành trình để bắt đầu theo dõi xe điện và kiếm tín chỉ carbon."
+            actionText="Thêm hành trình"
+            onAction={handleAddTrip}
           />
         )}
       </div>

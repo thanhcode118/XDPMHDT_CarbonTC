@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Topbar from '../../components/Topbar/Topbar';
 import UploadJourneyModal from '../../components/UploadJourneyModal/UploadJourneyModal';
@@ -11,6 +12,7 @@ import { getMyBatches, submitVerificationRequest } from '../../services/verifica
 import styles from './Trips.module.css';
 
 const Trips = ({ showNotification: propShowNotification }) => {
+  const location = useLocation();
   const { sidebarActive, toggleSidebar } = useSidebar();
   const { showNotification: hookShowNotification } = useNotification();
   const showNotification = propShowNotification || hookShowNotification;
@@ -18,9 +20,14 @@ const Trips = ({ showNotification: propShowNotification }) => {
   const [batches, setBatches] = useState([]);
   const [allJourneys, setAllJourneys] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('pending'); // 'pending', 'history', or 'journeys'
+  // Check if we need to open journeys tab from navigation state
+  const initialTab = location.state?.openJourneysTab ? 'journeys' : 'pending';
+  const [activeTab, setActiveTab] = useState(initialTab); // 'pending', 'history', or 'journeys'
+  const [journeySubTab, setJourneySubTab] = useState('pending'); // 'pending' or 'completed'
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showJsonUpload, setShowJsonUpload] = useState(false);
+  // Check if we need to open upload form from navigation state
+  const shouldOpenUploadForm = location.state?.openUploadForm || false;
+  const [showJsonUpload, setShowJsonUpload] = useState(shouldOpenUploadForm);
   const [submittingBatchId, setSubmittingBatchId] = useState(null);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [showBatchDetails, setShowBatchDetails] = useState(false);
@@ -65,6 +72,14 @@ const Trips = ({ showNotification: propShowNotification }) => {
       loadJourneys();
     }
   }, [activeTab]);
+
+  // Clear location state after processing to prevent reopening on refresh
+  useEffect(() => {
+    if (location.state?.openJourneysTab || location.state?.openUploadForm) {
+      // Replace current location to remove state from history
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   const loadBatches = async () => {
     try {
@@ -286,6 +301,20 @@ const Trips = ({ showNotification: propShowNotification }) => {
     // Allow selection if status is pending or journey doesn't have a batchId
     return status === 'pending' || !journey.journeyBatchId || journey.journeyBatchId === '00000000-0000-0000-0000-000000000000';
   });
+
+  // Filter journeys by status
+  const pendingJourneys = allJourneys.filter(journey => {
+    const status = journey.status?.toLowerCase() || '';
+    return status === 'pending';
+  });
+
+  const completedJourneys = allJourneys.filter(journey => {
+    const status = journey.status?.toLowerCase() || '';
+    return status === 'completed' || status === 'verified' || status === 'failed';
+  });
+
+  // Get the journeys to display based on the selected sub-tab
+  const displayedJourneys = journeySubTab === 'pending' ? pendingJourneys : completedJourneys;
 
   // Filter batches by status
   const pendingBatches = batches.filter(batch => {
@@ -885,10 +914,41 @@ const Trips = ({ showNotification: propShowNotification }) => {
             </div>
           </div>
           <div className={styles.cardBody}>
-              {allJourneys.length > 0 ? (
+            {/* Sub-tabs for journeys */}
+            <div className={styles.card} style={{ marginBottom: '20px', background: 'transparent', border: 'none' }}>
+              <div className={styles.cardHeader} style={{ padding: '0 0 15px 0', background: 'transparent', border: 'none' }}>
+                <div className={styles.tabContainer} style={{ gap: '8px' }}>
+                  <button
+                    className={`${styles.tabButton} ${journeySubTab === 'pending' ? styles.tabActive : ''}`}
+                    onClick={() => setJourneySubTab('pending')}
+                    style={{ fontSize: '0.9rem', padding: '8px 16px' }}
+                  >
+                    <i className="bi bi-clock me-2"></i>Đang Chờ Tạo Lô
+                    {pendingJourneys.length > 0 && (
+                      <span style={{ marginLeft: '8px', padding: '2px 8px', background: 'rgba(251, 191, 36, 0.2)', borderRadius: '10px', fontSize: '0.8rem' }}>
+                        {pendingJourneys.length}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    className={`${styles.tabButton} ${journeySubTab === 'completed' ? styles.tabActive : ''}`}
+                    onClick={() => setJourneySubTab('completed')}
+                    style={{ fontSize: '0.9rem', padding: '8px 16px' }}
+                  >
+                    <i className="bi bi-check-circle me-2"></i>Đã Tạo Lô
+                    {completedJourneys.length > 0 && (
+                      <span style={{ marginLeft: '8px', padding: '2px 8px', background: 'rgba(74, 222, 128, 0.2)', borderRadius: '10px', fontSize: '0.8rem' }}>
+                        {completedJourneys.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+              {displayedJourneys.length > 0 ? (
                 <div className={styles.timeline}>
                   {Object.entries(
-                    allJourneys.reduce((acc, trip) => {
+                    displayedJourneys.reduce((acc, trip) => {
                       const dateKey = trip._startTimeObj 
                         ? formatDate(trip._startTimeObj)
                         : trip.date || 'Không xác định';
@@ -913,7 +973,8 @@ const Trips = ({ showNotification: propShowNotification }) => {
                           // Use tripIndex as fallback only for React key, not for API calls
                           const tripKey = tripId || `trip-${tripIndex}`;
                           const status = trip.status?.toLowerCase() || '';
-                          const canSelect = status === 'pending' || !trip.journeyBatchId || trip.journeyBatchId === '00000000-0000-0000-0000-000000000000';
+                          // Only show checkbox for pending journeys in the pending tab
+                          const canSelect = journeySubTab === 'pending' && (status === 'pending' || !trip.journeyBatchId || trip.journeyBatchId === '00000000-0000-0000-0000-000000000000');
                           const isSelected = tripId && selectedJourneys.includes(tripId);
                           
                           return (
@@ -1016,8 +1077,12 @@ const Trips = ({ showNotification: propShowNotification }) => {
                 </div>
               ) : (
                 <div className={styles.emptyState}>
-                  <i className="bi bi-map"></i>
-                  <p>Chưa có lịch sử hành trình nào. Hãy tải lên hành trình đầu tiên của bạn!</p>
+                  <i className={journeySubTab === 'pending' ? 'bi bi-clock' : 'bi bi-check-circle'}></i>
+                  <p>
+                    {journeySubTab === 'pending' 
+                      ? 'Chưa có hành trình nào đang chờ. Hãy tải lên hành trình mới!' 
+                      : 'Chưa có hành trình nào đã tạo lô.'}
+                  </p>
                 </div>
             )}
           </div>
@@ -1054,10 +1119,6 @@ const Trips = ({ showNotification: propShowNotification }) => {
           setSelectedJourneyId(null);
         }}
         journeyId={selectedJourneyId}
-        onExportReport={() => {
-          // TODO: Implement export report functionality
-          showNotification('Chức năng xuất báo cáo đang được phát triển', 'info');
-        }}
       />
     </div>
   );

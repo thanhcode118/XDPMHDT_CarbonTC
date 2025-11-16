@@ -17,6 +17,8 @@ const Topbar = ({ title }) => {
   const [message, setMessage] = useState(null); 
 
   const dropdownRef = useRef(null);
+  const profileButtonRef = useRef(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
 
   useEffect(() => {
     // Lấy thông tin user từ localStorage
@@ -25,6 +27,17 @@ const Topbar = ({ title }) => {
       setUser(currentUser);
     }
   }, []);
+
+  // Calculate dropdown position when it opens
+  useEffect(() => {
+    if (showDropdown && profileButtonRef.current) {
+      const rect = profileButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 10,
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, [showDropdown]);
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -109,6 +122,7 @@ const Topbar = ({ title }) => {
           {/* User Profile with Dropdown */}
           <div className={styles.profileContainer} ref={dropdownRef}>
             <div 
+              ref={profileButtonRef}
               className={styles.userProfile} 
               onClick={toggleDropdown}
               role="button"
@@ -132,7 +146,13 @@ const Topbar = ({ title }) => {
 
             {/* Dropdown Menu */}
             {showDropdown && (
-              <div className={styles.dropdownMenu}>
+              <div 
+                className={styles.dropdownMenu}
+                style={{
+                  top: `${dropdownPosition.top}px`,
+                  right: `${dropdownPosition.right}px`
+                }}
+              >
                 <div className={styles.dropdownHeader}>
                   <div className={styles.userInfo}>
                     <img 

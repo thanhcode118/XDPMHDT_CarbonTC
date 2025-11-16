@@ -15,13 +15,15 @@ const EmptyState = ({
       </div>
       <h2 className={styles.emptyTitle}>{title}</h2>
       <p className={styles.emptyDescription}>{description}</p>
-      <button 
-        className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
-        onClick={onAction}
-      >
-        <i className="bi bi-plus-circle me-2"></i>
-        {actionText}
-      </button>
+      {onAction && (
+        <button 
+          className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+          onClick={onAction}
+        >
+          <i className="bi bi-plus-circle me-2"></i>
+          {actionText || 'Thêm mới'}
+        </button>
+      )}
     </div>
   );
 };

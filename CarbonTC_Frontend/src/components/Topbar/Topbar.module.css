@@ -9,6 +9,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  position: relative;
+  z-index: 100;
 }
 
 
@@ -21,6 +23,8 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  position: relative;
+  z-index: 9999;
 }
 
 .notificationBtn {
@@ -61,6 +65,7 @@
 /* Profile Container */
 .profileContainer {
   position: relative;
+  z-index: 9999;
 }
 
 .userProfile {
@@ -112,9 +117,7 @@
 
 /* Dropdown Menu */
 .dropdownMenu {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
+  position: fixed;
   min-width: 280px;
   background: var(--card-bg);
   backdrop-filter: blur(10px);
@@ -123,7 +126,7 @@
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  z-index: 1000;
+  z-index: 99999;
   animation: slideDown 0.3s ease;
 }
 
