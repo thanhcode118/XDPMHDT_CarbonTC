@@ -207,7 +207,7 @@ const Reports = () => {
           </div>
         </div>
         
-        {/* CO2 Reduction Chart */}
+        {/* CO2 Reduction Chart
         <div className={styles.card} data-aos="fade-up" data-aos-delay="600">
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Biểu đồ giảm phát thải CO₂</h3>
@@ -215,10 +215,10 @@ const Reports = () => {
           <div className={styles.cardBody}>
             <WalletChart data={co2ChartMockData} />
           </div>
-        </div>
+        </div> */}
         
         {/* Transaction History Table */}
-        <div className={styles.card} data-aos="fade-up" data-aos-delay="700">
+        <div className={styles.card} data-aos="fade-up" data-aos-delay="600">
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Lịch sử giao dịch</h3>
           </div>
