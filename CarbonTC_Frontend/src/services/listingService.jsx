@@ -19,8 +19,6 @@ export const getUserIdFromToken = () => {
     }
 };
 
-
-
 /**
  * Lấy danh sách listings với các tham số query
  * @param {object} params - Các tham số query (pageNumber, pageSize, type, status, v.v.)
@@ -183,4 +181,14 @@ export const submitDispute = (disputeData) => {
  */
 export const getDisputeByTransactionId = (transactionId) => {
   return apiClientPD.get(`/admin/disputes/transaction/${transactionId}`);
+};
+
+
+/**
+ * Lấy tất cả giao dịch (Mua và Bán) của người dùng hiện tại
+ * @param {object} params - Các tham số query (pageNumber, pageSize, status, sortBy, ...)
+ * (Dựa trên GetAllTransactionsQuery ở backend)
+ */
+export const getMyTransactions = (params) => {
+  return apiClientPD.get('/users/me/transactions', { params });
 };

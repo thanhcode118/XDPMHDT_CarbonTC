@@ -3,6 +3,7 @@
   min-height: 100vh;
   background: var(--dark-bg, #0f0f1e);
   width: 100%;
+  overflow: visible;
 }
 
 .mainContent {
@@ -11,6 +12,9 @@
   padding-bottom: 50px;
   min-height: calc(100vh - 60px);
   background: var(--dark-bg, #0f0f1e);
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .mobileToggle {

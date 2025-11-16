@@ -75,7 +75,7 @@ const Topbar = ({ title }) => {
     try {
       // Gọi API logout
       await authService.logout();
-      
+      localStorage.clear();
       // THAY THẾ alert() bằng AlertBox (Thông báo thành công)
       setMessage({
           type: 'success',
