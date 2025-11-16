@@ -48,7 +48,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
 
             migrationBuilder.InsertData(
                 table: "VerificationRequests",
-                columns: new[] { "Id", "CreatedAt", "JourneyBatchId", "LastModifiedAt", "Notes", "RequestDate", "RequestorId", "Status", "VerificationDate", "VerifierId" },
+                columns: new[] { "Id", "CreatedAt", "JourneyBatchId", "LastModifiedAt", "Notes", "RequestDate", "RequestorId", "Status", "VerificationDate", "CVAId" },
                 values: new object[] { new Guid("12345678-90ab-4cde-8fab-1234567890ab"), new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("b0b0b0b0-b0b0-4b0b-8b0b-0b0b0b0b0b0b"), new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc), "Seed data - automatically approved.", new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc), "auth0|demo-user-12345", 1, new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc), "system-seed" });
         }
 

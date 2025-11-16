@@ -24,12 +24,12 @@ public enum UserStatus
     PendingVerification = 3,
 
     /// <summary>
-    /// Đang chờ phê duyệt từ Admin (dành cho Verifier)
+    /// Đang chờ phê duyệt từ Admin (dành cho CVA)
     /// </summary>
     PendingApproval = 4,
 
     /// <summary>
-    /// Tài khoản bị từ chối (dành cho Verifier)
+    /// Tài khoản bị từ chối (dành cho CVA)
     /// </summary>
     Rejected = 5
 }

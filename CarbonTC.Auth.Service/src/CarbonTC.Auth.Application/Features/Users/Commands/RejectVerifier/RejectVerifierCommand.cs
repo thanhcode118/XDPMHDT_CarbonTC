@@ -1,7 +1,7 @@
-// CarbonTC.Auth.Application/Features/Users/Commands/RejectVerifier/RejectVerifierCommand.cs
+// CarbonTC.Auth.Application/Features/Users/Commands/RejectCVA/RejectCVACommand.cs
 
 using MediatR;
 
-namespace CarbonTC.Auth.Application.Features.Users.Commands.RejectVerifier;
+namespace CarbonTC.Auth.Application.Features.Users.Commands.RejectCVA;
 
-public record RejectVerifierCommand(Guid UserId, string? Reason) : IRequest<bool>;
+public record RejectCVACommand(Guid UserId, string? Reason) : IRequest<bool>;

@@ -63,7 +63,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
 
         public async Task ApproveVerificationRequestAsync(
             Guid verificationRequestId,
-            string verifierId,
+            string CVAId,
             AuditFindings findings,
             string approvalNotes,
             CVAStandard cvaStandard)
@@ -86,7 +86,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             }
 
             // Cập nhật VerificationRequest Entity - SỬ DỤNG DOMAIN BEHAVIOR
-            verificationRequest.MarkAsApproved(verifierId, cvaStandard.Id, approvalNotes);
+            verificationRequest.MarkAsApproved(CVAId, cvaStandard.Id, approvalNotes);
             await _verificationRequestRepository.UpdateAsync(verificationRequest);
 
             // Cập nhật JourneyBatch Entity - SỬ DỤNG DOMAIN BEHAVIOR
@@ -124,16 +124,16 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             else
             {
                 // Nếu không có tín chỉ nào được tạo
-                await _eventDispatcher.Dispatch(new CarbonCreditsRejectedEvent(batch.Id, verifierId, "No eligible carbon credits could be generated from batch."));
+                await _eventDispatcher.Dispatch(new CarbonCreditsRejectedEvent(batch.Id, CVAId, "No eligible carbon credits could be generated from batch."));
             }
 
             // Phát Domain Event VerificationRequestApproved
-            await _eventDispatcher.Dispatch(new VerificationRequestApprovedEvent(verificationRequestId, batch.Id, verifierId));
+            await _eventDispatcher.Dispatch(new VerificationRequestApprovedEvent(verificationRequestId, batch.Id, CVAId));
         }
 
         public async Task RejectVerificationRequestAsync(
             Guid verificationRequestId,
-            string verifierId,
+            string CVAId,
             AuditFindings findings,
             string reason)
         {
@@ -144,7 +144,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             }
 
             // Cập nhật VerificationRequest Entity - SỬ DỤNG DOMAIN BEHAVIOR
-            verificationRequest.MarkAsRejected(verifierId, reason);
+            verificationRequest.MarkAsRejected(CVAId, reason);
             await _verificationRequestRepository.UpdateAsync(verificationRequest);
 
             var batch = await _journeyBatchRepository.GetByIdAsync(verificationRequest.JourneyBatchId);
@@ -158,8 +158,8 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
             await _journeyBatchRepository.UpdateAsync(batch);
 
             // Phát Domain Event
-            await _eventDispatcher.Dispatch(new CarbonCreditsRejectedEvent(batch.Id, verifierId, reason));
-            await _eventDispatcher.Dispatch(new VerificationRequestRejectedEvent(verificationRequestId, batch.Id, verifierId, reason));
+            await _eventDispatcher.Dispatch(new CarbonCreditsRejectedEvent(batch.Id, CVAId, reason));
+            await _eventDispatcher.Dispatch(new VerificationRequestRejectedEvent(verificationRequestId, batch.Id, CVAId, reason));
         }
     }
 }

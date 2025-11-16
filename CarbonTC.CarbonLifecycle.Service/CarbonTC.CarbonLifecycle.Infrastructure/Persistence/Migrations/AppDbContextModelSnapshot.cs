@@ -386,7 +386,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("VerificationDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("VerifierId")
+                    b.Property<string>("CVAId")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -411,7 +411,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
                             RequestorId = "auth0|demo-user-12345",
                             Status = 1,
                             VerificationDate = new DateTime(2025, 10, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            VerifierId = "system-seed"
+                            CVAId = "system-seed"
                         });
                 });
 

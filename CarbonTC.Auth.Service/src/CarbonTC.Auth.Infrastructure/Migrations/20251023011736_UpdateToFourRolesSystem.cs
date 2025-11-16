@@ -33,7 +33,7 @@ namespace CarbonTC.Auth.Infrastructure.Migrations
                 values: new object[,]
                 {
                     { new Guid("33333333-3333-3333-3333-333333333333"), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Người mua tín chỉ - Cá nhân/tổ chức mua tín chỉ carbon", false, "CreditBuyer", null },
-                    { new Guid("44444444-4444-4444-4444-444444444444"), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Tổ chức xác minh - Xác minh tính hợp lệ của tín chỉ carbon", false, "Verifier", null }
+                    { new Guid("44444444-4444-4444-4444-444444444444"), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Tổ chức xác minh - Xác minh tính hợp lệ của tín chỉ carbon", false, "CVA", null }
                 });
         }
 

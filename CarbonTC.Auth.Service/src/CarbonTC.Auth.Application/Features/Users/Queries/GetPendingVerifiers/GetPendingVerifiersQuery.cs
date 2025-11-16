@@ -1,11 +1,11 @@
-// CarbonTC.Auth.Application/Features/Users/Queries/GetPendingVerifiers/GetPendingVerifiersQuery.cs
+// CarbonTC.Auth.Application/Features/Users/Queries/GetPendingCVAs/GetPendingCVAsQuery.cs
 
 using CarbonTC.Auth.Application.DTOs;
 using MediatR;
 
-namespace CarbonTC.Auth.Application.Features.Users.Queries.GetPendingVerifiers;
+namespace CarbonTC.Auth.Application.Features.Users.Queries.GetPendingCVAs;
 
-public record GetPendingVerifiersQuery(
+public record GetPendingCVAsQuery(
     int PageNumber = 1,
     int PageSize = 10
 ) : IRequest<PagedResult<UserProfileDto>>;

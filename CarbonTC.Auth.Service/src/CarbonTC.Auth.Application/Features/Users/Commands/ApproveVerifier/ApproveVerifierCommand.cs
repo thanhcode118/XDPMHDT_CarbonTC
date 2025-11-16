@@ -1,7 +1,7 @@
-// CarbonTC.Auth.Application/Features/Users/Commands/ApproveVerifier/ApproveVerifierCommand.cs
+// CarbonTC.Auth.Application/Features/Users/Commands/ApproveCVA/ApproveCVACommand.cs
 
 using MediatR;
 
-namespace CarbonTC.Auth.Application.Features.Users.Commands.ApproveVerifier;
+namespace CarbonTC.Auth.Application.Features.Users.Commands.ApproveCVA;
 
-public record ApproveVerifierCommand(Guid UserId) : IRequest<bool>;
+public record ApproveCVACommand(Guid UserId) : IRequest<bool>;

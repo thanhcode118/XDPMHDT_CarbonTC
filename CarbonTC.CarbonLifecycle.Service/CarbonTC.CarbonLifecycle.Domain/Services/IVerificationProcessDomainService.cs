@@ -15,7 +15,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
         // Phê duyệt một yêu cầu xác minh
         Task ApproveVerificationRequestAsync(
             Guid verificationRequestId,
-            string verifierId,
+            string CVAId,
             AuditFindings findings,
             string approvalNotes,
             CVAStandard cvaStandard); // Cần CVAStandard để tính toán tín chỉ
@@ -23,7 +23,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Services
         // Từ chối một yêu cầu xác minh
         Task RejectVerificationRequestAsync(
             Guid verificationRequestId,
-            string verifierId,
+            string CVAId,
             AuditFindings findings,
             string reason);
     }

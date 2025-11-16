@@ -1,5 +1,5 @@
 // CarbonTC.Auth.Api/Controllers/UsersController.cs
-using CarbonTC.Auth.Application.Features.Users.Queries.GetPendingVerifiers; // ✅ THÊM DÒNG NÀY
+using CarbonTC.Auth.Application.Features.Users.Queries.GetPendingCVAs; // ✅ THÊM DÒNG NÀY
 using CarbonTC.Auth.Application.Features.Users.Commands.ChangePassword;
 using CarbonTC.Auth.Application.Features.Users.Commands.DeleteUser;
 using CarbonTC.Auth.Application.Features.Users.Commands.UpdateProfile;
@@ -249,7 +249,7 @@ public class UsersController : ControllerBase
     /// <param name="pageNumber">Số trang (mặc định: 1)</param>
     /// <param name="pageSize">Kích thước trang (mặc định: 10)</param>
     /// <param name="searchTerm">Từ khóa tìm kiếm (email, tên, số điện thoại)</param>
-    /// <param name="role">Lọc theo role (Admin, EVOwner, CreditBuyer, Verifier)</param>
+    /// <param name="role">Lọc theo role (Admin, EVOwner, CreditBuyer, CVA)</param>
     /// <param name="status">Lọc theo trạng thái (Active, Inactive, PendingApproval, etc.)</param>
     [HttpGet]
     [Authorize(Roles = "Admin")]
@@ -359,13 +359,13 @@ public class UsersController : ControllerBase
 
     #endregion
 
-    #region Admin & Verifier - Approval Management
+    #region Admin & CVA - Approval Management
 
     /// <summary>
-    /// Phê duyệt tài khoản Verifier (Admin only)
+    /// Phê duyệt tài khoản CVA (Admin only)
     /// </summary>
     /// <remarks>
-    /// Admin phê duyệt tài khoản Verifier đang ở trạng thái PendingApproval
+    /// Admin phê duyệt tài khoản CVA đang ở trạng thái PendingApproval
     /// </remarks>
     [HttpPost("{id:guid}/approve")]
     [Authorize(Roles = "Admin")]
@@ -374,17 +374,17 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), 403)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     [ProducesResponseType(typeof(ApiResponse), 500)]
-    public async Task<IActionResult> ApproveVerifier(Guid id)
+    public async Task<IActionResult> ApproveCVA(Guid id)
     {
         try
         {
-            // TODO: Implement ApproveVerifierCommand
-            // var result = await _mediator.Send(new ApproveVerifierCommand(id));
+            // TODO: Implement ApproveCVACommand
+            // var result = await _mediator.Send(new ApproveCVACommand(id));
 
-            _logger.LogInformation("Admin approved Verifier: {UserId}", id);
+            _logger.LogInformation("Admin approved CVA: {UserId}", id);
 
             return Ok(ApiResponse.SuccessResult(
-                "Phê duyệt tài khoản Verifier thành công"
+                "Phê duyệt tài khoản CVA thành công"
             ));
         }
         catch (KeyNotFoundException ex)
@@ -403,7 +403,7 @@ public class UsersController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error approving Verifier: {UserId}", id);
+            _logger.LogError(ex, "Error approving CVA: {UserId}", id);
             return StatusCode(500, ApiResponse.ErrorResult(
                 "Đã xảy ra lỗi trong quá trình phê duyệt",
                 ex.Message
@@ -412,10 +412,10 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Từ chối tài khoản Verifier (Admin only)
+    /// Từ chối tài khoản CVA (Admin only)
     /// </summary>
     /// <remarks>
-    /// Admin từ chối tài khoản Verifier đang ở trạng thái PendingApproval
+    /// Admin từ chối tài khoản CVA đang ở trạng thái PendingApproval
     /// </remarks>
     [HttpPost("{id:guid}/reject")]
     [Authorize(Roles = "Admin")]
@@ -424,17 +424,17 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), 403)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     [ProducesResponseType(typeof(ApiResponse), 500)]
-    public async Task<IActionResult> RejectVerifier(Guid id, [FromBody] string? reason)
+    public async Task<IActionResult> RejectCVA(Guid id, [FromBody] string? reason)
     {
         try
         {
-            // TODO: Implement RejectVerifierCommand
-            // var result = await _mediator.Send(new RejectVerifierCommand(id, reason));
+            // TODO: Implement RejectCVACommand
+            // var result = await _mediator.Send(new RejectCVACommand(id, reason));
 
-            _logger.LogInformation("Admin rejected Verifier: {UserId}, Reason: {Reason}", id, reason);
+            _logger.LogInformation("Admin rejected CVA: {UserId}, Reason: {Reason}", id, reason);
 
             return Ok(ApiResponse.SuccessResult(
-                "Từ chối tài khoản Verifier thành công"
+                "Từ chối tài khoản CVA thành công"
             ));
         }
         catch (KeyNotFoundException ex)
@@ -453,7 +453,7 @@ public class UsersController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error rejecting Verifier: {UserId}", id);
+            _logger.LogError(ex, "Error rejecting CVA: {UserId}", id);
             return StatusCode(500, ApiResponse.ErrorResult(
                 "Đã xảy ra lỗi trong quá trình từ chối",
                 ex.Message
@@ -462,29 +462,29 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy danh sách Verifier đang chờ phê duyệt (Admin only)
+    /// Lấy danh sách CVA đang chờ phê duyệt (Admin only)
     /// </summary>
-    [HttpGet("pending-verifiers")]
+    [HttpGet("pending-CVAs")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(ApiResponse<object>), 200)]
     [ProducesResponseType(typeof(ApiResponse<object>), 403)]
     [ProducesResponseType(typeof(ApiResponse<object>), 500)]
-    public async Task<IActionResult> GetPendingVerifiers(
+    public async Task<IActionResult> GetPendingCVAs(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         try
         {
-            var result = await _mediator.Send(new GetPendingVerifiersQuery(pageNumber, pageSize));
+            var result = await _mediator.Send(new GetPendingCVAsQuery(pageNumber, pageSize));
 
             return Ok(ApiResponse<object>.SuccessResult(
                 result,
-                $"Lấy danh sách Verifier chờ duyệt thành công. Tìm thấy {result.TotalCount} tài khoản."
+                $"Lấy danh sách CVA chờ duyệt thành công. Tìm thấy {result.TotalCount} tài khoản."
             ));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting pending verifiers");
+            _logger.LogError(ex, "Error getting pending CVAs");
             return StatusCode(500, ApiResponse<object>.ErrorResult(
                 "Đã xảy ra lỗi trong quá trình lấy danh sách",
                 ex.Message
@@ -520,7 +520,7 @@ public class UsersController : ControllerBase
                         admin = 0,
                         evOwner = 0,
                         creditBuyer = 0,
-                        verifier = 0
+                        CVA = 0
                     },
                     byStatus = new
                     {

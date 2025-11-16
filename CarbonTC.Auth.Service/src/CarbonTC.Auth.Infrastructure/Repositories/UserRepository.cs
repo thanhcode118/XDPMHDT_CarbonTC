@@ -124,16 +124,16 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
-    /// Lấy danh sách Verifier đang chờ phê duyệt
+    /// Lấy danh sách CVA đang chờ phê duyệt
     /// </summary>
-    public async Task<(List<User> Users, int TotalCount)> GetPendingVerifiersAsync(
+    public async Task<(List<User> Users, int TotalCount)> GetPendingCVAsAsync(
         int pageNumber,
         int pageSize)
     {
         var query = _context.Users
             .Include(u => u.Role)
             .Where(u => !u.IsDeleted
-                && u.Role!.Name == "Verifier"
+                && u.Role!.Name == "CVA"
                 && u.Status == UserStatus.PendingApproval)
             .AsQueryable();
 
@@ -238,13 +238,13 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
-    /// Đếm số Verifier chờ duyệt
+    /// Đếm số CVA chờ duyệt
     /// </summary>
-    public async Task<int> GetPendingVerifierCountAsync()
+    public async Task<int> GetPendingCVACountAsync()
     {
         return await _context.Users
             .CountAsync(u => !u.IsDeleted
-                && u.Role!.Name == "Verifier"
+                && u.Role!.Name == "CVA"
                 && u.Status == UserStatus.PendingApproval);
     }
 

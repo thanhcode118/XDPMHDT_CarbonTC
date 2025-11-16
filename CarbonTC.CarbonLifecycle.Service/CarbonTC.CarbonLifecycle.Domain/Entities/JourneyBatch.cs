@@ -111,7 +111,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
             LastModifiedAt = DateTime.UtcNow;
         }
 
-        // Behavior Method 3: Đánh dấu đã xác minh (Verifier)
+        // Behavior Method 3: Đánh dấu đã xác minh (CVA)
         public void MarkAsVerified(DateTime verificationTime)
         {
             if (Status != JourneyBatchStatus.SubmittedForVerification)

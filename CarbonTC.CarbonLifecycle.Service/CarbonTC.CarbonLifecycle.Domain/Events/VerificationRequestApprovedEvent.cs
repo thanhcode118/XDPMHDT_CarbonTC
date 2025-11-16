@@ -7,14 +7,14 @@ namespace CarbonTC.CarbonLifecycle.Domain.Events
     {
         public Guid VerificationRequestId { get; }
         public Guid JourneyBatchId { get; }
-        public string VerifierId { get; }
+        public string CVAId { get; }
         public DateTime OccurredOn { get; } = DateTime.UtcNow;
 
-        public VerificationRequestApprovedEvent(Guid verificationRequestId, Guid journeyBatchId, string verifierId)
+        public VerificationRequestApprovedEvent(Guid verificationRequestId, Guid journeyBatchId, string CVAId)
         {
             VerificationRequestId = verificationRequestId;
             JourneyBatchId = journeyBatchId;
-            VerifierId = verifierId;
+            CVAId = CVAId;
         }
     }
 }

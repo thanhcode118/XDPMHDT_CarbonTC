@@ -1,26 +1,26 @@
-// CarbonTC.Auth.Application/Features/Users/Queries/GetPendingVerifiers/GetPendingVerifiersHandler.cs
+// CarbonTC.Auth.Application/Features/Users/Queries/GetPendingCVAs/GetPendingCVAsHandler.cs
 
 using CarbonTC.Auth.Application.DTOs;
 using CarbonTC.Auth.Application.Interfaces;
 using MediatR;
 
-namespace CarbonTC.Auth.Application.Features.Users.Queries.GetPendingVerifiers;
+namespace CarbonTC.Auth.Application.Features.Users.Queries.GetPendingCVAs;
 
-public class GetPendingVerifiersHandler : IRequestHandler<GetPendingVerifiersQuery, PagedResult<UserProfileDto>>
+public class GetPendingCVAsHandler : IRequestHandler<GetPendingCVAsQuery, PagedResult<UserProfileDto>>
 {
     private readonly IUserRepository _userRepository;
 
-    public GetPendingVerifiersHandler(IUserRepository userRepository)
+    public GetPendingCVAsHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
 
     public async Task<PagedResult<UserProfileDto>> Handle(
-        GetPendingVerifiersQuery request,
+        GetPendingCVAsQuery request,
         CancellationToken cancellationToken)
     {
-        // Lấy danh sách Verifier đang chờ duyệt
-        var (users, totalCount) = await _userRepository.GetPendingVerifiersAsync(
+        // Lấy danh sách CVA đang chờ duyệt
+        var (users, totalCount) = await _userRepository.GetPendingCVAsAsync(
             request.PageNumber,
             request.PageSize
         );

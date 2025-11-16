@@ -1,21 +1,21 @@
-// CarbonTC.Auth.Application/Features/Users/Commands/RejectVerifier/RejectVerifierHandler.cs
+// CarbonTC.Auth.Application/Features/Users/Commands/RejectCVA/RejectCVAHandler.cs
 
 using CarbonTC.Auth.Application.Interfaces;
 using CarbonTC.Auth.Domain.Enums;
 using MediatR;
 
-namespace CarbonTC.Auth.Application.Features.Users.Commands.RejectVerifier;
+namespace CarbonTC.Auth.Application.Features.Users.Commands.RejectCVA;
 
-public class RejectVerifierHandler : IRequestHandler<RejectVerifierCommand, bool>
+public class RejectCVAHandler : IRequestHandler<RejectCVACommand, bool>
 {
     private readonly IUserRepository _userRepository;
 
-    public RejectVerifierHandler(IUserRepository userRepository)
+    public RejectCVAHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
 
-    public async Task<bool> Handle(RejectVerifierCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(RejectCVACommand request, CancellationToken cancellationToken)
     {
         // 1. Lấy user
         var user = await _userRepository.GetByIdAsync(request.UserId);
@@ -26,9 +26,9 @@ public class RejectVerifierHandler : IRequestHandler<RejectVerifierCommand, bool
         }
 
         // 2. Kiểm tra role
-        if (user.Role?.Name != "Verifier")
+        if (user.Role?.Name != "CVA")
         {
-            throw new InvalidOperationException("Chỉ có thể từ chối tài khoản Verifier");
+            throw new InvalidOperationException("Chỉ có thể từ chối tài khoản CVA");
         }
 
         // 3. Kiểm tra status

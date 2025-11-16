@@ -9,7 +9,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
         public Guid Id { get; private set; }
         public Guid JourneyBatchId { get; private set; }
         public string RequestorId { get; private set; }
-        public string VerifierId { get; private set; }
+        public string CVAId { get; private set; }
         public DateTime RequestDate { get; private set; }
         public DateTime? VerificationDate { get; private set; }
         public VerificationRequestStatus Status { get; private set; }
@@ -27,7 +27,7 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
         private VerificationRequest()
         {
             RequestorId = string.Empty;
-            VerifierId = string.Empty;
+            CVAId = string.Empty;
             Notes = string.Empty;
             CarbonCredits = new List<CarbonCredit>();
         }
@@ -46,27 +46,27 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
                 RequestDate = DateTime.UtcNow,
                 Status = VerificationRequestStatus.Pending,
                 Notes = notes ?? string.Empty,
-                VerifierId = string.Empty,
+                CVAId = string.Empty,
             };
         }
 
         // Behavior Method 1: Phê duyệt yêu cầu
-        public void MarkAsApproved(string verifierId, Guid cvaStandardId, string notes)
+        public void MarkAsApproved(string CVAId, Guid cvaStandardId, string notes)
         {
             if (Status != VerificationRequestStatus.Pending)
             {
                 throw new InvalidOperationException($"Cannot approve a request that is in status {Status}.");
             }
-            if (string.IsNullOrWhiteSpace(verifierId))
+            if (string.IsNullOrWhiteSpace(CVAId))
             {
-                throw new ArgumentException("Verifier ID cannot be empty.", nameof(verifierId));
+                throw new ArgumentException("CVA ID cannot be empty.", nameof(CVAId));
             }
             if (cvaStandardId == Guid.Empty)
             {
                 throw new ArgumentException("CVA Standard ID must be provided.", nameof(cvaStandardId));
             }
 
-            VerifierId = verifierId;
+            CVAId = CVAId;
             CvaStandardId = cvaStandardId;
             VerificationDate = DateTime.UtcNow;
             Status = VerificationRequestStatus.Approved;
@@ -75,22 +75,22 @@ namespace CarbonTC.CarbonLifecycle.Domain.Entities
         }
 
         // Behavior Method 2: Từ chối yêu cầu
-        public void MarkAsRejected(string verifierId, string reason)
+        public void MarkAsRejected(string CVAId, string reason)
         {
             if (Status != VerificationRequestStatus.Pending)
             {
                 throw new InvalidOperationException($"Cannot reject a request that is in status {Status}.");
             }
-            if (string.IsNullOrWhiteSpace(verifierId))
+            if (string.IsNullOrWhiteSpace(CVAId))
             {
-                throw new ArgumentException("Verifier ID cannot be empty.", nameof(verifierId));
+                throw new ArgumentException("CVA ID cannot be empty.", nameof(CVAId));
             }
             if (string.IsNullOrWhiteSpace(reason))
             {
                 throw new ArgumentException("Rejection reason must be provided.", nameof(reason));
             }
 
-            VerifierId = verifierId;
+            CVAId = CVAId;
             VerificationDate = DateTime.UtcNow;
             Status = VerificationRequestStatus.Rejected;
             Notes = reason; // Gán lý do từ chối vào Notes
