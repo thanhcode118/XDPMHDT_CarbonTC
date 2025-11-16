@@ -9,9 +9,25 @@ import axios from 'axios';
 
 const envApiUrl = import.meta.env.VITE_APIGATEWAY_BASE_URL;
 const defaultApiUrl = 'http://localhost:7000/api';
-const baseURL = envApiUrl || defaultApiUrl;
+
+// Kiểm tra nếu đang chạy local (trong browser) và URL chứa 'api-gateway', 
+// thì tự động fallback về localhost:7000 vì 'api-gateway' chỉ hoạt động trong Docker network
+let baseURL = envApiUrl || defaultApiUrl;
+
+// Kiểm tra nếu đang chạy trong browser (không phải Docker container)
+// và URL là 'api-gateway', thì tự động chuyển sang localhost
+const isRunningInBrowser = typeof window !== 'undefined';
+const isLocalhost = isRunningInBrowser && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+if (isLocalhost && baseURL && baseURL.includes('api-gateway')) {
+  console.warn('⚠️ Phát hiện api-gateway URL trong local development. Tự động chuyển sang localhost:7000');
+  console.warn('   Lý do: api-gateway chỉ hoạt động trong Docker network, không thể truy cập từ localhost');
+  baseURL = defaultApiUrl;
+}
 
 console.log("API Base URL:", baseURL);
+console.log("Environment API URL:", envApiUrl);
 
 const apiClientTH = axios.create({
   baseURL: baseURL, // Base URL của CarbonLifecycle Service API
