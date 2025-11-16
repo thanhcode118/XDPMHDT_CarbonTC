@@ -16,7 +16,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
     // Kế thừa BaseApiController để có Mediator
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "EVOwner")]
+    [Authorize] // Cho phép tất cả user đã đăng ký (có JWT token hợp lệ) truy cập
     public class JourneyBatchesController : BaseApiController
     {
         private readonly ILogger<JourneyBatchesController> _logger;

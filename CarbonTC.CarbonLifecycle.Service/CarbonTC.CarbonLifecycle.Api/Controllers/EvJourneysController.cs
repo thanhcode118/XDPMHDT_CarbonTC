@@ -18,7 +18,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "EVOwner")] 
+    [Authorize] // Cho phép tất cả user đã đăng ký (có JWT token hợp lệ) truy cập
     public class EvJourneysController : BaseApiController
     {
         private readonly ILogger<EvJourneysController> _logger;

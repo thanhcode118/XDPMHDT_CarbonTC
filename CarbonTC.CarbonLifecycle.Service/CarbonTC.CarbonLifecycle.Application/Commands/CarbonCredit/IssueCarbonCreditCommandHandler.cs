@@ -195,7 +195,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
                     IssuedAt = new DateTimeOffset(newCarbonCredit.IssueDate, TimeSpan.Zero)
                 };
 
-                await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit.issued");
+                await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit_issued");
                 _logger.LogInformation("Published CreditIssuedIntegrationEvent for Credit ID: {CreditId}, UserId: {UserId}, Amount: {Amount}, ReferenceId: {ReferenceId}",
                     newCarbonCredit.Id, newCarbonCredit.UserId, newCarbonCredit.AmountKgCO2e, referenceId);
 

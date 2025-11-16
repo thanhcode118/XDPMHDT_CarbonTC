@@ -184,8 +184,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
                             ReferenceId = verificationRequest.JourneyBatchId.ToString(), // Dùng Batch ID làm Reference
                             IssuedAt = new DateTimeOffset(newCredit.IssueDate, TimeSpan.Zero),
                         };
-                        // Routing Key: credit.issued
-                        await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit.issued");
+                        // Routing Key: credit_issued (for wallet service)
+                        await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit_issued");
                         _logger.LogInformation("Published CreditIssuedIntegrationEvent for Credit ID: {CreditId}, UserId: {UserId}, Amount: {Amount}",
                             newCredit.Id, newCredit.UserId, newCredit.AmountKgCO2e);
 
