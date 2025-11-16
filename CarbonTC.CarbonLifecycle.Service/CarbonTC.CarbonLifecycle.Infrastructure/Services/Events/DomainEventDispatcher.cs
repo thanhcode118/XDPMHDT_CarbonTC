@@ -138,7 +138,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             return eventTypeName switch
             {
                 // 1. Dành cho Service 4 (Wallet)
-                nameof(CreditIssuedIntegrationEvent) => "credit.issued",
+                nameof(CreditIssuedIntegrationEvent) => "credit_issued",
 
                 // 2. Dành cho Service 3 (Marketplace)
                 //  dùng key "credit.inventory.update" để gửi
