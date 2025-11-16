@@ -20,7 +20,10 @@ namespace Application.Common.Features.Transactions.Queries.GetAllTransactions
 
         TransactionSortBy? SortBy = TransactionSortBy.CreatedAt,
         bool SortDescending = true
-    ) : IRequest<PagedResult<Domain.Entities.Transactions>>;
+    ) : IRequest<PagedResult<Domain.Entities.Transactions>>
+    {
+        public Guid? InvolvedUserId { get; init; } = null;
+    }
 
     public enum TransactionSortBy
     {

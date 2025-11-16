@@ -84,8 +84,7 @@ namespace CarbonTC.API.Controllers
 
             var modifiedQuery = query with
             {
-                BuyerId = query.BuyerId ?? userId,  
-                SellerId = query.SellerId ?? userId  
+                InvolvedUserId = userId
             };
 
             var transactions = await _mediator.Send(modifiedQuery, cancellationToken);
