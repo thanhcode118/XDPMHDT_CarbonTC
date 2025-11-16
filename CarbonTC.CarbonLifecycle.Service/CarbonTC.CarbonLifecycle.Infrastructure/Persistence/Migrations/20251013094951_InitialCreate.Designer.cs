@@ -274,7 +274,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("VerificationDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("CVAId")
+                    b.Property<string>("VerifierId")
                         .IsRequired()
                         .HasColumnType("longtext");
 

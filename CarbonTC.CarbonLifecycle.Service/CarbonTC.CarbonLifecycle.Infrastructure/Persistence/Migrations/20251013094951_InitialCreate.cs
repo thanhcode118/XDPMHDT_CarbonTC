@@ -156,7 +156,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence.Migrations
                     JourneyBatchId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     RequestorId = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CVAId = table.Column<string>(type: "longtext", nullable: false)
+                    VerifierId = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     RequestDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     VerificationDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),

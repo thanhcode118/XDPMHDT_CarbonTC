@@ -68,16 +68,16 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
         public async Task<VerificationRequestDto> Handle(ReviewVerificationRequestCommand request, CancellationToken cancellationToken)
         {
             var reviewData = request.ReviewData;
-            var CVAId = _identityService.GetUserId();
-            // TODO: Kiểm tra Role của CVAId có phải là CVA không? (Có thể làm ở Controller hoặc Middleware)
-            if (string.IsNullOrEmpty(CVAId))
+            var verifierId = _identityService.GetUserId();
+            // TODO: Kiểm tra Role của verifierId có phải là CVA không? (Có thể làm ở Controller hoặc Middleware)
+            if (string.IsNullOrEmpty(verifierId))
             {
-                _logger.LogError("CVA ID could not be retrieved from identity service.");
+                _logger.LogError("Verifier ID could not be retrieved from identity service.");
                 throw new UnauthorizedAccessException("User is not authenticated or authorized.");
             }
 
-            _logger.LogInformation("Processing review for VerificationRequest ID: {VerificationRequestId} by CVA: {CVAId}",
-                reviewData.VerificationRequestId, CVAId);
+            _logger.LogInformation("Processing review for VerificationRequest ID: {VerificationRequestId} by Verifier: {VerifierId}",
+                reviewData.VerificationRequestId, verifierId);
 
             // 1. Lấy VerificationRequest gốc (bao gồm JourneyBatch và Standard nếu có)
             var verificationRequest = await _verificationRequestRepository.GetByIdAsync(reviewData.VerificationRequestId);
@@ -128,7 +128,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
                 // Gọi Domain Service để xử lý nghiệp vụ duyệt
                 await _verificationProcessDomainService.ApproveVerificationRequestAsync(
                     verificationRequest.Id,
-                    CVAId,
+                    verifierId,
                     auditFindings,
                     reviewData.Notes,
                     cvaStandard); // Truyền standard đã lấy
@@ -153,7 +153,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
                 // Gọi Domain Service để xử lý nghiệp vụ từ chối
                 await _verificationProcessDomainService.RejectVerificationRequestAsync(
                     verificationRequest.Id,
-                    CVAId,
+                    verifierId,
                     auditFindings,
                     reviewData.ReasonForRejection); // Truyền lý do
 
@@ -226,7 +226,7 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
                 OriginalValuesJson = originalValuesJson,
                 NewValuesJson = newValuesJson
             });
-
+            
             // Await audit command để tránh DbContext threading issues
             // Nếu audit fail, log nhưng không fail toàn bộ operation
             try

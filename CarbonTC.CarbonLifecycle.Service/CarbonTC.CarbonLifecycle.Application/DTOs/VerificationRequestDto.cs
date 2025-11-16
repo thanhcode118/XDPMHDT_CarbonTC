@@ -9,7 +9,7 @@ namespace CarbonTC.CarbonLifecycle.Application.DTOs
         public Guid Id { get; set; }
         public Guid JourneyBatchId { get; set; }
         public string RequestorId { get; set; } = string.Empty;
-        public string? CVAId { get; set; }
+        public string? VerifierId { get; set; }
         public DateTime RequestDate { get; set; }
         public DateTime? VerificationDate { get; set; }
         public VerificationRequestStatus Status { get; set; }

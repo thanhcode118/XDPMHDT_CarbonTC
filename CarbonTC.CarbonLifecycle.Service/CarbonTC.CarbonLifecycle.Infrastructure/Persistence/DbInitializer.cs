@@ -23,11 +23,11 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
             var hasEVJourneys = await context.EVJourneys.AnyAsync();
             var hasVerificationRequests = await context.VerificationRequests.AnyAsync();
             var hasCarbonCredits = await context.CarbonCredits.AnyAsync();
-
+            
             // Nếu có ít nhất 2 trong số các bảng chính đã có dữ liệu, coi như database đã được seed
             var existingDataCount = new[] { hasCVAStandards, hasJourneyBatches, hasEVJourneys, hasVerificationRequests, hasCarbonCredits }
                 .Count(x => x);
-
+            
             // Nếu forceSeed = false và database đã có dữ liệu, không seed lại
             if (!forceSeed && existingDataCount >= 2)
             {
@@ -35,12 +35,12 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                 logger?.LogInformation($"Database already contains data ({existingDataCount} tables have data). Skipping seed operation.");
                 return;
             }
-
+            
             if (forceSeed)
             {
                 logger?.LogWarning("Force seed is enabled. Seeding database even if data exists.");
             }
-
+            
             logger?.LogInformation("Database appears to be empty. Starting seed operation...");
 
             // 3. CHỈ SEED KHI DATABASE TRỐNG
@@ -109,9 +109,9 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                 new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc), true);
             idProperty?.SetValue(standardKia, Guid.Parse("a9d9d9f9-d2e9-4ea9-1f6d-9d9d9d9d9d10"));
 
-            var cvaStandards = new CVAStandard[] {
+            var cvaStandards = new CVAStandard[] { 
                 standardVFe34, standardTeslaY, standardBYD, standardHyundai, standardNissan,
-                standardBMW, standardMercedes, standardAudi, standardPorsche, standardKia
+                standardBMW, standardMercedes, standardAudi, standardPorsche, standardKia 
             };
             context.CVAStandards.AddRange(cvaStandards);
 
@@ -151,37 +151,37 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
             };
 
             // Define data arrays - TẤT CẢ DỮ LIỆU CHO 1 USER: auth0|demo-user-12345
-            var vehicleTypes = new[] { "Vinfast-VFe34", "Tesla-ModelY", "BYD-Atto3", "Hyundai-Kona",
+            var vehicleTypes = new[] { "Vinfast-VFe34", "Tesla-ModelY", "BYD-Atto3", "Hyundai-Kona", 
                 "Nissan-Leaf", "BMW-iX3", "Mercedes-EQC", "Audi-e-tron", "Porsche-Taycan", "Kia-EV6" };
             var distances = new[] { 85.5m, 42.0m, 120.3m, 65.7m, 95.2m, 150.8m, 78.4m, 110.6m, 200.5m, 88.9m };
             var conversionRates = new[] { 0.12m, 0.09m, 0.11m, 0.10m, 0.08m, 0.13m, 0.14m, 0.15m, 0.16m, 0.11m };
 
             // Địa điểm Việt Nam - Origin và Destination
-            var vietnamOrigins = new[]
-            {
-                "Hà Nội, Việt Nam",
-                "TP. Hồ Chí Minh, Việt Nam",
-                "Đà Nẵng, Việt Nam",
-                "Hải Phòng, Việt Nam",
-                "Cần Thơ, Việt Nam",
-                "Nha Trang, Việt Nam",
-                "Huế, Việt Nam",
-                "Vũng Tàu, Việt Nam",
-                "Quy Nhon, Việt Nam",
-                "Đà Lạt, Việt Nam"
+            var vietnamOrigins = new[] 
+            { 
+                "Hà Nội, Việt Nam", 
+                "TP. Hồ Chí Minh, Việt Nam", 
+                "Đà Nẵng, Việt Nam", 
+                "Hải Phòng, Việt Nam", 
+                "Cần Thơ, Việt Nam", 
+                "Nha Trang, Việt Nam", 
+                "Huế, Việt Nam", 
+                "Vũng Tàu, Việt Nam", 
+                "Quy Nhon, Việt Nam", 
+                "Đà Lạt, Việt Nam" 
             };
-            var vietnamDestinations = new[]
-            {
-                "TP. Hồ Chí Minh, Việt Nam",
-                "Đà Nẵng, Việt Nam",
-                "Hà Nội, Việt Nam",
-                "Cần Thơ, Việt Nam",
-                "Nha Trang, Việt Nam",
-                "Huế, Việt Nam",
-                "Vũng Tàu, Việt Nam",
-                "Hải Phòng, Việt Nam",
-                "Đà Lạt, Việt Nam",
-                "Quy Nhon, Việt Nam"
+            var vietnamDestinations = new[] 
+            { 
+                "TP. Hồ Chí Minh, Việt Nam", 
+                "Đà Nẵng, Việt Nam", 
+                "Hà Nội, Việt Nam", 
+                "Cần Thơ, Việt Nam", 
+                "Nha Trang, Việt Nam", 
+                "Huế, Việt Nam", 
+                "Vũng Tàu, Việt Nam", 
+                "Hải Phòng, Việt Nam", 
+                "Đà Lạt, Việt Nam", 
+                "Quy Nhon, Việt Nam" 
             };
 
             // --- TẠO DỮ LIỆU JOURNEY BATCHES (10 batches) - TẤT CẢ CHO 1 USER ---
@@ -190,13 +190,13 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
             {
                 var batch = JourneyBatch.Create(demoUserId); // CHỈ 1 USER
                 journeyBatchIdProperty?.SetValue(batch, batchGuids[i]);
-
+                
                 // Add journey summary to batch
                 var co2Saved = distances[i] * conversionRates[i];
                 batch.AddJourneySummary(distances[i], co2Saved);
-
+                
                 statusProperty?.SetValue(batch, batchStatuses[i]);
-                if (batchStatuses[i] == JourneyBatchStatus.Verified ||
+                if (batchStatuses[i] == JourneyBatchStatus.Verified || 
                     batchStatuses[i] == JourneyBatchStatus.CreditsIssued ||
                     batchStatuses[i] == JourneyBatchStatus.Rejected)
                 {
@@ -285,11 +285,11 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                 // Set different statuses
                 if (i < 3) // First 3 approved
                 {
-                    request.MarkAsApproved("CVA-001", standardIds[i], $"Approved batch {i + 1}");
+                    request.MarkAsApproved("verifier-001", standardIds[i], $"Approved batch {i + 1}");
                 }
                 else if (i < 5) // Next 2 rejected
                 {
-                    request.MarkAsRejected("CVA-002", $"Rejected batch {i + 1} - insufficient data");
+                    request.MarkAsRejected("verifier-002", $"Rejected batch {i + 1} - insufficient data");
                 }
                 // Rest remain pending
 
@@ -353,7 +353,7 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
 
             var entityTypes = new[] { "JourneyBatch", "CarbonCredit", "VerificationRequest", "EVJourney",
                 "JourneyBatch", "CarbonCredit", "VerificationRequest", "EVJourney", "JourneyBatch", "CarbonCredit" };
-            var actions = new[] { "Created", "Updated", "Verified", "Issued", "Rejected", "Approved",
+            var actions = new[] { "Created", "Updated", "Verified", "Issued", "Rejected", "Approved", 
                 "Created", "Updated", "Verified", "Issued" };
 
             var auditReports = new List<AuditReport>();
@@ -448,44 +448,44 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                 new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc), true);
             idProperty?.SetValue(standardKia, Guid.NewGuid());
 
-            var cvaStandards = new CVAStandard[] {
+            var cvaStandards = new CVAStandard[] { 
                 standardVFe34, standardTeslaY, standardBYD, standardHyundai, standardNissan,
-                standardBMW, standardMercedes, standardAudi, standardPorsche, standardKia
+                standardBMW, standardMercedes, standardAudi, standardPorsche, standardKia 
             };
             context.CVAStandards.AddRange(cvaStandards);
 
             // Define data arrays - TẤT CẢ DỮ LIỆU CHO 1 USER: auth0|demo-user-12345
-            var vehicleTypes = new[] { "Vinfast-VFe34", "Tesla-ModelY", "BYD-Atto3", "Hyundai-Kona",
+            var vehicleTypes = new[] { "Vinfast-VFe34", "Tesla-ModelY", "BYD-Atto3", "Hyundai-Kona", 
                 "Nissan-Leaf", "BMW-iX3", "Mercedes-EQC", "Audi-e-tron", "Porsche-Taycan", "Kia-EV6" };
             var distances = new[] { 85.5m, 42.0m, 120.3m, 65.7m, 95.2m, 150.8m, 78.4m, 110.6m, 200.5m, 88.9m };
             var conversionRates = new[] { 0.12m, 0.09m, 0.11m, 0.10m, 0.08m, 0.13m, 0.14m, 0.15m, 0.16m, 0.11m };
 
             // Địa điểm Việt Nam - Origin và Destination
-            var vietnamOrigins = new[]
-            {
-                "Hà Nội, Việt Nam",
-                "TP. Hồ Chí Minh, Việt Nam",
-                "Đà Nẵng, Việt Nam",
-                "Hải Phòng, Việt Nam",
-                "Cần Thơ, Việt Nam",
-                "Nha Trang, Việt Nam",
-                "Huế, Việt Nam",
-                "Vũng Tàu, Việt Nam",
-                "Quy Nhon, Việt Nam",
-                "Đà Lạt, Việt Nam"
+            var vietnamOrigins = new[] 
+            { 
+                "Hà Nội, Việt Nam", 
+                "TP. Hồ Chí Minh, Việt Nam", 
+                "Đà Nẵng, Việt Nam", 
+                "Hải Phòng, Việt Nam", 
+                "Cần Thơ, Việt Nam", 
+                "Nha Trang, Việt Nam", 
+                "Huế, Việt Nam", 
+                "Vũng Tàu, Việt Nam", 
+                "Quy Nhon, Việt Nam", 
+                "Đà Lạt, Việt Nam" 
             };
-            var vietnamDestinations = new[]
-            {
-                "TP. Hồ Chí Minh, Việt Nam",
-                "Đà Nẵng, Việt Nam",
-                "Hà Nội, Việt Nam",
-                "Cần Thơ, Việt Nam",
-                "Nha Trang, Việt Nam",
-                "Huế, Việt Nam",
-                "Vũng Tàu, Việt Nam",
-                "Hải Phòng, Việt Nam",
-                "Đà Lạt, Việt Nam",
-                "Quy Nhon, Việt Nam"
+            var vietnamDestinations = new[] 
+            { 
+                "TP. Hồ Chí Minh, Việt Nam", 
+                "Đà Nẵng, Việt Nam", 
+                "Hà Nội, Việt Nam", 
+                "Cần Thơ, Việt Nam", 
+                "Nha Trang, Việt Nam", 
+                "Huế, Việt Nam", 
+                "Vũng Tàu, Việt Nam", 
+                "Hải Phòng, Việt Nam", 
+                "Đà Lạt, Việt Nam", 
+                "Quy Nhon, Việt Nam" 
             };
 
             // --- TẠO THÊM DỮ LIỆU JOURNEY BATCHES (10 batches) ---
@@ -517,12 +517,12 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
                 batchGuids.Add(batchGuid);
                 var batch = JourneyBatch.Create(demoUserId); // CHỈ 1 USER
                 journeyBatchIdProperty?.SetValue(batch, batchGuid);
-
+                
                 var co2Saved = distances[i] * conversionRates[i];
                 batch.AddJourneySummary(distances[i], co2Saved);
-
+                
                 statusProperty?.SetValue(batch, batchStatuses[i]);
-                if (batchStatuses[i] == JourneyBatchStatus.Verified ||
+                if (batchStatuses[i] == JourneyBatchStatus.Verified || 
                     batchStatuses[i] == JourneyBatchStatus.CreditsIssued ||
                     batchStatuses[i] == JourneyBatchStatus.Rejected)
                 {
@@ -579,11 +579,11 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
 
                 if (i < 3)
                 {
-                    request.MarkAsApproved("CVA-001", standardIds[i], $"Approved batch {i + 1}");
+                    request.MarkAsApproved("verifier-001", standardIds[i], $"Approved batch {i + 1}");
                 }
                 else if (i < 5)
                 {
-                    request.MarkAsRejected("CVA-002", $"Rejected batch {i + 1} - insufficient data");
+                    request.MarkAsRejected("verifier-002", $"Rejected batch {i + 1} - insufficient data");
                 }
 
                 verificationRequests.Add(request);
@@ -616,11 +616,11 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Persistence
             // --- TẠO THÊM DỮ LIỆU AUDIT REPORTS (10 reports) ---
             var entityTypes = new[] { "JourneyBatch", "CarbonCredit", "VerificationRequest", "EVJourney",
                 "JourneyBatch", "CarbonCredit", "VerificationRequest", "EVJourney", "JourneyBatch", "CarbonCredit" };
-            var actions = new[] { "Created", "Updated", "Verified", "Issued", "Rejected", "Approved",
+            var actions = new[] { "Created", "Updated", "Verified", "Issued", "Rejected", "Approved", 
                 "Created", "Updated", "Verified", "Issued" };
 
             var auditReports = new List<AuditReport>();
-            var carbonCreditGuids = carbonCredits.Select(c =>
+            var carbonCreditGuids = carbonCredits.Select(c => 
             {
                 var idProp = typeof(CarbonCredit).GetProperty("Id");
                 return (Guid)(idProp?.GetValue(c) ?? Guid.Empty);
