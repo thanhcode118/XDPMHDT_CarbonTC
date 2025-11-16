@@ -195,7 +195,7 @@ const Dashboard = () => {
         
         {/* Charts and Recent Activities */}
         <div className="row">
-          <div className="col-lg-8">
+          <div className="col">
             <div className={styles.card} data-aos="fade-up" data-aos-delay="100">
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Biểu đồ tín chỉ carbon</h3>
@@ -234,7 +234,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-lg-4">
+          {/* <div className="col-lg-4">
             <div className={styles.card} data-aos="fade-up" data-aos-delay="200">
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Hành trình gần đây</h3>
@@ -258,7 +258,7 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         
         {/* Transactions Table */}
