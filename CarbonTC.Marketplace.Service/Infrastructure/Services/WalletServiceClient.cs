@@ -102,11 +102,16 @@ namespace Infrastructure.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    var errorBody = await response.Content.ReadAsStringAsync(cts.Token);
                     _logger.LogWarning(
-                        "Wallet service returned {StatusCode}",
-                        response.StatusCode);
+                        "Wallet service returned non-success status: {StatusCode}. Response Body: {ErrorBody}",
+                        response.StatusCode,
+                        errorBody); 
                     return null;
                 }
+
+                var contentString = await response.Content.ReadAsStringAsync(cts.Token);
+                _logger.LogInformation("Raw JSON response from Wallet Service: {ContentString}", contentString);
 
                 var contentStream = await response.Content.ReadAsStreamAsync(cts.Token);
                 var walletResponse = await JsonSerializer.DeserializeAsync<WalletResponseDto<WalletDto>>(
@@ -129,6 +134,7 @@ namespace Infrastructure.Services
                     return null;
                 }
 
+                _logger.LogInformation(wallet.ToString());
                 return wallet;
             }
             catch (OperationCanceledException)

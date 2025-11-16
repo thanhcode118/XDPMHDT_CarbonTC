@@ -14,5 +14,5 @@ public interface IUserRepository
     Task<(List<User> Users, int TotalCount)> GetAllAsync(int pageNumber, int pageSize, string? searchTerm);
 
     // ✅ THÊM METHOD MỚI
-    Task<(List<User> Users, int TotalCount)> GetPendingVerifiersAsync(int pageNumber, int pageSize);
+    Task<(List<User> Users, int TotalCount)> GetPendingCVAsAsync(int pageNumber, int pageSize);
 }

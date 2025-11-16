@@ -1,21 +1,21 @@
-// CarbonTC.Auth.Application/Features/Users/Commands/ApproveVerifier/ApproveVerifierHandler.cs
+// CarbonTC.Auth.Application/Features/Users/Commands/ApproveCVA/ApproveCVAHandler.cs
 
 using CarbonTC.Auth.Application.Interfaces;
 using CarbonTC.Auth.Domain.Enums;
 using MediatR;
 
-namespace CarbonTC.Auth.Application.Features.Users.Commands.ApproveVerifier;
+namespace CarbonTC.Auth.Application.Features.Users.Commands.ApproveCVA;
 
-public class ApproveVerifierHandler : IRequestHandler<ApproveVerifierCommand, bool>
+public class ApproveCVAHandler : IRequestHandler<ApproveCVACommand, bool>
 {
     private readonly IUserRepository _userRepository;
 
-    public ApproveVerifierHandler(IUserRepository userRepository)
+    public ApproveCVAHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
 
-    public async Task<bool> Handle(ApproveVerifierCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(ApproveCVACommand request, CancellationToken cancellationToken)
     {
         // 1. Lấy user
         var user = await _userRepository.GetByIdAsync(request.UserId);
@@ -26,9 +26,9 @@ public class ApproveVerifierHandler : IRequestHandler<ApproveVerifierCommand, bo
         }
 
         // 2. Kiểm tra role
-        if (user.Role?.Name != "Verifier")
+        if (user.Role?.Name != "CVA")
         {
-            throw new InvalidOperationException("Chỉ có thể phê duyệt tài khoản Verifier");
+            throw new InvalidOperationException("Chỉ có thể phê duyệt tài khoản CVA");
         }
 
         // 3. Kiểm tra status

@@ -4,11 +4,14 @@ import axios from 'axios';
 // EVOwner token
 //const TEMP_TOKEN_FOR_TESTING = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHxkZW1vLXVzZXItMTIzNDUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImF1dGgwfGRlbW8tdXNlci0xMjM0NSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkVWT3duZXIiLCJpc3MiOiJDYXJib25UQy5BdXRoIiwiYXVkIjoiQ2FyYm9uVEMuU2VydmljZXMiLCJleHAiOjE3OTg1ODIwMDAsImlhdCI6MTczNTY4OTYwMCwiZW1haWwiOiJldm93bmVyQGNhcmJvbnRjLmRlbW8iLCJuYW1lIjoiRVYgT3duZXIgRGVtbyBVc2VyIiwianRpIjoiNTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAwIn0.Dumln6dZQHcSKuo45FuMt873vmjH-D8BM9WQ6kx9_hs'; 
 // CVA token 
-const TEMP_TOKEN_FOR_TESTING = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHxkZW1vLXVzZXItNjc4OTAiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImF1dGgwfGRlbW8tdXNlci02Nzg5MCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkNWQSIsImlzcyI6IkNhcmJvblRDLkF1dGgiLCJhdWQiOiJDYXJib25UQy5TZXJ2aWNlcyIsImV4cCI6MTc5ODU4MjAwMCwiaWF0IjoxNzM1Njg5NjAwLCJlbWFpbCI6ImN2YUBjYXJib250Yy5kZW1vIiwibmFtZSI6IkNWQSBEZW1vIFVzZXIiLCJqdGkiOiI2NjBlODQwMC1lMjliLTQxZDQtYTcxNi01NTY2NTU0NDAwMDAifQ.S0i2rpPAb6BE879nbaAiopPX_4EIuORjP3hHmMkiD1Y'; 
+//const TEMP_TOKEN_FOR_TESTING = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHxkZW1vLXVzZXItNjc4OTAiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImF1dGgwfGRlbW8tdXNlci02Nzg5MCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkNWQSIsImlzcyI6IkNhcmJvblRDLkF1dGgiLCJhdWQiOiJDYXJib25UQy5TZXJ2aWNlcyIsImV4cCI6MTc5ODU4MjAwMCwiaWF0IjoxNzM1Njg5NjAwLCJlbWFpbCI6ImN2YUBjYXJib250Yy5kZW1vIiwibmFtZSI6IkNWQSBEZW1vIFVzZXIiLCJqdGkiOiI2NjBlODQwMC1lMjliLTQxZDQtYTcxNi01NTY2NTU0NDAwMDAifQ.S0i2rpPAb6BE879nbaAiopPX_4EIuORjP3hHmMkiD1Y'; 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-// Sử dụng environment variable nếu có, fallback về localhost:5002 cho development
-const baseURL = import.meta.env.VITE_CARBON_LIFECYCLE_API_URL || 'http://localhost:5002/api';
+const envApiUrl = import.meta.env.VITE_APIGATEWAY_BASE_URL;
+const defaultApiUrl = 'http://localhost:7000/api';
+const baseURL = envApiUrl || defaultApiUrl;
+
+console.log("API Base URL:", baseURL);
 
 const apiClientTH = axios.create({
   baseURL: baseURL, // Base URL của CarbonLifecycle Service API
@@ -18,12 +21,11 @@ const apiClientTH = axios.create({
   }
 });
 
-// Request Interceptor - Thêm JWT token vào header
+// Request Interceptor - Thêm JWT token vào header từ localStorage
 apiClientTH.interceptors.request.use(
   (config) => {
-    // GIẢ LẬP VIỆC ĐỌC TỪ LOCALSTORAGE
-    // Thay vì đọc từ localStorage, chúng ta dùng token cứng
-    const token = TEMP_TOKEN_FOR_TESTING; 
+    // Lấy token từ localStorage (được lưu sau khi đăng nhập/đăng ký)
+    const token = localStorage.getItem('accessToken');
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -37,7 +39,7 @@ apiClientTH.interceptors.request.use(
         });
       }
     } else {
-      console.warn('⚠️ No token found (TESTING)');
+      console.warn('⚠️ No token found in localStorage. User may need to login.');
     }
     return config;
   },
@@ -59,12 +61,12 @@ apiClientTH.interceptors.response.use(
         baseURL: baseURL,
         message: error.message,
         code: error.code,
-        suggestion: 'Kiểm tra xem backend server có đang chạy trên port 5002 không. Thử truy cập http://localhost:5002/swagger để kiểm tra.'
+        suggestion: 'Kiểm tra xem backend server có đang chạy trên port 7000 không. Thử truy cập http://localhost:7000/api để kiểm tra.'
       });
       // Tạo error message rõ ràng hơn
       error.userMessage = `Không thể kết nối đến server backend. Vui lòng kiểm tra:
-1. Backend server có đang chạy không? (http://localhost:5002/swagger)
-2. Port 5002 có bị chặn không?
+1. Backend server có đang chạy không? (http://localhost:7000/api)
+2. Port 7000 có bị chặn không?
 3. Có lỗi firewall không?`;
     } else if (error.code === 'ERR_EMPTY_RESPONSE') {
       console.error('❌ Empty Response - Server không trả về phản hồi:', {

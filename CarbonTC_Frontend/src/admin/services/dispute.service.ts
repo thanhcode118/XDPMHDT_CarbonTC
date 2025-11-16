@@ -11,7 +11,7 @@ import type {
   UpdateStatusRequest,
 } from '../types/dispute.type';
 
-const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:5005';
+const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:5005/api';
 const BASE_PATH = '/admin/disputes';
 
 // Axios instance with auth
@@ -24,10 +24,22 @@ const axiosInstance = axios.create({
 
 // Add auth token interceptor
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('adminToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const authStorage = localStorage.getItem('admin-auth-storage');
+  if (authStorage) {
+    try {
+      const parsed = JSON.parse(authStorage);
+      const token = parsed?.state?.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Failed to parse admin-auth-storage:', error);
+    }
   }
+  // const token = localStorage.getItem('adminToken');
+  // if (token) {
+  //   config.headers.Authorization = `Bearer ${token}`;
+  // }
   return config;
 });
 
@@ -40,7 +52,7 @@ export const disputeService = {
   ): Promise<PaginatedResponse<Dispute>> {
     const params = {
       ...filters,
-      page: page + 1, // Backend expects 1-indexed
+      page: page + 1,
       limit,
     };
 

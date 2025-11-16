@@ -52,7 +52,7 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             new Role
             {
                 Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-                Name = "Verifier",
+                Name = "CVA",
                 Description = "Tổ chức xác minh - Xác minh tính hợp lệ của tín chỉ carbon",
                 CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false

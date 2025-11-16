@@ -58,7 +58,7 @@
     background: var(--secondary-gradient);
 }
 
-.verifierIcon {
+.CVAIcon {
     background: var(--accent-gradient);
 }
 
@@ -97,7 +97,7 @@
     color: white;
 }
 
-.btnVerifier {
+.btnCVA {
     background: var(--accent-gradient);
     color: white;
 }

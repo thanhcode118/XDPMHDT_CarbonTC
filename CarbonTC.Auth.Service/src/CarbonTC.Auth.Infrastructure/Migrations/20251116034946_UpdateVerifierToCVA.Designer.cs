@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarbonTC.Auth.Infrastructure.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20251023011736_UpdateToFourRolesSystem")]
-    partial class UpdateToFourRolesSystem
+    [Migration("20251116034946_UpdateVerifierToCVA")]
+    partial class UpdateVerifierToCVA
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -126,7 +126,7 @@ namespace CarbonTC.Auth.Infrastructure.Migrations
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Tổ chức xác minh - Xác minh tính hợp lệ của tín chỉ carbon",
+                            Description = "Cơ quan xác minh carbon - Xác minh tính hợp lệ của tín chỉ carbon",
                             IsDeleted = false,
                             Name = "CVA"
                         });
