@@ -1,16 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 :root {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --dark-bg: #0f0f1e;
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --text-primary: #ffffff;
-  --text-secondary: #b8bcc8;
-  --sidebar-bg: rgba(15, 15, 30, 0.9);
+  --primary-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --secondary-gradient: linear-gradient(135deg, #e0f7ef 0%, #b8e4d6 100%); /* Gradient dịu hơn */
+  --accent-gradient: linear-gradient(135deg, #aee9d1 0%, #38f9d7 100%);
+  --dark-bg: #0e5b4f;
+  --card-bg: rgba(67, 233, 123, 0.06); /* Card nền dịu hơn */
+  --text-primary: #eafff7;
+  --text-secondary: #aee9d1;
+  --sidebar-bg: rgba(10, 31, 28, 0.92);
   --sidebar-width: 280px;
-  --ev-owner-color: #667eea;
+  --ev-owner-color: #43e97b;
+  --carbon-shadow: 0 4px 18px rgba(67, 233, 123, 0.10);
+  --border-radius: 18px;
+  --input-bg: #f6faf8;
+  --input-border: #d1e7dd;
 }
 
 * {
@@ -20,10 +24,11 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: 'Inter', 'Montserrat', 'Segoe UI', Arial, sans-serif;
   background-color: var(--dark-bg);
   color: var(--text-primary);
   overflow-x: hidden;
+  letter-spacing: 0.01em;
 }
 
 html {
@@ -34,18 +39,57 @@ html {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(67, 233, 123, 0.04);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  background: linear-gradient(135deg, #aee9d1 0%, #43e97b 100%);
+  border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: #43e97b;
 }
 
 @keyframes float {
   0% { transform: translateY(0) translateX(0); }
   50% { transform: translateY(-20px) translateX(10px); }
   100% { transform: translateY(0) translateX(0); }
+}
+
+/* Card shadow effect for CarbonTC */
+.card, .walletCard, .modalContent {
+  box-shadow: var(--carbon-shadow);
+  border-radius: var(--border-radius);
+  background: var(--card-bg);
+  padding: 32px 28px;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.card:hover, .walletCard:hover, .modalContent:hover {
+  box-shadow: 0 8px 32px rgba(67, 233, 123, 0.18);
+  background: rgba(67, 233, 123, 0.12);
+}
+
+button, .btnCustom {
+  border-radius: 14px !important;
+  padding: 12px 28px !important;
+  font-size: 1.08rem;
+  font-family: 'Inter', 'Montserrat', Arial, sans-serif;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+button:hover, .btnCustom:hover {
+  background: var(--accent-gradient);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(67, 233, 123, 0.10);
+}
+
+input, .input {
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 1.08rem;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+input:focus, .input:focus {
+  border-color: #43e97b;
+  box-shadow: 0 0 0 2px #43e97b22;
 }

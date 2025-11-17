@@ -14,7 +14,7 @@
 }
 
 .footerBrand i {
-  background: var(--primary-gradient);
+  background: var(--text-primary);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -22,7 +22,7 @@
 }
 
 .footerDescription {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   margin-bottom: 20px;
   line-height: 1.6;
 }
@@ -44,7 +44,7 @@
 }
 
 .footerLinks a {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -68,20 +68,20 @@
 }
 
 .newsletterInput::placeholder {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .newsletterInput:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.909);
 }
 
 .newsletterButton {
-  background: var(--primary-gradient);
+  background: var(--text-primary);
   border: none;
   border-radius: 0 50px 50px 0;
   padding: 0 20px;
-  color: white;
+  color: rgb(3, 13, 69);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -118,5 +118,5 @@
   padding-top: 20px;
   margin-top: 40px;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }

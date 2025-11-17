@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
+import '@google/model-viewer';
 import styles from './CSS/HeroSection.module.css'; 
 import 'aos/dist/aos.css';
+import logoModel from '../../assets/logoCb.glb';
 
 const HeroSection = () => {
     const particlesContainerRef = useRef(null);
@@ -70,7 +72,15 @@ const HeroSection = () => {
                         </div>
                         <div className="col-lg-6">
                             <div className={styles.heroImage} data-aos="fade-left" data-aos-delay="300">
-                                <img src="https://picsum.photos/seed/electriccar/600/400.jpg" alt="Electric Car" className="img-fluid rounded-4" />
+                                <model-viewer
+                                    src={logoModel}
+                                    alt="CarbonTC biểu tượng 3D"
+                                    auto-rotate
+                                    rotation-per-second="30deg"
+                                    camera-controls
+                                    disable-zoom
+                                    shadow-intensity="0.8"
+                                />
                             </div>
                         </div>
                     </div>
