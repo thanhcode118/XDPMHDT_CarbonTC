@@ -30,11 +30,12 @@ public class CarbonCreditTransfer {
     private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20)
+    @Column(name = "status",nullable = false, length = 20)
     private TransferStatus status;
 
     private BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "transfer_type", nullable = false, length = 20)
     private TransferType transferType;
 

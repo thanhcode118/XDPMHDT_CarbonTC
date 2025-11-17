@@ -82,6 +82,9 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
         log.setReferenceId(event.getReferenceId());
         log.setCreatedAt(event.getIssuedAt());
 
+        log.setTotalPrice(BigDecimal.ZERO);
+        log.setStatus(TransferStatus.COMPLETED);
+
         carbonCreditTransferRepository.save(log);
     }
 
