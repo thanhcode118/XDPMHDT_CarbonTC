@@ -30,7 +30,9 @@ const ReportTable = ({
     const statusConfig = {
       'Hoàn thành': 'success',
       'Đang xử lý': 'warning',
-      'Đã hủy': 'danger'
+      'Chờ xử lý': 'secondary',
+      'Đã hủy': 'dark',
+      'Thất bại': 'danger'
     };
 
     return (
@@ -60,7 +62,7 @@ const ReportTable = ({
                 <td>{row.date}</td>
                 <td>{row.type}</td>
                 <td>{row.credits}</td>
-                <td>{row.value.toLocaleString()}</td>
+                <td>{Number(row.value ?? 0).toLocaleString('vi-VN')}</td>
                 <td>{row.co2Reduced}</td>
                 <td>{getStatusBadge(row.status)}</td>
               </tr>

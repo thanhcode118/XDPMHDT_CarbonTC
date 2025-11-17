@@ -107,8 +107,62 @@
   font-size: 0.8rem;
 }
 
-.transactionList {
-  margin-top: 20px;
+.transactionFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.transactionFilters select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: var(--text-primary);
+  padding: 8px 12px;
+  min-width: 180px;
+}
+
+.transactionTableWrapper {
+  overflow-x: auto;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-bottom: 6px;
+}
+
+.transactionTableWrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.transactionTableWrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+.transactionTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transactionTable thead {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.transactionTable th,
+.transactionTable td {
+  text-align: left;
+  padding: 12px 10px;
+}
+
+.transactionTable th {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.transactionEmpty {
+  color: var(--text-secondary);
+  margin: 10px 0 0;
 }
 
 .textCenter {

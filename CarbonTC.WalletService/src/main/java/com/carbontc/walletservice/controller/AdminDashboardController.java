@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/dashboard")
+@RequestMapping("/api/admin-dashboard")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('Admin')")
 public class AdminDashboardController {

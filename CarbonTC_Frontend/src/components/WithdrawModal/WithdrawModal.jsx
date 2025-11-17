@@ -6,7 +6,9 @@ const WithdrawModal = ({
   onClose, 
   onConfirm,
   availableBalance = 0,
-  mode = 'credit' // 'credit' | 'money'
+  mode = 'credit', // 'credit' | 'money'
+  submitting = false,
+  serverError = ''
 }) => {
   const [formData, setFormData] = useState({
     amount: '',
@@ -95,14 +97,17 @@ const WithdrawModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
       if (onConfirm) {
-        onConfirm(formData);
+        try {
+          await onConfirm(formData);
+        } catch (_) {
+          // Parent handles error state; keep modal open
+        }
       }
-      handleClose();
     }
   };
 
@@ -132,6 +137,7 @@ const WithdrawModal = ({
             type="button" 
             className={styles.btnClose}
             onClick={handleClose}
+            disabled={submitting}
           >
             <i className="bi bi-x"></i>
           </button>
@@ -153,7 +159,7 @@ const WithdrawModal = ({
                 value={formData.amount}
                 onChange={handleInputChange}
                 required
-              />
+                />
               {errors.amount && (
                 <div className={styles.errorMessage}>{errors.amount}</div>
               )}
@@ -295,18 +301,26 @@ const WithdrawModal = ({
             </div>
           </div>
           <div className={styles.modalFooter}>
+            {serverError && (
+              <div className={styles.serverError}>
+                <i className="bi bi-exclamation-triangle me-2"></i>
+                {serverError}
+              </div>
+            )}
             <button 
               type="button" 
               className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}
               onClick={handleClose}
+              disabled={submitting}
             >
               Hủy
             </button>
             <button 
               type="submit" 
               className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+              disabled={submitting}
             >
-              Xác nhận
+              {submitting ? 'Đang xử lý...' : 'Xác nhận'}
             </button>
           </div>
         </form>

@@ -18,21 +18,6 @@ const WalletCard = ({
       <div className={styles.walletBalance}>
         <div className={styles.balanceLabel}>Số dư hiện tại</div>
         <div className={styles.balanceAmount}>{balance}</div>
-        <div className={styles.balanceValue}>≈ {value.toLocaleString()} VNĐ</div>
-      </div>
-      <div className={styles.walletActions}>
-        <button 
-          className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
-          onClick={onWithdraw}
-        >
-          <i className="bi bi-arrow-down-circle me-2"></i>Rút tiền
-        </button>
-        <button 
-          className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}
-          onClick={onDeposit}
-        >
-          <i className="bi bi-arrow-up-circle me-2"></i>Nạp thêm
-        </button>
       </div>
     </div>
   );

@@ -75,4 +75,23 @@ public class RabbitMQConfig {
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
+
+    public static final String USER_EXCHANGE = "user_exchange";
+    public static final String USER_CREATED_QUEUE = "q.user_created.wallet_service";
+    public static final String USER_CREATED_ROUTING_KEY = "user.created";
+
+    @Bean
+    public TopicExchange userExchange() {
+        return new TopicExchange(USER_EXCHANGE);
+    }
+
+    @Bean
+    public Queue userCreatedWalletQueue() {
+        return new Queue(USER_CREATED_QUEUE);
+    }
+
+    @Bean
+    public Binding userCreatedWalletBinding(Queue userCreatedWalletQueue, TopicExchange userExchange) {
+        return BindingBuilder.bind(userCreatedWalletQueue).to(userExchange).with(USER_CREATED_ROUTING_KEY);
+    }
 }
