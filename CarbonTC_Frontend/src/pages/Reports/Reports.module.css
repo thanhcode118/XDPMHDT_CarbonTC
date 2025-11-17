@@ -174,3 +174,9 @@
   display: flex;
   gap: 5px;
 }
+
+.historyState {
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 20px 0;
+}

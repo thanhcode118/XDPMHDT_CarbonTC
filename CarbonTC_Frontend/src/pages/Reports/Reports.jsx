@@ -10,6 +10,25 @@ import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
 import styles from './Reports.module.css';
 import { getTransactionChartData } from '../../services/listingService';
+import { getCarbonWalletHistory } from '../../services/walletService.jsx';
+
+const historyTypeLabels = {
+  BUY: 'Mua tín chỉ',
+  SELL: 'Bán tín chỉ',
+  EARN: 'Kiếm tín chỉ',
+  ISSUE: 'Phát hành tín chỉ',
+  TRANSFER: 'Chuyển tín chỉ',
+  REWARD: 'Thưởng tín chỉ'
+};
+
+const historyStatusLabels = {
+  COMPLETED: 'Hoàn thành',
+  SUCCESS: 'Hoàn thành',
+  PROCESSING: 'Đang xử lý',
+  PENDING: 'Chờ xử lý',
+  FAILED: 'Thất bại',
+  CANCELED: 'Đã hủy'
+};
 
 const Reports = () => {
   const { sidebarActive, toggleSidebar } = useSidebar();
@@ -21,6 +40,10 @@ const Reports = () => {
   
   const [carbonChartData, setCarbonChartData] = useState({ labels: [], datasets: [] });
   const [chartLoading, setChartLoading] = useState(true);
+
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyData, setHistoryData] = useState([]);
+  const [historyError, setHistoryError] = useState('');
 
   // Sample data
   const reportStats = [
@@ -58,14 +81,6 @@ const Reports = () => {
     }
   ];
 
-  const tableData = [
-    { date: '15/05/2023', type: 'Bán', credits: 20, value: 300000, co2Reduced: 50, status: 'Hoàn thành' },
-    { date: '14/05/2023', type: 'Bán', credits: 15, value: 225000, co2Reduced: 37.5, status: 'Hoàn thành' },
-    { date: '12/05/2023', type: 'Kiếm được', credits: 9, value: 0, co2Reduced: 22.5, status: 'Hoàn thành' },
-    { date: '10/05/2023', type: 'Kiếm được', credits: 6, value: 0, co2Reduced: 15, status: 'Hoàn thành' },
-    { date: '08/05/2023', type: 'Bán', credits: 10, value: 150000, co2Reduced: 25, status: 'Đang xử lý' }
-  ];
-
   const co2ChartMockData = {
   labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
   datasets: [
@@ -81,11 +96,51 @@ const Reports = () => {
 
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const fetchHistory = async () => {
+      setHistoryLoading(true);
+      setHistoryError('');
+      try {
+        const response = await getCarbonWalletHistory();
+        if (response?.success && Array.isArray(response?.data)) {
+          const mapped = response.data.map((entry, index) => {
+            const amount = Number(entry.amount ?? 0);
+            const price = Number(entry.price ?? 0);
+            const value = amount * (price || 0);
+            return {
+              key: entry.id ?? `${index}-${entry.date}`,
+              date: entry.date
+                ? new Date(entry.date).toLocaleString('vi-VN', {
+                    hour12: false,
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
+                : 'N/A',
+              type: historyTypeLabels[entry.type] || entry.type || 'N/A',
+              credits: amount,
+              value,
+              co2Reduced: entry.co2Reduced ?? 0,
+              status: historyStatusLabels[entry.status] || entry.status || 'Đang cập nhật'
+            };
+          });
+          setHistoryData(mapped);
+        } else {
+          throw new Error(response?.message || 'Không thể lấy lịch sử giao dịch');
+        }
+      } catch (err) {
+        const message = err?.message || 'Không thể tải lịch sử giao dịch';
+        setHistoryError(message);
+        showNotification(message, 'error');
+      } finally {
+        setHistoryLoading(false);
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [showNotification]);
 
   useEffect(() => {
     const fetchChart = async () => {
@@ -220,13 +275,21 @@ const Reports = () => {
         {/* Transaction History Table */}
         <div className={styles.card} data-aos="fade-up" data-aos-delay="700">
           <div className={styles.cardHeader}>
-            <h3 className={styles.cardTitle}>Lịch sử giao dịch</h3>
+            <h3 className={styles.cardTitle}>Lịch sử giao dịch carbon</h3>
           </div>
           <div className={styles.cardBody}>
-            <ReportTable
-              data={tableData}
-              onExport={handleExport}
-            />
+            {historyLoading ? (
+              <p className={styles.historyState}>Đang tải lịch sử giao dịch...</p>
+            ) : historyError ? (
+              <p className={styles.historyState}>{historyError}</p>
+            ) : historyData.length ? (
+              <ReportTable
+                data={historyData}
+                onExport={handleExport}
+              />
+            ) : (
+              <p className={styles.historyState}>Chưa có lịch sử giao dịch carbon.</p>
+            )}
           </div>
         </div>
       </div>
