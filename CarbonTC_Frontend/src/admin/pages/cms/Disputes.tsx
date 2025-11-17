@@ -74,7 +74,6 @@ function Disputes() {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
       <Box
         sx={{
           display: 'flex',
@@ -82,8 +81,7 @@ function Disputes() {
           alignItems: 'center',
           mb: 3,
         }}
-      >q
-
+      >
         <Box>
           <Typography variant="h4" gutterBottom>
             Dispute Management
@@ -114,6 +112,7 @@ function Disputes() {
         onPageChange={handlePageChange}
         isLoading={isLoading}
         noDataMessage="No disputes found"
+        // getRowId={(row) => row.disputeId}
       />
 
       {/* Create Dialog */}
