@@ -36,12 +36,24 @@ axiosInstance.interceptors.request.use((config) => {
       console.error('Failed to parse admin-auth-storage:', error);
     }
   }
-  // const token = localStorage.getItem('adminToken');
-  // if (token) {
-  //   config.headers.Authorization = `Bearer ${token}`;
-  // }
   return config;
 });
+
+const transformPaginatedResponse = <T>(backendResponse: any): PaginatedResponse<T> => {
+  return {
+    data: backendResponse.data || [],
+    pagination: {
+      total: backendResponse.pagination?.totalItems || 0,
+      page: backendResponse.pagination?.currentPage || 1,
+      limit: backendResponse.pagination?.itemsPerPage || 10,
+      totalPages: backendResponse.pagination?.totalPages || 0,
+    },
+  };
+};
+
+const unwrapResponse = <T>(backendResponse: any): T => {
+  return backendResponse.data;
+};
 
 export const disputeService = {
   // Get all disputes with filters and pagination
@@ -56,49 +68,75 @@ export const disputeService = {
       limit,
     };
 
-    const response = await axiosInstance.get<PaginatedResponse<Dispute>>(
-      BASE_PATH,
-      { params },
-    );
-    return response.data;
+    const response = await axiosInstance.get(BASE_PATH, { params });
+    console.log('📦 Backend response:', response.data);
+
+    // ✅ Transform: Add `id` field for DataGrid compatibility
+    const transformedData = response.data.data.map((dispute: any) => ({
+      ...dispute,
+      id: dispute.disputeId, // Map disputeId to id for MUI DataGrid
+    }));
+
+    return transformPaginatedResponse<Dispute>({
+      ...response.data,
+      data: transformedData,
+    });
   },
 
   // Get dispute statistics
   async getStatistics(): Promise<DisputeStatistics> {
-    const response = await axiosInstance.get<DisputeStatistics>(
-      `${BASE_PATH}/statistics`,
-    );
-    return response.data;
+    const response = await axiosInstance.get(`${BASE_PATH}/statistics`);
+    return unwrapResponse<DisputeStatistics>(response.data);
   },
 
   // Get dispute by ID
   async getById(disputeId: string): Promise<DisputeDetail> {
-    const response = await axiosInstance.get<DisputeDetail>(
-      `${BASE_PATH}/${disputeId}`,
-    );
-    return response.data;
+    const response = await axiosInstance.get(`${BASE_PATH}/${disputeId}`);
+    const data = unwrapResponse<DisputeDetail>(response.data);
+
+    // ✅ Add id field for consistency
+    return {
+      ...data,
+      id: data.disputeId,
+    } as DisputeDetail;
   },
 
   // Get disputes by transaction ID
   async getByTransactionId(transactionId: string): Promise<Dispute[]> {
-    const response = await axiosInstance.get<Dispute[]>(
+    const response = await axiosInstance.get(
       `${BASE_PATH}/transaction/${transactionId}`,
     );
-    return response.data;
+    const disputes = unwrapResponse<Dispute[]>(response.data);
+
+    // ✅ Add id field to each dispute
+    return disputes.map((dispute) => ({
+      ...dispute,
+      id: dispute.disputeId,
+    })) as Dispute[];
   },
 
   // Get disputes by user ID
   async getByUserId(userId: string): Promise<Dispute[]> {
-    const response = await axiosInstance.get<Dispute[]>(
-      `${BASE_PATH}/user/${userId}`,
-    );
-    return response.data;
+    const response = await axiosInstance.get(`${BASE_PATH}/user/${userId}`);
+    const disputes = unwrapResponse<Dispute[]>(response.data);
+
+    // ✅ Add id field to each dispute
+    return disputes.map((dispute) => ({
+      ...dispute,
+      id: dispute.disputeId,
+    })) as Dispute[];
   },
 
   // Create new dispute
   async create(data: CreateDisputeRequest): Promise<Dispute> {
-    const response = await axiosInstance.post<Dispute>(BASE_PATH, data);
-    return response.data;
+    const response = await axiosInstance.post(BASE_PATH, data);
+    const dispute = unwrapResponse<Dispute>(response.data);
+
+    // ✅ Add id field
+    return {
+      ...dispute,
+      id: dispute.disputeId,
+    } as Dispute;
   },
 
   // Update dispute status
@@ -106,11 +144,17 @@ export const disputeService = {
     disputeId: string,
     data: UpdateStatusRequest,
   ): Promise<Dispute> {
-    const response = await axiosInstance.patch<Dispute>(
+    const response = await axiosInstance.patch(
       `${BASE_PATH}/${disputeId}/status`,
       data,
     );
-    return response.data;
+    const dispute = unwrapResponse<Dispute>(response.data);
+
+    // ✅ Add id field
+    return {
+      ...dispute,
+      id: dispute.disputeId,
+    } as Dispute;
   },
 
   // Resolve dispute
@@ -118,11 +162,17 @@ export const disputeService = {
     disputeId: string,
     data: ResolveDisputeRequest,
   ): Promise<Dispute> {
-    const response = await axiosInstance.post<Dispute>(
+    const response = await axiosInstance.post(
       `${BASE_PATH}/${disputeId}/resolve`,
       data,
     );
-    return response.data;
+    const dispute = unwrapResponse<Dispute>(response.data);
+
+    // ✅ Add id field
+    return {
+      ...dispute,
+      id: dispute.disputeId,
+    } as Dispute;
   },
 
   // Delete dispute

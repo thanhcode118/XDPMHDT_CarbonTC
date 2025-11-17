@@ -20,6 +20,7 @@ export enum ActionType {
 
 export interface Dispute {
   disputeId: string;
+  id?: string;
   transactionId: string;
   raisedBy: string;
   raisedByName?: string;
