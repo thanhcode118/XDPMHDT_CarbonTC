@@ -3,9 +3,11 @@ package com.carbontc.walletservice.service.Impl;
 import com.carbontc.walletservice.config.RabbitMQConfig;
 import com.carbontc.walletservice.dto.event.BalanceUpdateCommand;
 import com.carbontc.walletservice.entity.EWallet;
+import com.carbontc.walletservice.entity.Payment;
 import com.carbontc.walletservice.entity.TransactionLog;
 import com.carbontc.walletservice.exception.BusinessException;
 import com.carbontc.walletservice.repository.EWalletRepository;
+import com.carbontc.walletservice.repository.PaymentRepository;
 import com.carbontc.walletservice.repository.TransactionLogRepository;
 import com.carbontc.walletservice.service.PaymentService;
 import com.carbontc.walletservice.service.VNPayService;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final TransactionLogRepository transactionLogRepository;
     private final VNPayService vnPayService;
     private final RabbitTemplate rabbitTemplate;
+    private final PaymentRepository paymentRepository;
 
     @Override
     @Transactional
@@ -112,6 +116,18 @@ public class PaymentServiceImpl implements PaymentService {
                     RabbitMQConfig.BALANCE_UPDATE_ROUTING_KEY,
                     event
             );
+
+            Payment payment = new Payment();
+            payment.setWallet(eWallet); // Gán với EWallet
+            payment.setAmount(log.getAmount());
+            payment.setMethod("VNPAY");
+            payment.setPaymentStatus("SUCCESS");
+            payment.setPaidAt(LocalDateTime.now());
+
+            payment.setTransactionId(params.get("vnp_TxnRef"));
+            payment.setPaymentGatewayRef(params.get("vnp_TransactionNo"));
+
+            paymentRepository.save(payment);
 
             response.put("RspCode", "00");
             response.put("Message", "Confirm Success");
