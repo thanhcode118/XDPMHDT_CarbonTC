@@ -1,58 +1,77 @@
-.transactionItem {
-  display: flex;
-  align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+.row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.transactionItem:last-child {
+.row:last-child {
   border-bottom: none;
 }
 
-.transactionIcon {
-  width: 45px;
-  height: 45px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-  font-size: 1.2rem;
-}
-
-.transactionIconIncome {
-  background: rgba(74, 222, 128, 0.2);
-  color: #4ade80;
-}
-
-.transactionIconExpense {
-  background: rgba(248, 113, 113, 0.2);
-  color: #f87171;
-}
-
-.transactionDetails {
-  flex: 1;
-}
-
-.transactionTitle {
+.cellTitle {
   font-weight: 600;
-  margin-bottom: 5px;
+  font-size: 0.95rem;
 }
 
-.transactionDate {
-  font-size: 0.9rem;
+.cellSubtitle {
+  font-size: 0.85rem;
   color: var(--text-secondary);
+  margin-top: 2px;
 }
 
-.transactionAmount {
-  font-weight: 600;
-  font-size: 1.1rem;
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
 }
 
-.amountPositive {
+.amount {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.dateCell {
+  text-align: right;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.amountDeposit {
   color: #4ade80;
 }
 
-.amountNegative {
+.amountWithdraw {
   color: #f87171;
+}
+
+.amountPending,
+.amountFailed {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.amountStrike {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.statusDeposit {
+  background: rgba(74, 222, 128, 0.18);
+  color: #4ade80;
+}
+
+.statusWithdraw {
+  background: rgba(248, 113, 113, 0.18);
+  color: #f87171;
+}
+
+.statusPending {
+  background: rgba(148, 163, 184, 0.15);
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.statusFailed {
+  background: rgba(148, 163, 184, 0.08);
+  color: rgba(148, 163, 184, 0.9);
 }

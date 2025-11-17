@@ -162,6 +162,15 @@
   line-height: 1.4;
 }
 
+.serverError {
+  color: #f87171;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+}
+
 .btnCustom {
   padding: 10px 20px;
   border-radius: 8px;

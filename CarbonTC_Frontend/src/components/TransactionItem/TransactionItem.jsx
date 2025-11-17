@@ -1,33 +1,37 @@
 import React from 'react';
 import styles from './TransactionItem.module.css';
 
-const TransactionItem = ({ 
-  transaction 
-}) => {
+const capitalize = (value = '') => value.charAt(0).toUpperCase() + value.slice(1);
+
+const TransactionItem = ({ transaction }) => {
   const {
-    id,
-    type,
     title,
+    description,
     date,
-    amount,
-    icon = 'bi-arrow-down-circle'
+    statusText,
+    variant = 'deposit',
+    amountDisplay = { prefix: '', value: '', strike: false }
   } = transaction;
 
-  const isIncome = type === 'income';
+  const amountClass = styles[`amount${capitalize(variant)}`] || '';
+  const statusClass = styles[`status${capitalize(variant)}`] || '';
 
   return (
-    <div className={styles.transactionItem}>
-      <div className={`${styles.transactionIcon} ${isIncome ? styles.transactionIconIncome : styles.transactionIconExpense}`}>
-        <i className={`bi ${icon}`}></i>
-      </div>
-      <div className={styles.transactionDetails}>
-        <div className={styles.transactionTitle}>{title}</div>
-        <div className={styles.transactionDate}>{date}</div>
-      </div>
-      <div className={`${styles.transactionAmount} ${isIncome ? styles.amountPositive : styles.amountNegative}`}>
-        {isIncome ? '+' : '-'}{amount}
-      </div>
-    </div>
+    <tr className={styles.row}>
+      <td>
+        <div className={styles.cellTitle}>{title}</div>
+        {description && <div className={styles.cellSubtitle}>{description}</div>}
+      </td>
+      <td>
+        <span className={`${styles.statusBadge} ${statusClass}`}>
+          {statusText}
+        </span>
+      </td>
+      <td className={`${styles.amount} ${amountClass} ${amountDisplay.strike ? styles.amountStrike : ''}`}>
+        {amountDisplay.prefix}{amountDisplay.value}
+      </td>
+      <td className={styles.dateCell}>{date}</td>
+    </tr>
   );
 };
 

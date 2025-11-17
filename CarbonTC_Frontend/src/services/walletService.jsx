@@ -1,36 +1,54 @@
 import apiClientTK from './apiClientTK.jsx';
 
-// Carbon wallet
-export const getMyCarbonWallet = () => {
-  return apiClientTK.get('/carbon-wallet/my-wallet');
+const unwrap = async (requestPromise) => {
+  try {
+    const response = await requestPromise;
+    return response.data;
+  } catch (error) {
+    const apiError = error.response?.data ?? {};
+    return Promise.reject({
+      ...apiError,
+      status: error.response?.status,
+      message: apiError.message || error.message || 'Đã xảy ra lỗi không xác định'
+    });
+  }
 };
 
-export const createMyCarbonWallet = () => {
-  return apiClientTK.post('/carbon-wallet/my-wallet');
-};
+// Carbon wallet
+export const getMyCarbonWallet = () => unwrap(
+  apiClientTK.get('/carbon-wallet/my-wallet')
+);
+
+export const createMyCarbonWallet = () => unwrap(
+  apiClientTK.post('/carbon-wallet/my-wallet')
+);
+
+export const getCarbonWalletHistory = () => unwrap(
+  apiClientTK.get('/carbon-wallet/history')
+);
 
 // E-wallet (fiat)
-export const getMyEWallet = () => {
-  return apiClientTK.get('/wallet/my-wallet');
-};
+export const getMyEWallet = () => unwrap(
+  apiClientTK.get('/wallet/my-wallet')
+);
 
-export const createMyEWallet = (currency = 'VND') => {
-  return apiClientTK.post('/wallet/my-wallet', { currency });
-};
+export const createMyEWallet = (currency = 'VND') => unwrap(
+  apiClientTK.post('/wallet/my-wallet', { currency })
+);
 
-export const getMyEWalletTransactions = () => {
-  return apiClientTK.get('/wallet/my-wallet/transactions');
-};
+export const getMyEWalletTransactions = () => unwrap(
+  apiClientTK.get('/wallet/my-wallet/transactions')
+);
 
 // Payments / deposit
-export const createDepositPayment = (amount) => {
-  return apiClientTK.post('/payments/deposit', { amount });
-};
+export const createDepositPayment = (amount) => unwrap(
+  apiClientTK.post('/payments/deposit', { amount })
+);
 
 // Withdraw requests (money out)
 export const createWithdrawRequest = ({ userId, amount, bankAccountNumber, bankName }) => {
   const payload = { userId, amount, bankAccountNumber, bankName };
-  return apiClientTK.post('/withdraw-requests', payload);
+  return unwrap(apiClientTK.post('/withdraw-requests', payload));
 };
 
 // Certificate download (PDF)
