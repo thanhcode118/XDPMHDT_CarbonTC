@@ -31,22 +31,25 @@ public class EWalletServiceImpl implements EWalletService {
 
     private final TransactionLogRepository transactionLogRepository;
 
-    // TẠO VÍ
-    @Override
-    public EWalletResponse createWallet(String userId, EWalletRequest request) throws BusinessException {
-        EWallet eWallet = new EWallet();
-
+    private EWalletResponse createWalletInternal(String userId, String currency) throws BusinessException {
         if(eWalletRepository.existsByUserId(userId)){
             throw new BusinessException("Người dùng đã tạo ví rồi");
         }
 
+        EWallet eWallet = new EWallet();
         eWallet.setUserId(userId);
-        eWallet.setCurrency(request.getCurrency());
+        eWallet.setCurrency(currency);
         eWallet.setBalance(BigDecimal.ZERO);
         eWallet.setUpdatedAt(LocalDateTime.now());
 
         EWallet saved = eWalletRepository.save(eWallet);
         return mapToResponse(saved);
+    }
+
+    // TẠO VÍ
+    @Override
+    public EWalletResponse createWallet(String userId) throws BusinessException {
+        return createWalletInternal(userId, "VND");
     }
 
     // NỘP TIỀN

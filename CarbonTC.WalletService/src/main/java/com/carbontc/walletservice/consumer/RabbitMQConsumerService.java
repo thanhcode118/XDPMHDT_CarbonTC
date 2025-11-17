@@ -1,10 +1,7 @@
 package com.carbontc.walletservice.consumer;
 
 import com.carbontc.walletservice.config.RabbitMQConfig;
-import com.carbontc.walletservice.dto.event.BalanceUpdateCommand;
-import com.carbontc.walletservice.dto.event.CreditIssuedEvent;
-import com.carbontc.walletservice.dto.event.TransactionCompletedEvent;
-import com.carbontc.walletservice.dto.event.TransactionCreatedEvent;
+import com.carbontc.walletservice.dto.event.*;
 import com.carbontc.walletservice.dto.request.CreditTransferRequestForConsumer;
 import com.carbontc.walletservice.entity.Certificate;
 import com.carbontc.walletservice.entity.EWallet;
@@ -150,4 +147,41 @@ public class RabbitMQConsumerService {
             log.error("Cộng tín chỉ cho user {} thất bại (Lỗi hệ thống): {}", creditIssuedEvent.getOwnerUserId(), e.getMessage(), e);
         }
     }
+
+    @RabbitListener(queues = RabbitMQConfig.USER_CREATED_QUEUE)
+    @Transactional(rollbackFor = Exception.class) // Đảm bảo cả 2 ví cùng tạo, hoặc rollback
+    public void handleUserCreated(UserCreatedEvent event) {
+        if (event == null || event.getUserId() == null) {
+            log.error("Nhận được UserCreatedEvent nhưng bị null, không xử lý.");
+            return;
+        }
+
+        String userId = event.getUserId();
+        log.info("Nhận được UserCreatedEvent, bắt đầu tạo ví cho user: {}", userId);
+
+        try {
+            // 1. Tạo Ví tiền (EWallet)
+            eWalletService.createWallet(userId);
+            log.info("Tạo EWallet (tiền) cho user {} thành công.", userId);
+
+            // 2. Tạo Ví Carbon (CarbonWallet)
+            carbonWalletsService.createCarbonWallet(userId);
+            log.info("Tạo CarbonWallet (tín chỉ) cho user {} thành công.", userId);
+
+        } catch (BusinessException e) {
+            // Xử lý Idempotency (tin nhắn bị gửi lại)
+            // Cả 2 hàm create của bạn đều ném BusinessException nếu ví đã tồn tại
+            if (e.getMessage().contains("đã tạo ví rồi") || e.getMessage().contains("đã tồn tại")) {
+                log.warn("User {} đã có ví. Bỏ qua tin nhắn (Idempotent).", userId);
+            } else {
+                log.error("Lỗi nghiệp vụ khi tạo ví cho user {}: {}", userId, e.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Lỗi hệ thống khi tạo ví cho user {}: {}", userId, e.getMessage(), e);
+            // Ném lỗi lại để RabbitMQ biết mà retry (thử lại)
+            throw new RuntimeException("Lỗi hệ thống, cần retry", e);
+        }
+    }
+
+
 }

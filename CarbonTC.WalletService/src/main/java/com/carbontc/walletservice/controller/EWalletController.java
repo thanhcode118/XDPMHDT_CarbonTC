@@ -35,7 +35,7 @@ public class EWalletController {
     public ResponseEntity<ApiResponse<EWalletResponse>> createWallet(
             @RequestBody @Valid EWalletRequest eWalletRequest) throws BusinessException {
         String userId = authencationUtil.getAuthenticatedUserId();
-        EWalletResponse eWalletResponse = eWalletService.createWallet(userId, eWalletRequest);
+        EWalletResponse eWalletResponse = eWalletService.createWallet(userId);
         return ResponseEntity.ok(ApiResponse.success("Tạo ví thành công", eWalletResponse));
     }
 
