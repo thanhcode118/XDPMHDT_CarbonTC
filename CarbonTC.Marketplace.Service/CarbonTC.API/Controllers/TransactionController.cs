@@ -84,8 +84,7 @@ namespace CarbonTC.API.Controllers
 
             var modifiedQuery = query with
             {
-                BuyerId = query.BuyerId ?? userId,  
-                SellerId = query.SellerId ?? userId  
+                InvolvedUserId = userId
             };
 
             var transactions = await _mediator.Send(modifiedQuery, cancellationToken);
@@ -151,7 +150,7 @@ namespace CarbonTC.API.Controllers
         }
 
         [Authorize]
-        [HttpGet("/api/transactions/summary/chart")]
+        [HttpGet("summary/chart")]
         public async Task<IActionResult> GetWalletSummary([FromQuery]ChartPeriod period, CancellationToken cancellationToken = default)
         {
             var transactionSummary = await _mediator.Send(new GetWalletChartDataQuery(period), cancellationToken);

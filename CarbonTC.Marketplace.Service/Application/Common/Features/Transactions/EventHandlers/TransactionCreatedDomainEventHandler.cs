@@ -28,7 +28,7 @@ namespace Application.Common.Features.Transactions.EventHandlers
                 CreatedAt = DateTime.UtcNow.ToString("o")
             };
             
-            await _integrationEventService.PublishAsync<TransactionWalletDto>(transactionWalletDto, "transactions_exchange", ExchangeType.Direct, "transaction.created");
+            await _integrationEventService.PublishAsync<TransactionWalletDto>(transactionWalletDto, "transaction_exchange", ExchangeType.Topic, "transaction_created");
         }
     }
 }

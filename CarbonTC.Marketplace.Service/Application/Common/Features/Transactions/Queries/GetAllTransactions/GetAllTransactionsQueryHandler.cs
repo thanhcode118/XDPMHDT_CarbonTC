@@ -18,6 +18,12 @@ namespace Application.Common.Features.Transactions.Queries.GetAllTransactions
         {
             var queryable = _dbContext.Transactions.AsQueryable();
 
+            if (query.InvolvedUserId.HasValue)
+            {
+                var uid = query.InvolvedUserId.Value;
+                queryable = queryable.Where(t => t.BuyerId == uid || t.SellerId == uid);
+            }
+
             if (query.BuyerId.HasValue)
             {
                 queryable = queryable.Where(t => t.BuyerId == query.BuyerId.Value);

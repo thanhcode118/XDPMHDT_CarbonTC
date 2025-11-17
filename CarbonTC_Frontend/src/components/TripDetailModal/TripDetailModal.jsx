@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import TripMap from '../TripMap/TripMap';
 import { getJourneyById } from '../../services/tripService';
 import styles from './TripDetailModal.module.css';
 
@@ -7,8 +6,7 @@ const TripDetailModal = ({
   show, 
   onClose, 
   trip,
-  journeyId,
-  onExportReport 
+  journeyId
 }) => {
   const [journeyData, setJourneyData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -203,12 +201,6 @@ const TripDetailModal = ({
             ))}
           </div>
           
-          <TripMap 
-            startLocation={{ name: startLocation, lat: 21.0285, lng: 105.8542 }}
-            endLocation={{ name: endLocation, lat: 20.8449, lng: 106.6881 }}
-            height="300px"
-          />
-          
           <div className={styles.tripInfo}>
             <h6>Thông tin chi tiết</h6>
             <table className={styles.infoTable}>
@@ -282,13 +274,6 @@ const TripDetailModal = ({
             onClick={onClose}
           >
             Đóng
-          </button>
-          <button 
-            type="button" 
-            className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
-            onClick={onExportReport}
-          >
-            Xuất báo cáo
           </button>
         </div>
       </div>

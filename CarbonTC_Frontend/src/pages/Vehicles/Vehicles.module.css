@@ -1,5 +1,6 @@
 .app {
   position: relative;
+  overflow: visible;
 }
 
 .mainContent {
@@ -7,6 +8,9 @@
   padding: 30px;
   min-height: 100vh;
   background-color: var(--dark-bg);
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .mobileToggle {

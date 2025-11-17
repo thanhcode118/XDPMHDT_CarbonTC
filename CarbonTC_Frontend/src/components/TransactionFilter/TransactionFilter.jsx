@@ -217,12 +217,12 @@ const TransactionFilter = ({
             >
               Đặt lại
             </button>
-            <button 
+            {/* <button 
               className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
               onClick={onExport}
             >
               Xuất báo cáo
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

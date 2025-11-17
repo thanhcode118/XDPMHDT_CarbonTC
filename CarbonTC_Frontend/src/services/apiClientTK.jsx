@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+
+const envApiUrl = import.meta.env.VITE_APIGATEWAY_BASE_URL;
+const defaultApiUrl = 'http://localhost:7000/api';
+const baseURL = envApiUrl || defaultApiUrl;
+
 const apiClientTK = axios.create({
-  baseURL: 'http://localhost:5004/api', // Base URL của API
+  baseURL: baseURL, // Base URL của API
   headers: {
     'Content-Type': 'application/json',
     'accept': '*/*'

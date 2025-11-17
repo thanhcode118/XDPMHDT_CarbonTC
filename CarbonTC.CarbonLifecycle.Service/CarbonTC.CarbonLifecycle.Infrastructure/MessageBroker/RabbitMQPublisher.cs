@@ -10,6 +10,7 @@ using RabbitMQ.Client.Events;
 using CarbonTC.CarbonLifecycle.Application.Abstractions.Messaging;
 using CarbonTC.CarbonLifecycle.Domain.Events;
 using CarbonTC.CarbonLifecycle.Infrastructure.Configuration;
+using CarbonTC.CarbonLifecycle.Application.IntegrationEvents;
 
 namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
 {
@@ -175,10 +176,15 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                     // Gọi một hàm publish message mới cho các sự kiện generic
                     PublishGenericMessage(@event, routingKey);
 
+                    // Xác định exchange name cho log
+                    string exchangeNameForLog = @event is CreditIssuedIntegrationEvent 
+                        ? "carbonlifecycle.events" 
+                        : _settings.ExchangeName;
+
                     _logger.LogInformation(
                         "Published integration event: {EventType} to Exchange: {Exchange}, RoutingKey: {RoutingKey}",
                         @event.GetType().Name,
-                        _settings.ExchangeName,
+                        exchangeNameForLog,
                         routingKey ?? GenerateGenericRoutingKey(@event) // Dùng fallback mới
                     );
 
@@ -238,8 +244,22 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             // Dùng routing key được cung cấp, hoặc fallback nếu nó null
             var finalRoutingKey = routingKey ?? GenerateGenericRoutingKey(@event);
 
+            // Xác định exchange dựa trên loại event
+            // Wallet service yêu cầu exchange "carbonlifecycle.events" cho CreditIssuedIntegrationEvent
+            string exchangeName;
+            if (@event is CreditIssuedIntegrationEvent)
+            {
+                exchangeName = "carbonlifecycle.events";
+                // Đảm bảo exchange được khai báo
+                EnsureExchangeDeclared(exchangeName);
+            }
+            else
+            {
+                exchangeName = _settings.ExchangeName;
+            }
+
             _channel.BasicPublish(
-                exchange: _settings.ExchangeName,
+                exchange: exchangeName,
                 routingKey: finalRoutingKey,
                 basicProperties: properties,
                 body: body
@@ -247,11 +267,30 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
 
             _logger.LogDebug(
                 "Message published successfully. Exchange: {Exchange}, RoutingKey: {RoutingKey}, MessageId: {MessageId}, MessageSize: {Size} bytes",
-                _settings.ExchangeName,
+                exchangeName,
                 finalRoutingKey,
                 properties.MessageId,
                 body.Length
             );
+        }
+
+        private void EnsureExchangeDeclared(string exchangeName)
+        {
+            try
+            {
+                _channel.ExchangeDeclare(
+                    exchange: exchangeName,
+                    type: ExchangeType.Topic,
+                    durable: _settings.Durable,
+                    autoDelete: _settings.AutoDelete,
+                    arguments: null
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to declare exchange: {ExchangeName}", exchangeName);
+                // Không throw exception ở đây vì exchange có thể đã được khai báo
+            }
         }
 
         // Hàm fallback để tạo routing key cho các event generic

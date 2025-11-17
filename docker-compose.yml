@@ -193,6 +193,9 @@ services:
       - SPRING_RABBITMQ_TEMPLATE_RETRY_ENABLED=false
       - SPRING_RABBITMQ_LISTENER_SIMPLE_AUTO_DECLARE=true
       - SPRING_RABBITMQ_LISTENER_DIRECT_AUTO_DECLARE=true
+      - RETURN_URL=http://localhost:5173/payment/return
+      - RETURN_FAIL_URL=http://localhost:5173/payment/fail
+      - LISTING_URL=http://marketplace-service:5003
     depends_on:
       mysql-db: 
         condition: service_healthy
@@ -274,7 +277,17 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_APIGATEWAY_BASE_URL=http://localhost:7000/api
+      - VITE_API_BASE_URL=http://localhost:7000/api
+      - VITE_AUTH_SERVICE_URL=http://localhost:7000/api
+      - VITE_CARBON_SERVICE_URL=http://localhost:7000/api
+      - VITE_MARKETPLACE_SERVICE_URL=http://localhost:7000/api
+      - VITE_WALLET_SERVICE_URL=http://localhost:7000/api
+      - VITE_LOGIN_URL=http://localhost:5173/login
+      - VITE_ADMIN_BASE_PATH=/admin
     restart: unless-stopped
+    networks:
+      - carbontc-network
 
 # ==============================
 # 6️⃣ Network & Volumes

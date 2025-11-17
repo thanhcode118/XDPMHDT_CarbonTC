@@ -234,119 +234,147 @@ const handleBuySubmit = async (buyData) => {
   try {
     const response = await buyListing(selectedListing.id, buyData.quantity);
 
-    if (response.data && response.data.success) {
+      // Trường hợp 1: API trả về 200 OK và { success: true }
+      if (response.data && response.data.success) {
+          
+          setSuccessData({
+              type: 'buy',
+              quantity: buyData.quantity,
+              pricePerUnit: buyData.totalAmount / buyData.quantity,
+              totalAmount: buyData.totalAmount,
+              sellerName: 'Công ty ABC', // Bạn có thể cần lấy tên này từ listing
+              creditType: 'Carbon Credit từ xe điện', // Lấy từ listing
+              transactionId: '', // Lấy từ response nếu có
+              estimatedDelivery: '2-3 ngày làm việc'
+          });
+          setShowSuccessModal(true);
+          handleCloseBuyModal();
+          
+          // Cập nhật lại danh sách listing trên UI
+          setListings(prevListings => {
+              const newListings = prevListings.map(listing => {
+                  if (listing.id === listingIdToUpdate) {
+                      const remainingQuantity = Math.max(0, listing.quantity - boughtQuantity);
+                      
+                      return {
+                          ...listing,
+                          quantity: remainingQuantity,
+                      };
+                  }
+                  return listing;
+              });
+              // Lọc bỏ những listing đã bán hết
+              return newListings.filter(listing => listing.quantity > 0);
+          });
 
-      setSuccessData({
-        type: 'buy',
-        quantity: buyData.quantity,
-        pricePerUnit: buyData.totalAmount / buyData.quantity,
-        totalAmount: buyData.totalAmount,
-        sellerName: 'Công ty ABC',
-        creditType: 'Carbon Credit từ xe điện',
-        transactionId: '',
-        estimatedDelivery: '2-3 ngày làm việc'
-      });
-      setShowSuccessModal(true);
+      } else {
+          // Trường hợp 2: API trả về 200 OK nhưng { success: false }
+          // (Như lỗi "Insufficient funds" bạn đã thấy)
+          const specificError = response.data?.errors?.[0]; 
+          const generalMessage = response.data?.message;
+          let errorMsg = specificError || generalMessage || "Giao dịch không thành công.";
 
-      handleCloseBuyModal();
-      
-      setListings(prevListings => {
-        const newListings = prevListings.map(listing => {
-            if (listing.id === listingIdToUpdate) {
-                const remainingQuantity = Math.max(0, listing.quantity - boughtQuantity);
-                
-                // Trả về object mới với quantity đã cập nhật
-                return {
-                    ...listing,
-                    quantity: remainingQuantity,
-                    // (Tùy chọn) Cập nhật status nếu quantity = 0?
-                    // status: remainingQuantity <= 0 ? 2 : listing.status // Giả định 2 = Closed/Sold
-                };
-            }
-            return listing;
-        });
-        return newListings.filter(listing => listing.quantity > 0);
-      });
-    } else {
-        const specificError = response.data?.errors?.[0]; 
-        const generalMessage = response.data?.message;
-        const errorMsg = specificError || generalMessage || "Giao dịch không thành công.";
-      setActionModalError(errorMsg);
-    }
+          // Kiểm tra xem có phải lỗi "Không đủ tiền" không
+          if (specificError && specificError.includes("Insufficient funds")) {
+              errorMsg = "Số dư không đủ. Vui lòng nạp thêm tiền để tiếp tục.";
+          }
+          
+          setActionModalError(errorMsg);
+      }
   } catch (err) {
-    setActionModalError(err.message || "Lỗi kết nối máy chủ.");
+      // Trường hợp 3: API trả về lỗi (4xx, 5xx) hoặc lỗi mạng
+      console.error("Lỗi khi thực hiện mua:", err);
+
+      // Thử kiểm tra lỗi từ response của axios (nếu có)
+      const responseError = err.response?.data?.errors?.[0];
+      let finalError = err.message || "Lỗi kết nối máy chủ.";
+
+      // Bắt lỗi không đủ tiền ở đây một lần nữa
+      if (responseError && responseError.includes("Insufficient funds")) {
+            finalError = "Số dư không đủ. Vui lòng nạp thêm tiền để tiếp tục.";
+      } else if (err.response?.data?.message) {
+          finalError = err.response.data.message;
+      }
+      
+      setActionModalError(finalError);
   } finally {
-    setIsSubmittingAction(false); 
+      setIsSubmittingAction(false); 
   }
 };
 
 const handleBidSubmit = async (bidData) => {
-      if (!selectedListing || !selectedListing.id) {
-          alert("Lỗi: Không tìm thấy thông tin listing.");
-          return;
-      }
-      
-      setActionModalError(null);
+    if (!selectedListing || !selectedListing.id) {
+        alert("Lỗi: Không tìm thấy thông tin listing.");
+        return;
+    }
+    
+    setActionModalError(null);
 
-      // Lấy thông tin auction hiện tại từ state `auctionUpdates`
-      const currentAuctionState = auctionUpdates[selectedListing.id] || {};
-      const currentPrice = currentAuctionState.latestBid?.bidAmount || selectedListing.minimumBid || 0;
+    // Lấy thông tin auction hiện tại từ state `auctionUpdates`
+    const currentAuctionState = auctionUpdates[selectedListing.id] || {};
+    const currentPrice = currentAuctionState.latestBid?.bidAmount || selectedListing.minimumBid || 0;
 
-      // Validation cơ bản phía client
-      if (bidData.bidAmount <= currentPrice) {
-            setActionModalError(`Giá đặt phải cao hơn giá hiện tại (${currentPrice.toLocaleString()} VNĐ).`);
-            return;
-      }
+    // Validation cơ bản phía client
+    if (bidData.bidAmount <= currentPrice) {
+        setActionModalError(`Giá đặt phải cao hơn giá hiện tại (${currentPrice.toLocaleString()} VNĐ).`);
+        return;
+    }
 
-      setIsSubmittingAction(true);
-      setActionModalError(null);
+    setIsSubmittingAction(true);
+    setActionModalError(null);
 
-      try {
-          // Gọi API đặt giá mới
-          const response = await placeBid(selectedListing.id, bidData.bidAmount);
+    try {
+        // Gọi API đặt giá mới
+        const response = await placeBid(selectedListing.id, bidData.bidAmount);
 
-          if (response.data && response.data.success) {
-              console.log("Đặt giá thành công! Chờ cập nhật từ SignalR...");
-              setSuccessData({
+        if (response.data && response.data.success) {
+            console.log("Đặt giá thành công! Chờ cập nhật từ SignalR...");
+            setSuccessData({
                 type: 'bid',
                 quantity: selectedListing?.quantity || 0,
                 pricePerUnit: bidData.bidAmount,
                 totalAmount: response.data.bidAmount * (selectedListing?.quantity || 0),
                 bidTime: response.data.bidTime,
                 listingId: selectedListing.id,
-              });
-              setShowSuccessModal(true);
-              setActionModalError(null);
-          } else {
-              const specificError = response.data?.errors?.[0];
-              const generalMessage = response.data?.message;
-              let errorMsg = specificError || generalMessage || "Đặt giá không thành công.";
+            });
+            setShowSuccessModal(true);
+            setActionModalError(null);
+        } else {
+            const specificError = response.data?.errors?.[0];
+            const generalMessage = response.data?.message;
+            let errorMsg = specificError || generalMessage || "Đặt giá không thành công.";
 
-              if (errorMsg.includes('own listing')) {
-                  errorMsg = "Bạn không thể đặt giá trên sản phẩm của chính mình";
-              }
-              setActionModalError(errorMsg);
-          }
-      } catch (err) {
-          let errorMsg = err.message || "Lỗi kết nối máy chủ.";
-      
-          // Xử lý lỗi từ response 
-          if (err.response?.data?.errors?.[0]) {
-              errorMsg = err.response.data.errors[0];
-          } else if (err.response?.data?.message) {
-              errorMsg = err.response.data.message;
-          }
-          
-          // Lỗi cho trường hợp chủ sở hữu
-          if (errorMsg.includes('own listing')) {
-              errorMsg = "Bạn không thể đặt giá trên sản phẩm của chính mình";
-          }
-          
-          setActionModalError(errorMsg);
-      } finally {
-          setIsSubmittingAction(false);
-      }
-  };
+            // Ưu tiên kiểm tra lỗi "Không đủ tiền"
+            if (errorMsg.includes('Insufficient balance') || errorMsg.includes('InsufficientBalance')) {
+                errorMsg = "Số dư không đủ. Vui lòng nạp thêm tiền để tiếp tục.";
+            }
+            // Kiểm tra lỗi "Tự đặt giá"
+            else if (errorMsg.includes('own listing')) {
+                errorMsg = "Bạn không thể đặt giá trên sản phẩm của chính mình";
+            }
+            setActionModalError(errorMsg);
+        }
+    } catch (err) {
+        console.error("Lỗi khi đặt giá:", err);
+        let errorMsg = err.message || "Lỗi kết nối máy chủ.";
+    
+        const responseErrorMsg = err.response?.data?.errors?.[0] || err.response?.data?.message;
+        if (responseErrorMsg) {
+            errorMsg = responseErrorMsg;
+        }
+        
+        if (errorMsg.includes('Insufficient balance') || errorMsg.includes('InsufficientBalance')) {
+            errorMsg = "Số dư không đủ. Vui lòng nạp thêm tiền để tiếp tục.";
+        }
+        else if (errorMsg.includes('own listing')) {
+            errorMsg = "Bạn không thể đặt giá trên sản phẩm của chính mình";
+        }
+        
+        setActionModalError(errorMsg);
+    } finally {
+        setIsSubmittingAction(false);
+    }
+};
 
   const toggleSidebar = () => {
     setSidebarActive(!sidebarActive);

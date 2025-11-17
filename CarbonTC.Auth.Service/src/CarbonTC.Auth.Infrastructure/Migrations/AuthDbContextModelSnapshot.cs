@@ -125,7 +125,7 @@ namespace CarbonTC.Auth.Infrastructure.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Tổ chức xác minh - Xác minh tính hợp lệ của tín chỉ carbon",
                             IsDeleted = false,
-                            Name = "Verifier"
+                            Name = "CVA"
                         });
                 });
 

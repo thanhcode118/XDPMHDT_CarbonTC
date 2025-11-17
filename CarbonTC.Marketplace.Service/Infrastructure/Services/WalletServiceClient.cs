@@ -80,7 +80,7 @@ namespace Infrastructure.Services
 
         public async Task<WalletDto?> GetBalanceAsync(CancellationToken cancellationToken = default)
         {
-            /*try
+            try
             {
                 var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
 
@@ -102,11 +102,16 @@ namespace Infrastructure.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    var errorBody = await response.Content.ReadAsStringAsync(cts.Token);
                     _logger.LogWarning(
-                        "Wallet service returned {StatusCode}",
-                        response.StatusCode);
+                        "Wallet service returned non-success status: {StatusCode}. Response Body: {ErrorBody}",
+                        response.StatusCode,
+                        errorBody); 
                     return null;
                 }
+
+                var contentString = await response.Content.ReadAsStringAsync(cts.Token);
+                _logger.LogInformation("Raw JSON response from Wallet Service: {ContentString}", contentString);
 
                 var contentStream = await response.Content.ReadAsStreamAsync(cts.Token);
                 var walletResponse = await JsonSerializer.DeserializeAsync<WalletResponseDto<WalletDto>>(
@@ -129,6 +134,7 @@ namespace Infrastructure.Services
                     return null;
                 }
 
+                _logger.LogInformation(wallet.ToString());
                 return wallet;
             }
             catch (OperationCanceledException)
@@ -146,15 +152,6 @@ namespace Infrastructure.Services
                 _logger.LogError(ex, "JSON error deserializing wallet response");
                 return null;
             }
-        */
-            return new WalletDto
-            {
-                WalletId = 12345,
-                UserId = "d5190e3a-e1bd-4e82-8571-38097c3a9652",
-                Balance = 20000000.00m,
-                Currency = "VND",
-                UpdatedAt = DateTime.UtcNow
-            };
         }
     }
 }

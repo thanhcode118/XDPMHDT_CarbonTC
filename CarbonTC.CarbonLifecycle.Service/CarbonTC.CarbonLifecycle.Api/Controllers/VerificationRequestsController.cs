@@ -41,7 +41,7 @@ namespace CarbonTC.CarbonLifecycle.Api.Controllers
         /// <param name="requestDto">DTO chứa JourneyBatchId.</param>
         /// <returns>Kết quả thực hiện.</returns>
         [HttpPost("submit")]
-        [Authorize(Roles = "EVOwner")]
+        [Authorize] // Cho phép tất cả user đã đăng ký (có JWT token hợp lệ) truy cập
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

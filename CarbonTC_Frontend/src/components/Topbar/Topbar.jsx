@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 import styles from './Topbar.module.css';
-// !!! IMPORT CUSTOM COMPONENTS !!!
 import AlertBox from '../../components/AlertBox/AlertBox'; 
 import CustomModal from '../../components/CustomModal/CustomModal'; 
 import { getUserIdFromToken } from '../../services/listingService';
@@ -12,11 +12,12 @@ const Topbar = ({ title }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  // THÊM STATE CHO MODAL VÀ THÔNG BÁO
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [message, setMessage] = useState(null); 
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const dropdownRef = useRef(null);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     // Lấy thông tin user từ localStorage
@@ -26,10 +27,29 @@ const Topbar = ({ title }) => {
     }
   }, []);
 
+  // Tính toán vị trí dropdown
+  const calculateDropdownPosition = () => {
+    if (profileRef.current) {
+      const rect = profileRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.right + window.scrollX - 280 // trừ chiều rộng dropdown
+      });
+    }
+  };
+
+  const toggleDropdown = () => {
+    if (!showDropdown) {
+      calculateDropdownPosition();
+    }
+    setShowDropdown(!showDropdown);
+  };
+
   // Click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          profileRef.current && !profileRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
     };
@@ -55,7 +75,7 @@ const Topbar = ({ title }) => {
     try {
       // Gọi API logout
       await authService.logout();
-      
+      localStorage.clear();
       // THAY THẾ alert() bằng AlertBox (Thông báo thành công)
       setMessage({
           type: 'success',
@@ -86,15 +106,64 @@ const Topbar = ({ title }) => {
     }
   };
 
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+  // Dropdown Component được render qua Portal
+  const DropdownMenu = () => {
+    if (!showDropdown) return null;
+
+    return ReactDOM.createPortal(
+      <div 
+        className={styles.dropdownMenu}
+        ref={dropdownRef}
+        style={{
+          position: 'fixed',
+          top: `${dropdownPosition.top}px`,
+          left: `${dropdownPosition.left}px`,
+          zIndex: 9999
+        }}
+      >
+        <div className={styles.dropdownHeader}>
+          <div className={styles.userInfo}>
+            <img 
+              src={user?.avatar || `https://i.pravatar.cc/30?u=${getUserIdFromToken() || 'default'}`} 
+              alt="User Avatar" 
+              className={styles.dropdownAvatar} 
+            />
+            <div className={styles.userDetails}>
+              <p className={styles.userFullName}>{user?.fullName || 'Người dùng'}</p>
+              <p className={styles.userEmail}>{user?.email || 'email@example.com'}</p>
+              <span className={styles.userRole}>{user?.roleName || 'User'}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className={styles.dropdownDivider}></div>
+        
+        <div className={styles.dropdownBody}>
+          <button 
+            className={`${styles.dropdownItem} ${styles.logoutItem}`}
+            onClick={handleLogout} // Gọi hàm hiển thị modal
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <>
+                <i className="bi bi-hourglass-split"></i>
+                <span>Đang đăng xuất...</span>
+              </>
+            ) : (
+              <>
+                <i className="bi bi-box-arrow-right"></i>
+                <span>Đăng xuất</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
   };
 
   return (
-    // Đặt AlertBox bên ngoài Topbar (hoặc ở component Layout) 
-    // để nó nằm trên cùng, nhưng tạm thời đặt ở đây.
     <>
-      {/* HIỂN THỊ COMPONENT THÔNG BÁO ALERTBOX */}
       {message && <AlertBox message={message} />} 
 
       <div className={styles.topbar}>
@@ -107,7 +176,7 @@ const Topbar = ({ title }) => {
           </div>
           
           {/* User Profile with Dropdown */}
-          <div className={styles.profileContainer} ref={dropdownRef}>
+          <div className={styles.profileContainer} ref={profileRef}>
             <div 
               className={styles.userProfile} 
               onClick={toggleDropdown}
@@ -129,51 +198,10 @@ const Topbar = ({ title }) => {
               </span>
               <i className={`bi bi-chevron-down ${styles.dropdownIcon} ${showDropdown ? styles.dropdownIconActive : ''}`}></i>
             </div>
-
-            {/* Dropdown Menu */}
-            {showDropdown && (
-              <div className={styles.dropdownMenu}>
-                <div className={styles.dropdownHeader}>
-                  <div className={styles.userInfo}>
-                    <img 
-                      src={user?.avatar || "https://picsum.photos/seed/user123/50/50.jpg"} 
-                      alt="User Avatar" 
-                      className={styles.dropdownAvatar} 
-                    />
-                    <div className={styles.userDetails}>
-                      <p className={styles.userFullName}>{user?.fullName || 'Người dùng'}</p>
-                      <p className={styles.userEmail}>{user?.email || 'email@example.com'}</p>
-                      <span className={styles.userRole}>{user?.roleName || 'User'}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className={styles.dropdownDivider}></div>
-                
-                <div className={styles.dropdownBody}>
-                  <button 
-                    className={`${styles.dropdownItem} ${styles.logoutItem}`}
-                    onClick={handleLogout} // Gọi hàm hiển thị modal
-                    disabled={isLoggingOut}
-                  >
-                    {isLoggingOut ? (
-                      <>
-                        <i className="bi bi-hourglass-split"></i>
-                        <span>Đang đăng xuất...</span>
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-box-arrow-right"></i>
-                        <span>Đăng xuất</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
+      <DropdownMenu />
       
       {/* RENDER CUSTOM MODAL XÁC NHẬN LOGOUT */}
       <CustomModal 

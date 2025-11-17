@@ -33,12 +33,12 @@ const UserTypesSection = () => {
                         </div>
                         <div className="col-md-3" data-aos="fade-up" data-aos-delay="400">
                             <div className={styles.userTypeCard}>
-                                <div className={`${styles.userTypeIcon} ${styles.verifierIcon}`}>
+                                <div className={`${styles.userTypeIcon} ${styles.CVAIcon}`}>
                                     <i className="bi bi-patch-check-fill text-white"></i>
                                 </div>
                                 <h4 className={styles.userTypeTitle}>Tổ chức xác minh</h4>
                                 <p className={styles.userTypeDescription}>Kiểm tra và xác minh dữ liệu phát thải, cấp tín chỉ carbon</p>
-                                <a href="login-verifier.html" className={`${styles.btnUserType} ${styles.btnVerifier}`}>Đăng nhập</a>
+                                <a href="login-CVA.html" className={`${styles.btnUserType} ${styles.btnCVA}`}>Đăng nhập</a>
                             </div>
                         </div>
                         <div className="col-md-3" data-aos="fade-up" data-aos-delay="500">

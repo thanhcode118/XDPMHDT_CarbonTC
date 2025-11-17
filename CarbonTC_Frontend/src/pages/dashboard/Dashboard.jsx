@@ -6,7 +6,7 @@ import StatCard from '../../components/StatCard/StatCard';
 import styles from './Dashboard.module.css';
 
 import WalletChart from '../../components/WalletChart/WalletChart';
-import { getTransactionChartData, getSuggestedPrice } from '../../services/listingService'; 
+import { getTransactionChartData, getSuggestedPrice, getUserIdFromToken, getMyTransactions } from '../../services/listingService'; 
 import { useNavigate } from 'react-router-dom';
 
 
@@ -21,6 +21,15 @@ const Dashboard = () => {
   const [bannerSuggestedPrice, setBannerSuggestedPrice] = useState(null);
   const [isBannerSuggestionLoading, setIsBannerSuggestionLoading] = useState(true);
 
+  const [transactions, setTransactions] = useState([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  const params = {
+    pageNumber: 1,
+    pageSize: 5,
+    status: 1 
+  };
 
   const toggleSidebar = () => {
     setSidebarActive(!sidebarActive);
@@ -61,6 +70,40 @@ const Dashboard = () => {
     };
     fetchAiSuggestion();
   }, []);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setTransactionsLoading(true);
+      const userId = getUserIdFromToken(); // Lấy ID user hiện tại
+      setCurrentUserId(userId);
+
+      try {
+        const response = await getMyTransactions(params); // Gọi API
+        if (response.data && response.data.success) {
+          // Lấy mảng 'items' từ data
+          setTransactions(response.data.data.items); 
+        } else {
+          console.error("Không thể tải giao dịch");
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải giao dịch:", err);
+      } finally {
+        setTransactionsLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
+  const mapTransactionStatus = (status) => {
+    switch (status) {
+      case 1: return { text: 'Đang xử lý', type: 'warning' };
+      case 2: return { text: 'Hoàn thành', type: 'success' };
+      case 3: return { text: 'Thất bại', type: 'danger' };
+      case 4: return { text: 'Đã hoàn tiền', type: 'info' };
+      case 5: return { text: 'Đang tranh chấp', type: 'danger' };
+      default: return { text: 'Không rõ', type: 'secondary' };
+    }
+  };
 
   const statsData = [
     {
@@ -114,35 +157,35 @@ const Dashboard = () => {
     }
   ];
 
-  const transactions = [
-    {
-      id: '#CC2023001',
-      date: '15/05/2023',
-      type: 'Bán',
-      quantity: '20',
-      price: '300.000',
-      status: 'Hoàn thành',
-      statusType: 'success'
-    },
-    {
-      id: '#CC2023002',
-      date: '10/05/2023',
-      type: 'Bán',
-      quantity: '15',
-      price: '225.000',
-      status: 'Hoàn thành',
-      statusType: 'success'
-    },
-    {
-      id: '#CC2023003',
-      date: '05/05/2023',
-      type: 'Đấu giá',
-      quantity: '10',
-      price: '180.000',
-      status: 'Đang xử lý',
-      statusType: 'warning'
-    }
-  ];
+  // const transactions = [
+  //   {
+  //     id: '#CC2023001',
+  //     date: '15/05/2023',
+  //     type: 'Bán',
+  //     quantity: '20',
+  //     price: '300.000',
+  //     status: 'Hoàn thành',
+  //     statusType: 'success'
+  //   },
+  //   {
+  //     id: '#CC2023002',
+  //     date: '10/05/2023',
+  //     type: 'Bán',
+  //     quantity: '15',
+  //     price: '225.000',
+  //     status: 'Hoàn thành',
+  //     statusType: 'success'
+  //   },
+  //   {
+  //     id: '#CC2023003',
+  //     date: '05/05/2023',
+  //     type: 'Đấu giá',
+  //     quantity: '10',
+  //     price: '180.000',
+  //     status: 'Đang xử lý',
+  //     statusType: 'warning'
+  //   }
+  // ];
 
   const getAiSuggestionContent = () => {
     if (isBannerSuggestionLoading) return "Đang tải gợi ý từ AI...";
@@ -195,7 +238,7 @@ const Dashboard = () => {
         
         {/* Charts and Recent Activities */}
         <div className="row">
-          <div className="col-lg-8">
+          <div className="col">
             <div className={styles.card} data-aos="fade-up" data-aos-delay="100">
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Biểu đồ tín chỉ carbon</h3>
@@ -234,7 +277,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-lg-4">
+          {/* <div className="col-lg-4">
             <div className={styles.card} data-aos="fade-up" data-aos-delay="200">
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Hành trình gần đây</h3>
@@ -258,14 +301,19 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         
         {/* Transactions Table */}
         <div className={styles.card} data-aos="fade-up" data-aos-delay="300">
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Giao dịch gần đây</h3>
-            <button className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}>Xem tất cả</button>
+            <button 
+              className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+              onClick={() => navigate('/dashboard/transactions')} // Thêm điều hướng
+            >
+              Xem tất cả
+            </button>
           </div>
           <div className={styles.cardBody}>
             <div className={styles.tableResponsive}>
@@ -278,29 +326,58 @@ const Dashboard = () => {
                     <th>Số lượng tín chỉ</th>
                     <th>Giá (VNĐ)</th>
                     <th>Trạng thái</th>
-                    <th>Thao tác</th>
+                    {/* <th>Thao tác</th> */}
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((transaction, index) => (
-                    <tr key={index}>
-                      <td>{transaction.id}</td>
-                      <td>{transaction.date}</td>
-                      <td>{transaction.type}</td>
-                      <td>{transaction.quantity}</td>
-                      <td>{transaction.price}</td>
-                      <td>
-                        <span className={`${styles.badge} ${styles[`badge${transaction.statusType}`]}`}>
-                          {transaction.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${styles.btnSm}`}>
-                          Chi tiết
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {transactionsLoading ? (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
+                      Đang tải giao dịch...
+                    </td>
+                  </tr>
+                ) : transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
+                      Không tìm thấy giao dịch nào.
+                    </td>
+                  </tr>
+                ) : (
+                  transactions.slice(0, 5).map((transaction) => { // Chỉ hiện 5 giao dịch gần nhất
+                    const statusInfo = mapTransactionStatus(transaction.status);
+                    const transactionType = transaction.buyerId === currentUserId ? 'Mua' : 'Bán';
+
+                    return (
+                      <tr key={transaction.id}>
+                        {/* Cắt ngắn ID cho dễ nhìn */}
+                        <td title={transaction.id}>
+                          {transaction.id.split('-')[0]}...
+                        </td>
+                        <td>
+                          {new Date(transaction.createdAt).toLocaleDateString('vi-VN')}
+                        </td>
+                        <td>
+                          {/* Đánh dấu Mua/Bán */}
+                          <span className={transactionType === 'Mua' ? styles.textSuccess : styles.textDanger}>
+                            {transactionType}
+                          </span>
+                        </td>
+                        <td>{transaction.quantity}</td>
+                        <td>{transaction.totalAmount.toLocaleString('vi-VN')}</td>
+                        <td>
+                          <span className={`${styles.badge} ${styles[`badge${statusInfo.type}`]}`}>
+                            {statusInfo.text}
+                          </span>
+                        </td>
+                        {/* <td>
+                          <button className={`${styles.btnCustom} ${styles.btnOutlineCustom} ${styles.btnSm}`}>
+                            Chi tiết
+                          </button>
+                        </td> */}
+                      </tr>
+                    );
+                  })
+                )}
                 </tbody>
               </table>
             </div>
