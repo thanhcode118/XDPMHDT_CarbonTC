@@ -11,14 +11,40 @@ class AuthClient extends BaseServiceClient {
   }
 
   /**
-   * Get user details by ID
+   * Get user by ID
    */
-  async getUserDetails(userId: string, authToken?: string): Promise<any> {
+  async getUserById(
+    userId: string,
+    authToken?: string
+  ): Promise<any> {
     try {
       const config = this.buildAuthConfig(authToken);
       return await this.get(`/api/users/${userId}`, config);
     } catch (error) {
-      logger.error(`[Auth] Failed to get user ${userId}:`, error);
+      logger.error(
+        `[Auth] Failed to get user ${userId}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get multiple users by IDs
+   */
+  async getUsersByIds(
+    userIds: string[],
+    authToken?: string
+  ): Promise<any[]> {
+    try {
+      const config = this.buildAuthConfig(authToken);
+      config.params = { ids: userIds.join(',') };
+      return await this.get('/api/users/batch', config);
+    } catch (error) {
+      logger.error(
+        `[Auth] Failed to get users:`,
+        error
+      );
       throw error;
     }
   }
@@ -26,7 +52,10 @@ class AuthClient extends BaseServiceClient {
   /**
    * Check if user exists
    */
-  async checkUserExists(userId: string, authToken?: string): Promise<boolean> {
+  async checkUserExists(
+    userId: string,
+    authToken?: string
+  ): Promise<boolean> {
     try {
       const config = this.buildAuthConfig(authToken);
       await this.client.get(`/api/users/${userId}`, config);
@@ -35,61 +64,54 @@ class AuthClient extends BaseServiceClient {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
         return false;
       }
-      logger.warn(`[Auth] Failed to check user ${userId}:`, error);
+      logger.warn(
+        `[Auth] Failed to check user ${userId}:`,
+        error
+      );
       return false;
     }
   }
 
   /**
-   * Get user profile
+   * Get user profile details
    */
-  async getUserProfile(userId: string, authToken?: string): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    return await this.get(`/api/users/${userId}/profile`, config);
-  }
-
-  /**
-   * Get multiple users
-   */
-  async getUsers(
-    filters?: {
-      page?: number;
-      limit?: number;
-      role?: string;
-      status?: string;
-    },
+  async getUserProfile(
+    userId: string,
     authToken?: string
   ): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    config.params = filters;
-    return await this.get('/api/users', config);
+    try {
+      const config = this.buildAuthConfig(authToken);
+      return await this.get(`/api/users/${userId}/profile`, config);
+    } catch (error) {
+      logger.error(
+        `[Auth] Failed to get user profile ${userId}:`,
+        error
+      );
+      throw error;
+    }
   }
 
   /**
-   * Verify JWT token (if Auth Service has this endpoint)
+   * Get user basic info (lightweight)
    */
-  async verifyToken(token: string): Promise<any> {
-    return await this.post('/api/auth/verify', { token });
-  }
-
-  /**
-   * Block user (Admin action via Auth Service)
-   */
-  async blockUser(userId: string, reason: string, authToken?: string): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    return await this.post(
-      `/api/users/${userId}/block`,
-      { reason },
-      config
-    );
-  }
-
-  /**
-   * Unblock user
-   */
-  async unblockUser(userId: string, authToken?: string): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    return await this.post(`/api/users/${userId}/unblock`, {}, config);
+  async getUserBasicInfo(
+    userId: string,
+    authToken?: string
+  ): Promise<{ userId: string; fullName?: string; email?: string } | null> {
+    try {
+      const user = await this.getUserById(userId, authToken);
+      return {
+        userId: user.userId || userId,
+        fullName: user.fullName || user.name,
+        email: user.email
+      };
+    } catch (error) {
+      logger.warn(
+        `[Auth] Failed to get basic info for user ${userId}, returning null:`,
+        error
+      );
+      return null;
+    }
   }
 }
 

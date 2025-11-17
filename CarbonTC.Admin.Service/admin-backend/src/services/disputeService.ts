@@ -16,7 +16,7 @@ class DisputeService {
         data: CreateDisputeDTO, 
         raisedBy: string,
         authToken?: string
-    ): Promise<IDisputeDocument> {
+    ): Promise<any> {
         try {
             // Check nếu đã có dispute cho transaction này
             const existingDispute = await Dispute.findOne({
@@ -48,14 +48,15 @@ class DisputeService {
             // Publish event đến RabbitMQ
             await this.publishDisputeEvent(dispute, 'created');
 
-            return dispute;
+            // 🔥 Return enriched data (consistent với các endpoints khác)
+            return await this.getDisputeById(dispute.disputeId);
         } catch (error) {
             logger.error('Error creating dispute:', error);
             throw error;
         }
     }
 
-    async getDisputeById(disputeId: string): Promise<IDisputeDocument> {
+    async getDisputeById(disputeId: string): Promise<any> {
         try {
             const dispute = await Dispute.findOne({ disputeId });
 
@@ -63,7 +64,61 @@ class DisputeService {
                 throw new NotFoundError(`Không tìm thấy tranh chấp với ID: ${disputeId}`);
             }
 
-            return dispute;
+            // Convert to plain object for enrichment
+            let enrichedDispute: any = dispute.toJSON();
+
+            // 🔥 ENRICH: Fetch transaction details from Marketplace Service
+            try {
+                const marketplaceClient = (await import('../utils/clients/marketplaceClient')).default;
+                const transaction = await marketplaceClient.getTransactionDetails(
+                    dispute.transactionId
+                );
+                
+                if (transaction) {
+                    enrichedDispute.transactionDetails = {
+                        buyerId: transaction.buyerId,
+                        buyerName: transaction.buyerName || transaction.buyerId,
+                        sellerId: transaction.sellerId,
+                        sellerName: transaction.sellerName || transaction.sellerId,
+                        amount: transaction.totalAmount || transaction.amount,
+                        quantity: transaction.quantity,
+                        listingId: transaction.listingId
+                    };
+
+                    logger.info(
+                        `Enriched dispute ${disputeId} with transaction details from ${dispute.transactionId}`
+                    );
+                }
+            } catch (err) {
+                logger.warn(
+                    `Failed to fetch transaction details for ${dispute.transactionId}:`,
+                    err
+                );
+                // Continue without transaction details - not critical
+            }
+
+            // 🔥 ENRICH: Fetch user details from Auth Service
+            try {
+                const authClient = (await import('../utils/clients/authClient')).default;
+                const userInfo = await authClient.getUserBasicInfo(dispute.raisedBy);
+                
+                if (userInfo) {
+                    enrichedDispute.raisedByName = userInfo.fullName;
+                    enrichedDispute.raisedByEmail = userInfo.email;
+
+                    logger.info(
+                        `Enriched dispute ${disputeId} with user details for ${dispute.raisedBy}`
+                    );
+                }
+            } catch (err) {
+                logger.warn(
+                    `Failed to fetch user details for ${dispute.raisedBy}:`,
+                    err
+                );
+                // Continue without user details - not critical
+            }
+
+            return enrichedDispute;
         } catch (error) {
             logger.error('Error fetching dispute:', error);
             throw error;
@@ -150,9 +205,14 @@ class DisputeService {
     async updateDisputeStatus(
         disputeId: string,
         status: DisputeStatus
-    ): Promise<IDisputeDocument> {
+    ): Promise<any> {
         try {
-            const dispute = await this.getDisputeById(disputeId);
+            // Get basic dispute for validation (không cần enriched data ở đây)
+            const dispute = await Dispute.findOne({ disputeId });
+            
+            if (!dispute) {
+                throw new NotFoundError(`Không tìm thấy tranh chấp với ID: ${disputeId}`);
+            }
             
             // Không cho phép thay đổi status nếu đã Resolved hoặc Rejected
             if (dispute.status === DisputeStatus.RESOLVED || 
@@ -179,7 +239,8 @@ class DisputeService {
             // Publish status update event
             await this.publishDisputeEvent(dispute, 'status_updated');
 
-            return dispute;
+            // 🔥 Return enriched data (consistent với getDisputeById)
+            return await this.getDisputeById(disputeId);
         } catch (error) {
             logger.error('Error updating dispute status:', error);
             throw error;
@@ -190,9 +251,14 @@ class DisputeService {
         disputeId: string,
         resolution: ResolveDisputeDTO,
         resolvedBy: string
-    ): Promise<IDisputeDocument> {
+    ): Promise<any> {
         try {
-            const dispute = await this.getDisputeById(disputeId);
+            // Get basic dispute for validation
+            const dispute = await Dispute.findOne({ disputeId });
+            
+            if (!dispute) {
+                throw new NotFoundError(`Không tìm thấy tranh chấp với ID: ${disputeId}`);
+            }
             
             if (dispute.status === DisputeStatus.RESOLVED) {
                 throw new ValidationError('Tranh chấp đã được giải quyết');
@@ -214,7 +280,8 @@ class DisputeService {
             // Publish resolved event
             await this.publishDisputeEvent(dispute, 'resolved', resolvedBy);
 
-            return dispute;
+            // 🔥 Return enriched data (consistent với getDisputeById)
+            return await this.getDisputeById(disputeId);
         } catch (error) {
             logger.error('Error resolving dispute:', error);
             throw error;
@@ -256,6 +323,7 @@ class DisputeService {
                 if (endDate) matchStage.createdAt.$lte = endDate;
             }
 
+            // Get status counts
             const stats = await Dispute.aggregate([
                 { $match: matchStage },
                 {
@@ -275,9 +343,51 @@ class DisputeService {
 
             const total = await Dispute.countDocuments(matchStage);
 
+            // Transform byStatus array to object
+            const statusMap = stats.reduce((acc: any, item: any) => {
+                const key = item.status.toLowerCase().replace('_', '');
+                acc[key] = item.count;
+                return acc;
+            }, {});
+
+            // Calculate average resolution time (in hours)
+            const resolvedMatchStage: any = {
+                status: { $in: [DisputeStatus.RESOLVED, DisputeStatus.REJECTED] },
+                resolvedAt: { $exists: true },
+                createdAt: { $exists: true }
+            };
+
+            if (startDate || endDate) {
+                resolvedMatchStage.createdAt = {};
+                if (startDate) resolvedMatchStage.createdAt.$gte = startDate;
+                if (endDate) resolvedMatchStage.createdAt.$lte = endDate;
+            }
+
+            const resolvedDisputes = await Dispute.find(resolvedMatchStage)
+                .select('createdAt resolvedAt')
+                .lean();
+
+            let avgResolutionTime = 0;
+            if (resolvedDisputes.length > 0) {
+                const totalTime = resolvedDisputes.reduce((sum, dispute) => {
+                    const created = new Date(dispute.createdAt).getTime();
+                    const resolved = new Date(dispute.resolvedAt!).getTime();
+                    const diffHours = (resolved - created) / (1000 * 60 * 60);
+                    return sum + diffHours;
+                }, 0);
+                avgResolutionTime = totalTime / resolvedDisputes.length;
+            }
+
             return {
                 total,
-                byStatus: stats,
+                byStatus: {
+                    pending: statusMap['pending'] || 0,
+                    underReview: statusMap['underreview'] || 0,
+                    resolved: statusMap['resolved'] || 0,
+                    rejected: statusMap['rejected'] || 0,
+                },
+                avgResolutionTime: Math.round(avgResolutionTime * 10) / 10, // Round to 1 decimal
+                recentTrend: [], // TODO: Implement if needed
                 period: {
                     startDate,
                     endDate

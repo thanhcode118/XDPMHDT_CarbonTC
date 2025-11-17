@@ -85,6 +85,44 @@ export const useDispute = () => {
     }
   }, []);
 
+  // Fetch disputes by transaction ID
+  const fetchDisputesByTransaction = useCallback(async (transactionId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const disputes = await disputeService.getByTransactionId(transactionId);
+      return { success: true, data: disputes };
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to fetch disputes by transaction';
+      setError(errorMessage);
+      console.error('Error fetching disputes by transaction:', err);
+      return { success: false, error: errorMessage, data: [] };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch disputes by user ID
+  const fetchDisputesByUser = useCallback(async (userId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const disputes = await disputeService.getByUserId(userId);
+      return { success: true, data: disputes };
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to fetch disputes by user';
+      setError(errorMessage);
+      console.error('Error fetching disputes by user:', err);
+      return { success: false, error: errorMessage, data: [] };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Create dispute
   const createDispute = useCallback(
     async (data: CreateDisputeRequest) => {
@@ -255,6 +293,8 @@ export const useDispute = () => {
     fetchDisputes,
     fetchStatistics,
     fetchDisputeById,
+    fetchDisputesByTransaction,  // ✅ NEW: Fetch disputes by transaction ID
+    fetchDisputesByUser,         // ✅ NEW: Fetch disputes by user ID (bonus)
     createDispute,
     updateStatus,
     resolveDispute,
