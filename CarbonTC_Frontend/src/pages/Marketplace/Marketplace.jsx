@@ -432,6 +432,27 @@ const handleBidSubmit = async (bidData) => {
     }));
   }, []);
 
+  // Thêm hàm này trong component Marketplace
+const fetchInventory = async (creditId) => {
+  if (!creditId) return;
+  
+  setIsInventoryLoading(true);
+  setInventoryError(null);
+  try {
+    const response = await getCreditInventory(creditId);
+    if (response.data && response.data.success) {
+      setCurrentInventory(response.data.data);
+      console.log('🔄 Đã cập nhật inventory:', response.data.data);
+    } else {
+      setInventoryError(response.data.message || "Không thể tải tồn kho.");
+    }
+  } catch (err) {
+    setInventoryError(err.message || "Lỗi server.");
+  } finally {
+    setIsInventoryLoading(false);
+  }
+};
+
     const handleRealtimeEndAuction = useCallback((endData) => {
         // endData = { listingId, winningBidderId, winningBidAmount }
         console.log("Received EndAuction:", endData);
@@ -616,54 +637,34 @@ const handleBidSubmit = async (bidData) => {
     setCurrentInventory(null);
     setInventoryError(null);
 
-    // Nếu người dùng bỏ chọn
     if (!selectedCreditId) {
-      // Đặt giá của form trở lại giá chung
       setFormSuggestedPrice(bannerSuggestedPrice); 
       setFormSuggestionType('generic');
       return;
     }
 
-    // Nếu người dùng chọn 1 creditId
     const fetchCreditData = async () => {
-      // Đặt 2 API vào trạng thái loading
-      setIsInventoryLoading(true);
       setIsFormSuggestionLoading(true); 
 
-      // Tạo 2 hàm promise để gọi song song
-      const fetchInventory = getCreditInventory(selectedCreditId);
-      const fetchPersonalizedPrice = getSuggestedPrice(selectedCreditId);
-
       try {
-        // Chờ cả 2 API hoàn thành
-        const [inventoryResponse, priceResponse] = await Promise.all([
-          fetchInventory,
-          fetchPersonalizedPrice
+        // Gọi song song inventory và suggested price
+        await Promise.all([
+          fetchInventory(selectedCreditId), // Dùng hàm mới
+          getSuggestedPrice(selectedCreditId).then(priceResponse => {
+            if (priceResponse.data && priceResponse.data.success) {
+              setFormSuggestedPrice(priceResponse.data.data);
+              setFormSuggestionType('personalized');
+            } else {
+              setFormSuggestedPrice(bannerSuggestedPrice);
+              setFormSuggestionType('generic');
+            }
+          })
         ]);
-
-        // Xử lý kết quả Inventory
-        if (inventoryResponse.data && inventoryResponse.data.success) {
-          setCurrentInventory(inventoryResponse.data.data);
-        } else {
-          setInventoryError(inventoryResponse.data.message || "Lỗi tải tồn kho.");
-        }
-
-        // Xử lý kết quả Giá cá nhân hóa
-        if (priceResponse.data && priceResponse.data.success) {
-          setFormSuggestedPrice(priceResponse.data.data);
-          setFormSuggestionType('personalized'); // Đánh dấu đây là giá cá nhân hóa
-        } else {
-          // Nếu lỗi, dùng lại giá chung
-          setFormSuggestedPrice(bannerSuggestedPrice);
-          setFormSuggestionType('generic');
-        }
-
       } catch (err) {
         setInventoryError(err.message || "Lỗi server.");
         setFormSuggestedPrice(bannerSuggestedPrice); 
         setFormSuggestionType('generic');
       } finally {
-        setIsInventoryLoading(false);
         setIsFormSuggestionLoading(false); 
       }
     };
@@ -688,6 +689,10 @@ const handleBidSubmit = async (bidData) => {
       const response = await createListing(listingData);
       if (response.data && response.data.success) {
         alert('Niêm yết thành công!');
+        
+        // ✅ GỌI LẠI INVENTORY ĐỂ CẬP NHẬT SỐ LƯỢNG MỚI
+        await fetchInventory(selectedCreditId);
+        
         fetchMyListings(); 
         setActiveTab('sell'); 
       } else {
@@ -718,6 +723,10 @@ const handleBidSubmit = async (bidData) => {
       const response = await createListing(auctionData); 
       if (response.data && response.data.success) {
         alert('Tạo phiên đấu giá thành công!');
+        
+        // ✅ GỌI LẠI INVENTORY ĐỂ CẬP NHẬT SỐ LƯỢNG MỚI
+        await fetchInventory(selectedCreditId);
+        
         fetchMyListings(); 
         setActiveTab('sell');
       } else {
@@ -1241,7 +1250,7 @@ const handleBidSubmit = async (bidData) => {
           transactionData={successData}
         />
 
-        <UserSelector/>
+        {/* <UserSelector/> */}
       </div>
     </div>
   );

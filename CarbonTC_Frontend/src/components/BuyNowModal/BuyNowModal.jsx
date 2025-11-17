@@ -195,6 +195,7 @@ const BuyNowModal = ({
                         {!isOwner && (
                             <>
                                 {/* Payment Methods */}
+                                {/*
                                 <div className={styles.paymentMethods}>
                                     <h6 className={styles.paymentMethodTitle}>Phương thức thanh toán</h6>
                                     
@@ -279,7 +280,7 @@ const BuyNowModal = ({
                                         </div>
                                     </div>
                                 </div>
-
+                                */}
                                 {/* Additional Information */}
                                 <form id="buyCreditsForm" onSubmit={handleSubmit}>
                                     <div className={styles.formGroup}>

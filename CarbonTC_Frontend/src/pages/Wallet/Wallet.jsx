@@ -571,9 +571,6 @@ const Wallet = () => {
         status={depositStatus}
         minAmount={10000}
       />
-      
-      {/* Token Test Helper - Chỉ hiển thị trong dev mode */}
-      <TokenTestHelper />
     </div>
   );
 };
