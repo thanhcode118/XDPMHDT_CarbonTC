@@ -19,10 +19,6 @@ export const getMyCarbonWallet = () => unwrap(
   apiClientTK.get('/carbon-wallet/my-wallet')
 );
 
-export const createMyCarbonWallet = () => unwrap(
-  apiClientTK.post('/carbon-wallet/my-wallet')
-);
-
 export const getCarbonWalletHistory = () => unwrap(
   apiClientTK.get('/carbon-wallet/history')
 );
@@ -30,10 +26,6 @@ export const getCarbonWalletHistory = () => unwrap(
 // E-wallet (fiat)
 export const getMyEWallet = () => unwrap(
   apiClientTK.get('/wallet/my-wallet')
-);
-
-export const createMyEWallet = (currency = 'VND') => unwrap(
-  apiClientTK.post('/wallet/my-wallet', { currency })
 );
 
 export const getMyEWalletTransactions = () => unwrap(

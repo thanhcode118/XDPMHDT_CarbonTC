@@ -15,9 +15,7 @@ import { getWalletSummary , getTransactionChartData} from '../../services/listin
 import styles from './Wallet.module.css';
 import { 
   getMyCarbonWallet,
-  createMyCarbonWallet,
   getMyEWalletTransactions,
-  createMyEWallet,
   createDepositPayment,
   createWithdrawRequest,
   getMyEWallet
@@ -194,30 +192,17 @@ const Wallet = () => {
       }
       throw response;
     } catch (error) {
-      const message = (error?.message || '').toLowerCase();
-      if (error?.status === 404 || message.includes('chưa') || message.includes('không tìm thấy')) {
-        try {
-          const created = await createMyEWallet('VND');
-          if (created?.success && created?.data) {
-            setEWallet(created.data);
-            if (showToast) {
-              showNotification('Đã tạo ví tiền cho bạn', 'success');
-            }
-            return created.data;
-          }
-          throw created;
-        } catch (createErr) {
-          if (showToast) {
-            showNotification(createErr?.message || 'Không thể tạo ví tiền', 'error');
-          }
-          throw createErr;
-        }
-      } else {
+      if (error?.status === 404) {
+        setEWallet(null);
         if (showToast) {
-          showNotification(error?.message || 'Không thể tải ví tiền', 'error');
+          showNotification('Ví tiền chưa sẵn sàng. Vui lòng thử lại sau khi hệ thống đồng bộ.', 'warning');
         }
-        throw error;
+        return null;
       }
+      if (showToast) {
+        showNotification(error?.message || 'Không thể tải ví tiền', 'error');
+      }
+      throw error;
     }
   }, [showNotification]);
 
@@ -232,28 +217,16 @@ const Wallet = () => {
       throw response;
     } catch (error) {
       if (error?.status === 404) {
-        try {
-          const created = await createMyCarbonWallet();
-          if (created?.success && created?.data) {
-            setCarbonWallet(created.data);
-            if (showToast) {
-              showNotification('Đã tạo ví carbon cho bạn', 'success');
-            }
-            return created.data;
-          }
-          throw created;
-        } catch (createErr) {
-          if (showToast) {
-            showNotification(createErr?.message || 'Không thể tạo ví carbon', 'error');
-          }
-          throw createErr;
-        }
-      } else {
+        setCarbonWallet(null);
         if (showToast) {
-          showNotification(error?.message || 'Không thể tải ví carbon', 'error');
+          showNotification('Ví carbon chưa sẵn sàng. Vui lòng thử lại sau khi hệ thống đồng bộ.', 'warning');
         }
-        throw error;
+        return null;
       }
+      if (showToast) {
+        showNotification(error?.message || 'Không thể tải ví carbon', 'error');
+      }
+      throw error;
     }
   }, [showNotification]);
 

@@ -6,17 +6,6 @@ export async function getMyCarbonWallet() {
   return data; // ApiResponseCarbonWalletResponse
 }
 
-export async function createMyCarbonWallet() {
-  const { data } = await apiClient.post('/api/carbon-wallet/my-wallet');
-  return data; // ApiResponseCarbonWalletResponse
-}
-
-// E-wallet (fiat) create
-export async function createMyEWallet(currency = 'VND') {
-  const { data } = await apiClient.post('/api/wallet/my-wallet', { currency });
-  return data; // ApiResponseEWalletResponse
-}
-
 // E-wallet transactions (fiat/money)
 export async function getMyEWalletTransactions() {
   const { data } = await apiClient.get('/api/wallet/my-wallet/transactions');
