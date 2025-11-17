@@ -52,7 +52,7 @@ Dự án sử dụng kiến trúc polyglot (đa ngôn ngữ) microservices:
     * **React.js (Vite):** `CarbonTC_Frontend` (cho User)
     * **React.js (TypeScript):** `CarbonTC.Admin.Service` (cho Admin)
 * **API Gateway:** Ocelot
-* **Cơ sở dữ liệu:** MySQL 8.0
+* **Cơ sở dữ liệu:** MySQL 8.0, MongoDB, Redis
 * **Message Broker:** RabbitMQ
 * **Containerization:** Docker & Docker Compose
 
