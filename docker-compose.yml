@@ -193,8 +193,8 @@ services:
       - SPRING_RABBITMQ_TEMPLATE_RETRY_ENABLED=false
       - SPRING_RABBITMQ_LISTENER_SIMPLE_AUTO_DECLARE=true
       - SPRING_RABBITMQ_LISTENER_DIRECT_AUTO_DECLARE=true
-      - RETURN_URL=http://frontend:5173/payment/return
-      - RETURN_FAIL_URL=http://frontend:5173/payment/fail
+      - RETURN_URL=http://localhost:5173/payment/return
+      - RETURN_FAIL_URL=http://localhost:5173/payment/fail
       - LISTING_URL=http://marketplace-service:5003
     depends_on:
       mysql-db: 
@@ -277,8 +277,10 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - VITE_APIGATEWAY_BASE_URL=http://api-gateway:80/api
+      - VITE_APIGATEWAY_BASE_URL=http://localhost:7000/api
     restart: unless-stopped
+    networks:
+      - carbontc-network
 
 # ==============================
 # 6️⃣ Network & Volumes
