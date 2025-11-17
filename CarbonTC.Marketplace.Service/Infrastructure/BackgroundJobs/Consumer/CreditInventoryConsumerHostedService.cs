@@ -26,7 +26,7 @@ namespace Infrastructure.BackgroundJobs.Consumer
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await _consumer.Subscribe<CreateCreditInventoryCommand>("carbonlifecycle.events", ExchangeType.Topic, "credit.inventory.update", "credit.inventory.update.queue", async (message) =>
+            await _consumer.Subscribe<CreateCreditInventoryCommand>("carbonlifecycle.events", ExchangeType.Topic, "credit.issued", "credit.issued.queue", async (message) =>
             {
                 using var scope = _scopeFactory.CreateScope();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
