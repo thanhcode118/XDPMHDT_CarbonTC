@@ -69,11 +69,11 @@ public class RabbitMQConsumerService {
             log.info("Giao dịch {}: Tổng tiền {}, Phí {}, Người bán nhận {}",
                     event.getTransactionId(), event.getMoneyAmount(), platformFee, amountSellerReceives);
 
-            // 3. Trừ tiền người mua
-            eWalletService.withdraw(buyerEwallet.getWalletId(), event.getMoneyAmount());
+            String debitDesc = "Thanh toán cho giao dịch " + event.getTransactionId();
+            eWalletService.debit(buyerEwallet.getWalletId(), event.getMoneyAmount(), debitDesc);
 
-            // 4. Cộng tiền cho người bán (đã trừ phí)
-            eWalletService.deposit(sellerEwallet.getWalletId(), amountSellerReceives);
+            String creditDesc = "Nhận tiền từ giao dịch " + event.getTransactionId();
+            eWalletService.credit(sellerEwallet.getWalletId(), amountSellerReceives, creditDesc);
 
             // 5. Chuyển tín chỉ
             CreditTransferRequestForConsumer transferRequest = new CreditTransferRequestForConsumer();

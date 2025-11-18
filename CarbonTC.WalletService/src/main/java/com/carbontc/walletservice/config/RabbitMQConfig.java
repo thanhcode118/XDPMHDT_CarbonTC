@@ -1,5 +1,8 @@
 package com.carbontc.walletservice.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -73,7 +76,16 @@ public class RabbitMQConfig {
 
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // 2. Thêm module để nó hiểu các kiểu thời gian mới (OffsetDateTime, v.v.)
+        objectMapper.registerModule(new JavaTimeModule());
+
+        // 3. (QUAN TRỌNG) TẮT tính năng ghi ngày tháng thành số timestamp
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // 4. Trả về converter đã được cấu hình
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     public static final String USER_EXCHANGE = "user_exchange";
