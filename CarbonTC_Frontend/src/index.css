@@ -11,6 +11,10 @@
   --sidebar-bg: rgba(15, 15, 30, 0.9);
   --sidebar-width: 280px;
   --ev-owner-color: #667eea;
+  --carbon-shadow: 0 4px 18px rgba(67, 233, 123, 0.10);
+  --border-radius: 18px;
+  --input-bg: #f6faf8;
+  --input-border: #d1e7dd;
 }
 
 * {
@@ -20,10 +24,11 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: 'Inter', 'Montserrat', 'Segoe UI', Arial, sans-serif;
   background-color: var(--dark-bg);
   color: var(--text-primary);
   overflow-x: hidden;
+  letter-spacing: 0.01em;
 }
 
 html {
@@ -34,14 +39,14 @@ html {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(67, 233, 123, 0.04);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  background: linear-gradient(135deg, #aee9d1 0%, #43e97b 100%);
+  border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: #43e97b;
 }
 
 @keyframes float {

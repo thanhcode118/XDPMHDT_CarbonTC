@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Hợp đồng dữ liệu (DTO) cho sự kiện CREDIT_ISSUED
@@ -19,13 +20,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreditIssuedEvent {
-    @JsonProperty("ownerUserld")
+    @JsonProperty("ownerUserId")
     private String ownerUserId;
 
     private BigDecimal creditAmount; // Số lượng tín chỉ MỚI
 
-    @JsonProperty("referenceld")
+    @JsonProperty("referenceId")
     private String referenceId;
 
-    private LocalDateTime issuedAt;
+    private OffsetDateTime issuedAt;
 }

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -123,7 +124,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
             carbonCreditTransfer.setStatus(TransferStatus.COMPLETED);
         }
 
-        carbonCreditTransfer.setCreatedAt(LocalDateTime.now());
+        carbonCreditTransfer.setCreatedAt(OffsetDateTime.now());
 
         CarbonCreditTransfer saved = carbonCreditTransferRepository.save(carbonCreditTransfer);
 
