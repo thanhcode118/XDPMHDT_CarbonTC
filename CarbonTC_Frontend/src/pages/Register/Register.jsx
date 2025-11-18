@@ -15,7 +15,24 @@ export default function Register() {
     confirmPassword: '',
     fullName: '',
     phoneNumber: '',
+    roleType: 'EVOwner' // Default role
   });
+
+  // Danh sách các role có thể chọn
+  const roleOptions = [
+    {
+      value: 'EVOwner',
+      label: 'Chủ xe điện',
+      description: 'Sở hữu xe điện và muốn bán carbon credit',
+      icon: 'bi-car-front'
+    },
+    {
+      value: 'CreditBuyer',
+      label: 'Nhà mua credit',
+      description: 'Cá nhân/tổ chức muốn mua carbon credit',
+      icon: 'bi-cart-check'
+    }
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,6 +41,17 @@ export default function Register() {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleRoleSelect = (roleType) => {
+    setFormData(prev => ({ ...prev, roleType }));
+    if (errors.roleType) {
+      setErrors(prev => ({ ...prev, roleType: '' }));
+    }
+  };
+
+  const handleGoHome = () => {
+    navigate('/');
   };
 
   const validateForm = () => {
@@ -55,6 +83,10 @@ export default function Register() {
       newErrors.phoneNumber = 'Số điện thoại không hợp lệ';
     }
 
+    if (!formData.roleType) {
+      newErrors.roleType = 'Vui lòng chọn loại tài khoản';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -68,7 +100,16 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await register(formData);
+      // Chuẩn bị dữ liệu gửi lên API
+      const submitData = {
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        phoneNumber: formData.phoneNumber,
+        roleType: formData.roleType
+      };
+
+      const response = await register(submitData);
       
       if (response.success) {
         navigate('/dashboard');
@@ -94,6 +135,16 @@ export default function Register() {
   return (
     <div className={styles.registerContainer}>
       <div className={styles.registerWrapper}>
+        {/* Back Button */}
+        <button 
+          className={styles.backButton}
+          onClick={handleGoHome}
+          type="button"
+        >
+          <i className="bi bi-arrow-left"></i>
+          Trở về trang chủ
+        </button>
+
         {/* Header */}
         <div className={styles.registerHeader} data-aos="fade-down">
           <div className={styles.brandLogo}>
@@ -116,11 +167,50 @@ export default function Register() {
             )}
 
             <form onSubmit={handleSubmit}>
+              {/* Role Selection */}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  <i className="bi bi-person-badge me-2"></i>
+                  Loại tài khoản <span className={styles.required}>*</span>
+                </label>
+                <div className={styles.roleSelection}>
+                  {roleOptions.map((role) => (
+                    <div
+                      key={role.value}
+                      className={`${styles.roleOption} ${
+                        formData.roleType === role.value ? styles.roleOptionSelected : ''
+                      }`}
+                      onClick={() => handleRoleSelect(role.value)}
+                    >
+                      <div className={styles.roleIcon}>
+                        <i className={role.icon}></i>
+                      </div>
+                      <div className={styles.roleContent}>
+                        <div className={styles.roleLabel}>{role.label}</div>
+                        <div className={styles.roleDescription}>{role.description}</div>
+                      </div>
+                      <div className={styles.roleRadio}>
+                        <div className={`${styles.radioCircle} ${
+                          formData.roleType === role.value ? styles.radioCircleSelected : ''
+                        }`}>
+                          {formData.roleType === role.value && (
+                            <i className="bi bi-check-lg"></i>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {errors.roleType && (
+                  <div className={styles.invalidFeedback}>{errors.roleType}</div>
+                )}
+              </div>
+
               {/* Full Name Input */}
               <div className={styles.formGroup}>
                 <label htmlFor="fullName" className={styles.formLabel}>
                   <i className="bi bi-person me-2"></i>
-                  Họ và tên
+                  {formData.roleType === 'EVOwner' ? 'Họ và tên' : 'Tên công ty/tổ chức'} <span className={styles.required}>*</span>
                 </label>
                 <input
                   type="text"
@@ -129,7 +219,7 @@ export default function Register() {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  placeholder="Nguyễn Văn An"
+                  placeholder={formData.roleType === 'EVOwner' ? "Nguyễn Văn An" : "Công ty ABC"}
                   autoFocus
                   disabled={loading}
                 />
@@ -142,7 +232,7 @@ export default function Register() {
               <div className={styles.formGroup}>
                 <label htmlFor="email" className={styles.formLabel}>
                   <i className="bi bi-envelope me-2"></i>
-                  Địa chỉ Email
+                  Địa chỉ Email <span className={styles.required}>*</span>
                 </label>
                 <input
                   type="email"
@@ -184,7 +274,7 @@ export default function Register() {
               <div className={styles.formGroup}>
                 <label htmlFor="password" className={styles.formLabel}>
                   <i className="bi bi-lock me-2"></i>
-                  Mật khẩu
+                  Mật khẩu <span className={styles.required}>*</span>
                 </label>
                 <input
                   type="password"
@@ -209,7 +299,7 @@ export default function Register() {
               <div className={styles.formGroup}>
                 <label htmlFor="confirmPassword" className={styles.formLabel}>
                   <i className="bi bi-lock-fill me-2"></i>
-                  Xác nhận mật khẩu
+                  Xác nhận mật khẩu <span className={styles.required}>*</span>
                 </label>
                 <input
                   type="password"

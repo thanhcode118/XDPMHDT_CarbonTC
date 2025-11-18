@@ -22,6 +22,10 @@ export default function Login() {
     }
   };
 
+  const handleGoHome = () => {
+    navigate('/');
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -39,55 +43,57 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
 
-  if (!validateForm()) return;
+    if (!validateForm()) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const response = await login(formData);
+    try {
+      const response = await login(formData);
 
-    if (response && response.success) {
-      const user = response.data.user;
-      const userRole = user.roleName || user.roleType || user.Role || user.RoleType;
+      if (response && response.success) {
+        const user = response.data.user;
+        const userRole = user.roleName || user.roleType || user.Role || user.RoleType;
 
-      if (userRole === 'Admin') {
-        const accessToken = localStorage.getItem('accessToken');
-        const refreshToken = localStorage.getItem('refreshToken');
+        if (userRole === 'Admin') {
+          const accessToken = localStorage.getItem('accessToken');
+          const refreshToken = localStorage.getItem('refreshToken');
 
-        const normalizedUser = {
-          ...user,
-          role: 'ADMIN'
-        };
+          const normalizedUser = {
+            ...user,
+            role: 'ADMIN'
+          };
 
-        const userJson = encodeURIComponent(JSON.stringify(normalizedUser));
-        window.location.href = `/admin/auth/callback?token=${accessToken}&refreshToken=${refreshToken}&user=${userJson}`;
+          const userJson = encodeURIComponent(JSON.stringify(normalizedUser));
+          window.location.href = `/admin/auth/callback?token=${accessToken}&refreshToken=${refreshToken}&user=${userJson}`;
+        } else {
+          navigate('/dashboard');
+        }
       } else {
-        navigate('/dashboard');
+        setError(response?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+        setTimeout(() => setError(''), 5000);
       }
-    } else {
-      setError(response?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+    } catch (err) {
+      setError(err.message || 'Email hoặc mật khẩu không đúng.');
       setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError(err.message || 'Email hoặc mật khẩu không đúng.');
-    setTimeout(() => setError(''), 5000);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  };
 
   return (
     <div className={styles.loginContainer}>
       <div className={styles.loginWrapper}>
         {/* Header */}
         <div className={styles.loginHeader} data-aos="fade-down">
-          <div className={styles.brandLogo}>
+          <div 
+            className={styles.brandLogo}
+            onClick={handleGoHome}
+            style={{ cursor: 'pointer' }}
+          >
             <i className="bi bi-lightning-charge-fill"></i>
             <span>CarbonCredit</span>
           </div>
