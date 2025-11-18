@@ -18,6 +18,21 @@ class DisputeService {
         authToken?: string
     ): Promise<any> {
         try {
+            // ✅ Validate transactionId must be UUID format
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!uuidRegex.test(data.transactionId)) {
+                throw new ValidationError(
+                    'TransactionId must be a valid UUID format (e.g., 550e8400-e29b-41d4-a716-446655440000)'
+                );
+            }
+
+            // ⚠️ Detect old format and log warning
+            if (data.transactionId.startsWith('TXN-')) {
+                logger.warn(
+                    `Old transaction format detected: ${data.transactionId}. Please use UUID format.`
+                );
+            }
+
             // Check nếu đã có dispute cho transaction này
             const existingDispute = await Dispute.findOne({
                 transactionId: data.transactionId
@@ -73,7 +88,7 @@ class DisputeService {
             // Convert to plain object for enrichment
             let enrichedDispute: any = dispute.toJSON();
 
-            // 🔥 ENRICH: Fetch transaction details from Marketplace Service
+            // ENRICH: Fetch transaction details from Marketplace Service
             try {
                 const marketplaceClient = (await import('../utils/clients/marketplaceClient')).default;
                 const transaction = await marketplaceClient.getTransactionDetails(
@@ -105,7 +120,7 @@ class DisputeService {
                 // Continue without transaction details - not critical
             }
 
-            // 🔥 ENRICH: Fetch user details from Auth Service
+            // ENRICH: Fetch user details from Auth Service
             try {
                 const authClient = (await import('../utils/clients/authClient')).default;
                 const userInfo = await authClient.getUserBasicInfo(dispute.raisedBy, authToken);
@@ -286,7 +301,6 @@ class DisputeService {
             // Publish resolved event
             await this.publishDisputeEvent(dispute, 'resolved', resolvedBy);
 
-            // 🔥 Return enriched data (consistent với getDisputeById)
             return await this.getDisputeById(disputeId, authToken);
         } catch (error) {
             logger.error('Error resolving dispute:', error);
@@ -296,7 +310,11 @@ class DisputeService {
 
     async deleteDispute(disputeId: string): Promise<void> {
         try {
-            const dispute = await this.getDisputeById(disputeId);
+            const dispute = await Dispute.findOne({ disputeId });
+
+            if (!dispute) {
+                throw new NotFoundError(`Không tìm thấy tranh chấp với ID: ${disputeId}`);
+            }
 
             if (dispute.status !== DisputeStatus.PENDING) {
                 throw new ValidationError(

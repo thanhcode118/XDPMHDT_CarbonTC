@@ -164,11 +164,14 @@ const swaggerDefinition = {
           },
           transactionId: {
             type: 'string',
-            example: 'TXN-2024-001',
+            format: 'uuid',
+            example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            description: 'Transaction ID in UUID format'
           },
           raisedBy: {
             type: 'string',
-            example: 'user-id-123',
+            format: 'uuid',
+            example: 'b60da81b-09d1-4aa5-99c3-21c1360d7144',
           },
           reason: {
             type: 'string',
@@ -207,7 +210,9 @@ const swaggerDefinition = {
         properties: {
           transactionId: {
             type: 'string',
-            example: 'TXN-2024-001',
+            format: 'uuid',
+            example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            description: 'Transaction ID in UUID format (not TXN-XXX format)'
           },
           reason: {
             type: 'string',
@@ -272,7 +277,8 @@ const swaggerDefinition = {
           },
           generatedBy: {
             type: 'string',
-            example: 'admin-user-id',
+            format: 'uuid',
+            example: 'b60da81b-09d1-4aa5-99c3-21c1360d7144',
           },
           startDate: {
             type: 'string',
@@ -326,7 +332,8 @@ const swaggerDefinition = {
           },
           adminId: {
             type: 'string',
-            example: 'admin-user-id',
+            format: 'uuid',
+            example: 'b60da81b-09d1-4aa5-99c3-21c1360d7144',
           },
           actionType: {
             type: 'string',
@@ -348,7 +355,8 @@ const swaggerDefinition = {
           },
           targetId: {
             type: 'string',
-            example: 'user-id-123',
+            format: 'uuid',
+            example: 'c1d2e3f4-5678-90ab-cdef-123456789abc',
           },
           description: {
             type: 'string',
@@ -404,7 +412,8 @@ const swaggerDefinition = {
           },
           targetId: {
             type: 'string',
-            example: 'user-id-123',
+            format: 'uuid',
+            example: 'c1d2e3f4-5678-90ab-cdef-123456789abc',
           },
           description: {
             type: 'string',
@@ -459,7 +468,8 @@ const swaggerDefinition = {
           },
           updatedBy: {
             type: 'string',
-            example: 'admin-user-id',
+            format: 'uuid',
+            example: 'b60da81b-09d1-4aa5-99c3-21c1360d7144',
           },
           createdAt: {
             type: 'string',
