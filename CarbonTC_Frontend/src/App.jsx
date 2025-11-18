@@ -21,7 +21,6 @@ import Login from './pages/Login/Login.jsx'; // ✅ Trang Login
 import Register from './pages/Register/Register.jsx'; // ✅ Trang Login
 import PaymentReturn from './pages/Payments/PaymentReturn.jsx';
 import PaymentFail from './pages/Payments/PaymentFail.jsx';
-import AboutUs from './pages/AboutUs.jsx';
 
 // --- IMPORT PRIVATE ROUTE ---
 import PrivateRoute from './components/PrivateRoute.jsx';
@@ -54,7 +53,6 @@ function App() {
         <Route path="/login" element={<Login />} />
         {/* ✅ Trang Đăng ký */}
         <Route path="/register" element={<Register />} />
-        <Route path="/about-us" element={<AboutUs />} />
 
         {/* =================== NHÓM 2: DASHBOARD =================== */}
       <Route 
