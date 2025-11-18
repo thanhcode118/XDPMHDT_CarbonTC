@@ -1,7 +1,9 @@
 ﻿using Application.Common.DTOs;
+using Application.Common.Features.Transactions.DTOs;
 using Application.Common.Features.Transactions.Queries.GetAllTransactions;
 using Application.Common.Features.Transactions.Queries.GetDashboardSummary;
 using Application.Common.Features.Transactions.Queries.GetDashboardWalletSummary;
+using Application.Common.Features.Transactions.Queries.GetTransactionById;
 using Application.Common.Features.Transactions.Queries.GetWalletChartData;
 using Application.Common.Interfaces;
 using CarbonTC.API.Common;
@@ -161,6 +163,19 @@ namespace CarbonTC.API.Controllers
             return Unauthorized();
         }
 
-
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(
+            [FromRoute] Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetTransactionByIdQuery(id);
+            var transaction = await _mediator.Send(query, cancellationToken);
+            if (transaction.IsSuccess)
+            {
+                return Ok(ApiResponse<TransactionDto>.SuccessResponse(transaction.Value));
+            }
+            return NotFound(ApiResponse<TransactionDto>.ErrorResponse(transaction.Error.Code, new List<string> { transaction.Error.Message }));
+        }
     }
 }
