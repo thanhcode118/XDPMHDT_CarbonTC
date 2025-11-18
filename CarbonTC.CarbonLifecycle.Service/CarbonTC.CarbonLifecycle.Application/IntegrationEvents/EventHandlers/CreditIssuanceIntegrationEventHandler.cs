@@ -33,8 +33,8 @@ namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
             var domainEvent = notification.DomainEvent;
 
             _logger.LogInformation(
-                "Đã bắt sự kiện CarbonCreditsApprovedEvent (wrapped) cho BatchId: {BatchId}. Đang chuẩn bị gửi Integration Events...",
-                domainEvent.JourneyBatchId);
+                "[CreditIssuanceIntegrationEventHandler] Bắt đầu xử lý CarbonCreditsApprovedEvent. BatchId: {BatchId}, UserId: {UserId}, CreditId: {CreditId}, Amount: {Amount}",
+                domainEvent.JourneyBatchId, domainEvent.UserId, domainEvent.CreditId, domainEvent.ApprovedCreditAmount.Value);
 
             // 1. Tạo DTO sự kiện cho Service 4 (Wallet)
             var walletEvent = new CreditIssuedIntegrationEvent
@@ -52,29 +52,57 @@ namespace CarbonTC.CarbonLifecycle.Application.IntegrationEvents.EventHandlers
                 TotalAmount = (decimal)domainEvent.ApprovedCreditAmount.Value
             };
 
+            // Gửi từng event riêng biệt để đảm bảo cả 2 đều được gửi, ngay cả khi 1 event fail
+            bool walletEventPublished = false;
+            bool marketplaceEventPublished = false;
+
+            // 3.1. Gửi CreditIssuedIntegrationEvent (Wallet Service)
             try
             {
-                // 3. Gửi 2 sự kiện MỚI này qua IMessagePublisher
-                // Sử dụng PublishIntegrationEventAsync vì các events này không còn implement IDomainEvent
+                // Routing key "credit_issued" (gạch dưới) để cả 2 queues nhận được:
+                // - credit.issued.queue (internal)
+                // - wallet_service_credit_queue (Wallet Service)
                 await _messagePublisher.PublishIntegrationEventAsync(walletEvent, "credit_issued");
+                walletEventPublished = true;
                 _logger.LogInformation(
-                    "Published CreditIssuedIntegrationEvent for BatchId: {BatchId}, UserId: {UserId}, Amount: {Amount}, ReferenceId: {ReferenceId}",
+                    "[CreditIssuanceIntegrationEventHandler] ✅ Published CreditIssuedIntegrationEvent. BatchId: {BatchId}, UserId: {UserId}, Amount: {Amount}, ReferenceId: {ReferenceId}, RoutingKey: credit_issued, Exchange: carbonlifecycle.events",
                     domainEvent.JourneyBatchId, walletEvent.OwnerUserId, walletEvent.CreditAmount, walletEvent.ReferenceId);
-
-                await _messagePublisher.PublishIntegrationEventAsync(marketplaceEvent, "credit.inventory.update");
-                _logger.LogInformation(
-                    "Published CreditInventoryUpdateIntegrationEvent for BatchId: {BatchId}, CreditId: {CreditId}, TotalAmount: {Amount}",
-                    domainEvent.JourneyBatchId, marketplaceEvent.CreditId, marketplaceEvent.TotalAmount);
-
-                _logger.LogInformation(
-                    "Successfully published 2 Integration Events for BatchId: {BatchId}, CreditId: {CreditId}",
-                    domainEvent.JourneyBatchId, domainEvent.CreditId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Error publishing Integration Events for BatchId: {BatchId}, CreditId: {CreditId}. Events may not have been sent.",
+                    "[CreditIssuanceIntegrationEventHandler] ❌ Failed to publish CreditIssuedIntegrationEvent. BatchId: {BatchId}, CreditId: {CreditId}",
                     domainEvent.JourneyBatchId, domainEvent.CreditId);
+            }
+
+            // 3.2. Gửi CreditInventoryUpdateIntegrationEvent (Marketplace Service)
+            try
+            {
+                await _messagePublisher.PublishIntegrationEventAsync(marketplaceEvent, "credit.inventory.update");
+                marketplaceEventPublished = true;
+                _logger.LogInformation(
+                    "[CreditIssuanceIntegrationEventHandler] ✅ Published CreditInventoryUpdateIntegrationEvent. BatchId: {BatchId}, CreditId: {CreditId}, TotalAmount: {Amount}, RoutingKey: credit.inventory.update, Exchange: carbonlifecycle.events",
+                    domainEvent.JourneyBatchId, marketplaceEvent.CreditId, marketplaceEvent.TotalAmount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "[CreditIssuanceIntegrationEventHandler] ❌ Failed to publish CreditInventoryUpdateIntegrationEvent. BatchId: {BatchId}, CreditId: {CreditId}",
+                    domainEvent.JourneyBatchId, domainEvent.CreditId);
+            }
+
+            // Tổng kết
+            if (walletEventPublished && marketplaceEventPublished)
+            {
+                _logger.LogInformation(
+                    "[CreditIssuanceIntegrationEventHandler] ✅ Successfully published BOTH Integration Events. BatchId: {BatchId}, CreditId: {CreditId}",
+                    domainEvent.JourneyBatchId, domainEvent.CreditId);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "[CreditIssuanceIntegrationEventHandler] ⚠️ Partially published Integration Events. WalletEvent: {WalletEvent}, MarketplaceEvent: {MarketplaceEvent}, BatchId: {BatchId}, CreditId: {CreditId}",
+                    walletEventPublished, marketplaceEventPublished, domainEvent.JourneyBatchId, domainEvent.CreditId);
             }
         }
     }
