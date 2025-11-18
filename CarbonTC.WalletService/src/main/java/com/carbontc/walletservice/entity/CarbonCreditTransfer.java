@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "carbon_credit_transfers")
@@ -41,6 +42,6 @@ public class CarbonCreditTransfer {
 
     private String referenceId; // TransactionId or ListingId
 
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
 }

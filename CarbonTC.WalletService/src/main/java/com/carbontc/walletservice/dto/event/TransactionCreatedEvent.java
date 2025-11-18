@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Hợp đồng dữ liệu (DTO) cho sự kiện TRANSACTION_CREATED
@@ -25,5 +26,5 @@ public class TransactionCreatedEvent {
     private BigDecimal moneyAmount;   // Tổng số tiền
     private BigDecimal creditAmount;  // Tổng số tín chỉ
     private BigDecimal platformFee;   // Phí nền tảng (hoa hồng)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -12,5 +13,5 @@ public class TransactionCompletedEvent {
     private String status; // Trạng thái (COMPLETED hoặc FAILED)
     private Long certificateId; // ID của chứng chỉ đã tạo
     private String message; // Lý do (nếu FAILED)
-    private LocalDateTime completedAt;
+    private OffsetDateTime completedAt;
 }

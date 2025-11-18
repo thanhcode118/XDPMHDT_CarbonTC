@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional; // Đảm bảo
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -95,7 +96,7 @@ public class RabbitMQConsumerService {
                     .transactionId(event.getTransactionId())
                     .status("COMPLETED")
                     .certificateId(newCert.getCertificateId())
-                    .completedAt(LocalDateTime.now())
+                    .completedAt(OffsetDateTime.now())
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.completed", completedEvent);
 
@@ -109,7 +110,7 @@ public class RabbitMQConsumerService {
                     .transactionId(event.getTransactionId())
                     .status("FAILED")
                     .message(e.getMessage())
-                    .completedAt(LocalDateTime.now())
+                    .completedAt(OffsetDateTime.now())
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.failed", failed);
 
@@ -121,7 +122,7 @@ public class RabbitMQConsumerService {
                     .transactionId(event.getTransactionId())
                     .status("FAILED")
                     .message("Lỗi hệ thống: " + e.getMessage())
-                    .completedAt(LocalDateTime.now())
+                    .completedAt(OffsetDateTime.now())
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.failed", failed);
 
