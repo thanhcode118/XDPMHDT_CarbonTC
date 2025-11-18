@@ -41,8 +41,12 @@ class DisputeController {
    */
   getDisputeById = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { disputeId } = req.params;
+    const authHeader = req.headers.authorization;
+    const authToken = authHeader?.startsWith('Bearer ') 
+      ? authHeader.split(' ')[1] 
+      : undefined;
 
-    const dispute = await disputeService.getDisputeById(disputeId);
+    const dispute = await disputeService.getDisputeById(disputeId, authToken);
 
     return ApiResponseHelper.success(
       res,
@@ -138,10 +142,15 @@ class DisputeController {
     async (req: AuthRequest, res: Response) => {
       const { disputeId } = req.params;
       const { status } = req.body;
+      const authHeader = req.headers.authorization;
+      const authToken = authHeader?.startsWith('Bearer ') 
+        ? authHeader.split(' ')[1] 
+        : undefined;
 
       const dispute = await disputeService.updateDisputeStatus(
         disputeId,
-        status
+        status,
+        authToken
       );
 
       return ApiResponseHelper.success(
@@ -161,11 +170,16 @@ class DisputeController {
     const { disputeId } = req.params;
     const { status, resolutionNotes } = req.body;
     const resolvedBy = req.user!.userId;
+    const authHeader = req.headers.authorization;
+    const authToken = authHeader?.startsWith('Bearer ') 
+      ? authHeader.split(' ')[1] 
+      : undefined;
 
     const dispute = await disputeService.resolveDispute(
       disputeId,
       { status, resolutionNotes },
-      resolvedBy
+      resolvedBy,
+      authToken
     );
 
     return ApiResponseHelper.success(

@@ -42,21 +42,27 @@ class DisputeService {
 
             await dispute.save();
             logger.info(
-                `Dispute created - ID: ${dispute.disputeId}, User: ${raisedBy}, Transaction: ${data.transactionId}, Status: ${dispute.status}`
+                `Dispute created - ID: ${dispute.disputeId}, 
+                User: ${raisedBy}, 
+                Transaction: ${data.transactionId}, 
+                Status: ${dispute.status}`
             );
 
             // Publish event đến RabbitMQ
             await this.publishDisputeEvent(dispute, 'created');
 
             // 🔥 Return enriched data (consistent với các endpoints khác)
-            return await this.getDisputeById(dispute.disputeId);
+            return await this.getDisputeById(dispute.disputeId, authToken);
         } catch (error) {
             logger.error('Error creating dispute:', error);
             throw error;
         }
     }
 
-    async getDisputeById(disputeId: string): Promise<any> {
+    async getDisputeById(
+        disputeId: string, 
+        authToken?: string
+    ): Promise<any> {
         try {
             const dispute = await Dispute.findOne({ disputeId });
 
@@ -71,7 +77,8 @@ class DisputeService {
             try {
                 const marketplaceClient = (await import('../utils/clients/marketplaceClient')).default;
                 const transaction = await marketplaceClient.getTransactionDetails(
-                    dispute.transactionId
+                    dispute.transactionId,
+                    authToken
                 );
                 
                 if (transaction) {
@@ -82,7 +89,8 @@ class DisputeService {
                         sellerName: transaction.sellerName || transaction.sellerId,
                         amount: transaction.totalAmount || transaction.amount,
                         quantity: transaction.quantity,
-                        listingId: transaction.listingId
+                        listingId: transaction.listingId,
+                        status: transaction.status
                     };
 
                     logger.info(
@@ -100,7 +108,7 @@ class DisputeService {
             // 🔥 ENRICH: Fetch user details from Auth Service
             try {
                 const authClient = (await import('../utils/clients/authClient')).default;
-                const userInfo = await authClient.getUserBasicInfo(dispute.raisedBy);
+                const userInfo = await authClient.getUserBasicInfo(dispute.raisedBy, authToken);
                 
                 if (userInfo) {
                     enrichedDispute.raisedByName = userInfo.fullName;
@@ -204,10 +212,10 @@ class DisputeService {
 
     async updateDisputeStatus(
         disputeId: string,
-        status: DisputeStatus
+        status: DisputeStatus,
+        authToken?: string
     ): Promise<any> {
         try {
-            // Get basic dispute for validation (không cần enriched data ở đây)
             const dispute = await Dispute.findOne({ disputeId });
             
             if (!dispute) {
@@ -236,11 +244,9 @@ class DisputeService {
                 `Dispute ${disputeId} status updated: ${oldStatus} -> ${status}`
             );
 
-            // Publish status update event
             await this.publishDisputeEvent(dispute, 'status_updated');
 
-            // 🔥 Return enriched data (consistent với getDisputeById)
-            return await this.getDisputeById(disputeId);
+            return await this.getDisputeById(disputeId, authToken);
         } catch (error) {
             logger.error('Error updating dispute status:', error);
             throw error;
@@ -250,10 +256,10 @@ class DisputeService {
     async resolveDispute(
         disputeId: string,
         resolution: ResolveDisputeDTO,
-        resolvedBy: string
+        resolvedBy: string,
+        authToken?: string
     ): Promise<any> {
         try {
-            // Get basic dispute for validation
             const dispute = await Dispute.findOne({ disputeId });
             
             if (!dispute) {
@@ -281,7 +287,7 @@ class DisputeService {
             await this.publishDisputeEvent(dispute, 'resolved', resolvedBy);
 
             // 🔥 Return enriched data (consistent với getDisputeById)
-            return await this.getDisputeById(disputeId);
+            return await this.getDisputeById(disputeId, authToken);
         } catch (error) {
             logger.error('Error resolving dispute:', error);
             throw error;
@@ -386,8 +392,8 @@ class DisputeService {
                     resolved: statusMap['resolved'] || 0,
                     rejected: statusMap['rejected'] || 0,
                 },
-                avgResolutionTime: Math.round(avgResolutionTime * 10) / 10, // Round to 1 decimal
-                recentTrend: [], // TODO: Implement if needed
+                avgResolutionTime: Math.round(avgResolutionTime * 10) / 10,
+                recentTrend: [],
                 period: {
                     startDate,
                     endDate
