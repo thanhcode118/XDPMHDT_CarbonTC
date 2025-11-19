@@ -475,9 +475,9 @@ const PlaceBidModal = ({
                                             <i className="bi bi-tag-fill"></i>
                                         </div>
                                         <div className={styles.detailInfo}>
-                                            <div className={styles.detailLabel}>Giá khởi điểm</div>
+                                            <div className={styles.detailLabel}>Giá khởi điểm trọn gói</div>
                                             <div className={styles.detailValue}>
-                                                {listingData?.minimumBid?.toLocaleString()} VNĐ/tín chỉ
+                                                {listingData?.minimumBid?.toLocaleString()} VNĐ
                                             </div>
                                         </div>
                                     </div>
