@@ -3,6 +3,7 @@ package com.carbontc.walletservice.entity;
 import com.carbontc.walletservice.entity.status.WithdrawStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class WithdrawRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", nullable = false)
+    @ToString.Exclude
     private EWallet wallet;
 
 
