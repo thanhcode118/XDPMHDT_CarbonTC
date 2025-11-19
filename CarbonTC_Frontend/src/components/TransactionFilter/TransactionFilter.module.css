@@ -6,12 +6,14 @@
   border-radius: 16px;
   padding: 25px;
   margin-bottom: 25px;
+  position: relative;
 }
 
 .filterTitle {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 20px;
+  color: var(--text-primary);
 }
 
 .formControl, .formSelect {
@@ -21,9 +23,10 @@
   padding: 12px 15px;
   color: var(--text-primary);
   width: 100%;
+  transition: all 0.3s ease;
 }
 
-.formControl::placeholder, .formSelect option {
+.formControl::placeholder {
   color: var(--text-secondary);
 }
 
@@ -46,6 +49,7 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .btnCustom {
@@ -55,6 +59,10 @@
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btnPrimaryCustom {
@@ -77,6 +85,143 @@
   background: rgba(102, 126, 234, 0.1);
 }
 
+.btnSuccessCustom {
+  background: linear-gradient(to right, #10b981, #059669);
+  color: white;
+}
+
+.btnSuccessCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.btnClose {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.btnClose:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.modalBody {
+  padding: 25px;
+}
+
+.modalDescription {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.radioItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--ev-owner-color);
+}
+
+.radioInput {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ev-owner-color);
+}
+
+.radioLabel {
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  flex: 1;
+}
+
+.modalFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 @media (max-width: 576px) {
   .filterActions {
     flex-direction: column;
@@ -84,5 +229,31 @@
   
   .btnCustom {
     width: 100%;
+  }
+
+  .modalContent {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .modalHeader,
+  .modalBody,
+  .modalFooter {
+    padding: 15px 20px;
+  }
+
+  .modalFooter {
+    flex-direction: column;
+  }
+
+  .modalFooter .btnCustom {
+    width: 100%;
+  }
+}
+
+/* Dark mode radio button enhancement */
+@media (prefers-color-scheme: dark) {
+  .radioInput {
+    filter: brightness(0.8);
   }
 }

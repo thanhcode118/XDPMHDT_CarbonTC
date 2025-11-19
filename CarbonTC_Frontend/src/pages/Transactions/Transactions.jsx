@@ -12,7 +12,7 @@ import { useNotification } from '../../hooks/useNotification';
 import { getCertificate } from '../../services/transactionService';
 import styles from './Transactions.module.css';
 
-import { getSalesTransactions, getPurchasesTransactions, getTransactionSummary } from '../../services/listingService'
+import { getSalesTransactions, getPurchasesTransactions, getTransactionSummary, exportTransactionStatement } from '../../services/listingService'
 
 const mapApiStatusToFe = (statusEnum) => {
   switch (statusEnum) {
@@ -224,11 +224,32 @@ const Transactions = () => {
     showNotification('Chức năng hủy đang được phát triển', 'info');
   };
 
-  const handleExport = () => {
-    showNotification('Đang xuất báo cáo giao dịch...', 'info');
-    setTimeout(() => {
-      showNotification('Xuất báo cáo thành công!', 'success');
-    }, 2000);
+  const handleExportStatement = async (rangeType) => {
+    try {
+        // Gọi hàm service thay vì axios.get trực tiếp
+        const response = await exportTransactionStatement(rangeType);
+
+        // Tạo đường dẫn tải về từ blob data
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Đặt tên file
+        const fileName = `SaoKe_${rangeType}_${new Date().toISOString().slice(0,10)}.xlsx`;
+        link.setAttribute('download', fileName);
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        // Dọn dẹp
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        // toast.success("Tải xuống thành công!");
+    } catch (error) {
+        console.error("Lỗi xuất file:", error);
+        // toast.error("Có lỗi xảy ra khi xuất file.");
+    }
   };
 
   const handleDownloadCertificate = async () => {
@@ -332,7 +353,7 @@ const Transactions = () => {
         <div className='mt-3'>
           <TransactionFilter
             onFilter={handleFilter}
-            onExport={handleExport}
+            onExport={handleExportStatement}
             activeTab={activeTab}
           />
 
