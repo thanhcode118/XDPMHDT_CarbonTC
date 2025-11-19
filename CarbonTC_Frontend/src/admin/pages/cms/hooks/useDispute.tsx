@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { disputeService } from '../../../services/dispute.service';
 import type {
@@ -29,11 +29,19 @@ export const useDispute = () => {
   const [isStatsLoading, setIsStatsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isFetchingRef = useRef(false);
+  const isFetchingStatsRef = useRef(false);
+
   // ============================
   // Fetch all disputes
   // ============================
-  const fetchDisputes = useCallback(async () => {
+  const fetchDisputes = async () => {
+    if (isFetchingRef.current) {
+      console.log('⏭️ Skip fetch: Already fetching...');
+      return;
+    }
     try {
+      isFetchingRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -52,14 +60,20 @@ export const useDispute = () => {
       console.error('Error fetching disputes:', err);
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [filters, currentPage, pageSize]);
+  };
 
   // ============================
   // Fetch statistics
   // ============================
-  const fetchStatistics = useCallback(async () => {
+  const fetchStatistics = async () => {
+    if (isFetchingStatsRef.current) {
+      console.log('⏭️ Skip stats: Already fetching...');
+      return;
+    }
     try {
+      isFetchingStatsRef.current = true;
       setIsStatsLoading(true);
       const stats = await disputeService.getStatistics();
       setStatistics(stats);
@@ -67,8 +81,9 @@ export const useDispute = () => {
       console.error('Error fetching statistics:', err);
     } finally {
       setIsStatsLoading(false);
+      isFetchingStatsRef.current = false;
     }
-  }, []);
+  };
 
   // ============================
   // Fetch dispute by ID
@@ -227,8 +242,8 @@ export const useDispute = () => {
       try {
         setError(null);
         await disputeService.delete(disputeId);
-        await fetchDisputes();
-        await fetchStatistics();
+        setDisputes(prev => prev.filter(d => d.disputeId === disputeId ? false : true));
+        setTotalCount(prev => (prev > 0 ? prev - 1 : 0));
         return { success: true };
       } catch (err) {
         const errorMessage =
@@ -252,19 +267,24 @@ export const useDispute = () => {
     setPageSize(size);
   }, []);
 
-  // ============================
-  // Effects
-  // ============================
-
-  // Tự động fetch disputes khi filters / page / size đổi
   useEffect(() => {
     void fetchDisputes();
-  }, [fetchDisputes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.search,
+    filters.status,
+    filters.transactionId,
+    filters.raisedBy,
+    // filters.startDate,
+    // filters.endDate,
+    currentPage,
+    pageSize,]);
 
-  // Fetch statistics 1 lần lúc mount
+  // Fetch statistics 1 lần khi mount
+  // ✅ FIX: Empty dependency array [] thay vì [fetchStatistics]
   useEffect(() => {
     void fetchStatistics();
-  }, [fetchStatistics]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     // Data

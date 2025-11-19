@@ -49,7 +49,10 @@ export const DisputeFilters: React.FC<DisputeFiltersProps> = ({
 
   // Update filters when debounced search changes
   useEffect(() => {
-    if (debouncedSearch !== filters.search) {
+    const currentSearch = filters.search || '';
+    const newSearch = debouncedSearch || '';
+
+    if (newSearch !== currentSearch) {
       onFiltersChange({
         ...filters,
         search: debouncedSearch || undefined,

@@ -2,7 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import rateLimit from 'express-rate-limit';
+// import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import { connectDatabase } from './config/database';
 import { connectRabbitMQ } from './config/rabbitmq';
@@ -31,12 +31,12 @@ app.use(cors({
   credentials: true
 }));
 
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
+// const limiter = rateLimit({
+//   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
+//   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+//   message: 'Too many requests from this IP, please try again later.'
+// });
+// app.use('/api/', limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
