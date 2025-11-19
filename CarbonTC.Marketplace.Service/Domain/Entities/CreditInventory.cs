@@ -94,19 +94,24 @@ namespace Domain.Entities
             AddDomainEvent(new InventoryTransactionCompletedDomainEvent(CreditId, amount));
         }
 
-        public void RollbackTransaction(decimal amount)
+        public void RollbackToListed(decimal amount)
         {
-            if (amount <= 0)
-                throw new DomainException("Amount must be greater than zero");
+            ValidateRollback(amount);
 
-            if (LockedAmount < amount)
-                throw new DomainException("Cannot rollback more than locked amount");
+            LockedAmount -= amount;
+            ListedAmount += amount;
+
+            FinalizeRollback(amount, "Listed");
+        }
+
+        public void RollbackToAvailable(decimal amount)
+        {
+            ValidateRollback(amount);
 
             LockedAmount -= amount;
             AvailableAmount += amount;
-            UpdatedAt = DateTime.UtcNow;
 
-            AddDomainEvent(new InventoryTransactionRolledBackDomainEvent(CreditId, amount));
+            FinalizeRollback(amount, "Available");
         }
 
         public void AddCredits(decimal amount)
@@ -130,6 +135,21 @@ namespace Domain.Entities
         public bool HasSufficientAvailable(decimal amount)
         {
             return AvailableAmount >= amount;
+        }
+
+        private void ValidateRollback(decimal amount)
+        {
+            if (amount <= 0)
+                throw new DomainException("Amount must be greater than zero");
+
+            if (LockedAmount < amount)
+                throw new DomainException("Cannot rollback more than locked amount");
+        }
+
+        private void FinalizeRollback(decimal amount, string destination)
+        {
+            UpdatedAt = DateTime.UtcNow;
+            AddDomainEvent(new InventoryTransactionRolledBackDomainEvent(CreditId, amount));
         }
 
     }

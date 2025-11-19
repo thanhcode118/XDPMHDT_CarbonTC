@@ -22,7 +22,7 @@ namespace Application.Common.Features.Listings.EventHandlers
             if (creditInventory == null)
                 return;
 
-            creditInventory.CommitDirectSale(notification.Amount);
+            creditInventory.LockForTransaction(notification.Amount);
 
             var transaction = Domain.Entities.Transactions.Create(
                 notification.BuyerId,
