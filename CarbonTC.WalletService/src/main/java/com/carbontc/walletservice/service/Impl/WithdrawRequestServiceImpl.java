@@ -74,10 +74,7 @@ public class WithdrawRequestServiceImpl implements WithdrawRequestService {
             throw new BusinessException("Số dư của quý khách không đủ thực hiện giao dịch");
         }
 
-        eWallet = eWalletRepository.save(eWallet);
-
-        log.info("Test log ewallet {}", eWallet);
-        System.out.println(eWallet + "test Log ewallet");
+        eWallet = eWalletRepository.save(eWallet); 
 
 
         WithdrawRequest withdrawRequest = new WithdrawRequest();

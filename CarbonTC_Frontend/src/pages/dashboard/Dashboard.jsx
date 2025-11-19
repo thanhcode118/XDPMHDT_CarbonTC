@@ -223,7 +223,7 @@ const Dashboard = () => {
         />
         
         {/* Stats Grid */}
-        <div className={styles.statsGrid}>
+        {/* <div className={styles.statsGrid}>
           {statsData.map((stat, index) => (
             <StatCard
               key={index}
@@ -234,7 +234,7 @@ const Dashboard = () => {
               change={stat.change}
             />
           ))}
-        </div>
+        </div> */}
         
         {/* Charts and Recent Activities */}
         <div className="row">

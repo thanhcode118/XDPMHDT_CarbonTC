@@ -6,24 +6,24 @@ const TransactionFilter = ({
   onExport,
   activeTab
 }) => {
-  // 1. Thêm state cho các bộ lọc mới
   const [filters, setFilters] = useState({
     status: '',
-    startDate: '', // C# dùng StartDate
-    endDate: '',   // C# dùng EndDate
-    minAmount: '', // C# dùng MinAmount
-    maxAmount: '', // C# dùng MaxAmount
-    sortBy: 'CreatedAt', // C# dùng SortBy
-    sortDescending: true, // C# dùng SortDescending
+    startDate: '',
+    endDate: '',
+    minAmount: '',
+    maxAmount: '',
+    sortBy: 'CreatedAt',
+    sortDescending: true,
     buyerId: '',
     sellerId: '',
     listingId: ''
   });
 
-   const selectRefs = useRef([]);
+  const selectRefs = useRef([]);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportRange, setExportRange] = useState('month');
 
   useEffect(() => {
-    // Force style cho dropdown options
     selectRefs.current.forEach(select => {
       if (select) {
         select.style.backgroundColor = 'var(--card-bg)';
@@ -38,7 +38,6 @@ const TransactionFilter = ({
     }
   };
 
-
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
@@ -46,10 +45,8 @@ const TransactionFilter = ({
 
   const handleApply = () => {
     if (onFilter) {
-      // 2. Map giá trị state sang query params (nếu cần)
       const queryParams = {
         ...filters,
-        // Chuyển đổi giá trị rỗng thành null
         status: filters.status ? parseInt(filters.status) : null,
         minAmount: filters.minAmount ? parseFloat(filters.minAmount) : null,
         maxAmount: filters.maxAmount ? parseFloat(filters.maxAmount) : null,
@@ -84,12 +81,20 @@ const TransactionFilter = ({
     }
   };
 
+  const openModal = () => setShowExportModal(true);
+  const closeModal = () => setShowExportModal(false);
+
+  const handleConfirmExport = () => {
+    if (onExport) {
+      onExport(exportRange); 
+    }
+    closeModal();
+  };
+
   return (
     <div className={styles.filterSection} data-aos="fade-up">
       <h3 className={styles.filterTitle}>Bộ lọc tìm kiếm</h3>
       <div className="row g-3">
-        {/* 3. Xóa bộ lọc "Loại giao dịch" */}
-
         {/* Trạng thái */}
         <div className="col-md-3">
           <label htmlFor="transactionStatus" className={styles.formLabel}>Trạng thái</label>
@@ -100,7 +105,6 @@ const TransactionFilter = ({
             value={filters.status}
             onChange={(e) => handleFilterChange('status', e.target.value)}
           >
-            {/* 4. Cập nhật value khớp với Enum C# (Giả định) */}
             <option value="">Tất cả</option>
             <option value="1">Đang xử lý (Pending)</option>
             <option value="2">Hoàn thành (Completed)</option>
@@ -109,7 +113,7 @@ const TransactionFilter = ({
           </select>
         </div>
         
-        {/* 5. Thêm các bộ lọc mới */}
+        {/* Các bộ lọc khác */}
         <div className="col-md-3">
           <label htmlFor="minAmount" className={styles.formLabel}>Giá trị từ (VNĐ)</label>
           <input 
@@ -217,15 +221,106 @@ const TransactionFilter = ({
             >
               Đặt lại
             </button>
-            {/* <button 
-              className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
-              onClick={onExport}
+            <button 
+              className={`${styles.btnCustom} ${styles.btnSuccessCustom}`}
+              onClick={openModal}
             >
+              <i className="bi bi-file-earmark-excel me-2"></i>
               Xuất báo cáo
-            </button> */}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className={styles.modal}>
+          <div className={styles.modalOverlay} onClick={closeModal}></div>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h5 className={styles.modalTitle}>Chọn kỳ báo cáo</h5>
+              <button 
+                type="button" 
+                className={styles.btnClose}
+                onClick={closeModal}
+              >
+                <i className="bi bi-x"></i>
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <p className={styles.modalDescription}>
+                Bạn muốn xuất sao kê giao dịch trong khoảng thời gian nào?
+              </p>
+              
+              <div className={styles.radioGroup}>
+                <div className={styles.radioItem}>
+                  <input 
+                    className={styles.radioInput}
+                    type="radio" 
+                    name="exportRange" 
+                    id="rangeWeek" 
+                    value="week" 
+                    checked={exportRange === 'week'} 
+                    onChange={(e) => setExportRange(e.target.value)}
+                  />
+                  <label className={styles.radioLabel} htmlFor="rangeWeek">
+                    1 Tuần gần nhất
+                  </label>
+                </div>
+
+                <div className={styles.radioItem}>
+                  <input 
+                    className={styles.radioInput}
+                    type="radio" 
+                    name="exportRange" 
+                    id="rangeMonth" 
+                    value="month" 
+                    checked={exportRange === 'month'} 
+                    onChange={(e) => setExportRange(e.target.value)}
+                  />
+                  <label className={styles.radioLabel} htmlFor="rangeMonth">
+                    1 Tháng gần nhất
+                  </label>
+                </div>
+
+                <div className={styles.radioItem}>
+                  <input 
+                    className={styles.radioInput}
+                    type="radio" 
+                    name="exportRange" 
+                    id="rangeYear" 
+                    value="year" 
+                    checked={exportRange === 'year'} 
+                    onChange={(e) => setExportRange(e.target.value)}
+                  />
+                  <label className={styles.radioLabel} htmlFor="rangeYear">
+                    1 Năm gần nhất
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button 
+                type="button" 
+                className={`${styles.btnCustom} ${styles.btnOutlineCustom}`}
+                onClick={closeModal}
+              >
+                Hủy
+              </button>
+              <button 
+                type="button" 
+                className={`${styles.btnCustom} ${styles.btnPrimaryCustom}`}
+                onClick={handleConfirmExport}
+              >
+                <i className="bi bi-download me-2"></i> 
+                Xác nhận xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

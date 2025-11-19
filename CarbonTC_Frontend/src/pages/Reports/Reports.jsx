@@ -210,7 +210,7 @@ const Reports = () => {
         <Topbar title="Báo cáo" />
         
         {/* Stats Grid */}
-        <div className={styles.statsGrid}>
+        {/* <div className={styles.statsGrid}>
           {reportStats.map((stat, index) => (
             <StatCard
               key={index}
@@ -223,7 +223,7 @@ const Reports = () => {
               delay={(index + 1) * 100}
             />
           ))}
-        </div>
+        </div> */}
         
         {/* Carbon Credits Chart */}
         <div className={styles.card} data-aos="fade-up" data-aos-delay="500">

@@ -192,3 +192,14 @@ export const getDisputeByTransactionId = (transactionId) => {
 export const getMyTransactions = (params) => {
   return apiClientPD.get('/users/me/transactions', { params });
 };
+
+/**
+ * Xuất sao kê giao dịch ra file Excel
+ * @param {string} rangeType - Loại kỳ báo cáo ('week', 'month', 'year')
+ */
+export const exportTransactionStatement = (rangeType) => {
+  return apiClientPD.get('/Transaction/export-statement', {
+    params: { rangeType },
+    responseType: 'blob' 
+  });
+};
