@@ -29,7 +29,9 @@ export const useDispute = () => {
   const [isStatsLoading, setIsStatsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ============================
   // Fetch all disputes
+  // ============================
   const fetchDisputes = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -44,14 +46,18 @@ export const useDispute = () => {
       setDisputes(response.data);
       setTotalCount(response.pagination.total);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch disputes');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch disputes',
+      );
       console.error('Error fetching disputes:', err);
     } finally {
       setIsLoading(false);
     }
   }, [filters, currentPage, pageSize]);
 
+  // ============================
   // Fetch statistics
+  // ============================
   const fetchStatistics = useCallback(async () => {
     try {
       setIsStatsLoading(true);
@@ -64,7 +70,9 @@ export const useDispute = () => {
     }
   }, []);
 
+  // ============================
   // Fetch dispute by ID
+  // ============================
   const fetchDisputeById = useCallback(async (disputeId: string) => {
     try {
       setIsDetailLoading(true);
@@ -86,23 +94,30 @@ export const useDispute = () => {
   }, []);
 
   // Fetch disputes by transaction ID
-  const fetchDisputesByTransaction = useCallback(async (transactionId: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const fetchDisputesByTransaction = useCallback(
+    async (transactionId: string) => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      const disputes = await disputeService.getByTransactionId(transactionId);
-      return { success: true, data: disputes };
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch disputes by transaction';
-      setError(errorMessage);
-      console.error('Error fetching disputes by transaction:', err);
-      return { success: false, error: errorMessage, data: [] };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        const disputes = await disputeService.getByTransactionId(
+          transactionId,
+        );
+        return { success: true, data: disputes };
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to fetch disputes by transaction';
+        setError(errorMessage);
+        console.error('Error fetching disputes by transaction:', err);
+        return { success: false, error: errorMessage, data: [] };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   // Fetch disputes by user ID
   const fetchDisputesByUser = useCallback(async (userId: string) => {
@@ -114,7 +129,9 @@ export const useDispute = () => {
       return { success: true, data: disputes };
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch disputes by user';
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch disputes by user';
       setError(errorMessage);
       console.error('Error fetching disputes by user:', err);
       return { success: false, error: errorMessage, data: [] };
@@ -123,9 +140,12 @@ export const useDispute = () => {
     }
   }, []);
 
-  // Create dispute
+  // Create dispute (Admin UI thực tế không dùng)
   const createDispute = useCallback(
     async (data: CreateDisputeRequest) => {
+      console.warn(
+        '⚠️ createDispute should not be called from Admin UI. Disputes are created from User FE.',
+      );
       try {
         setError(null);
         const newDispute = await disputeService.create(data);
@@ -232,46 +252,19 @@ export const useDispute = () => {
     setPageSize(size);
   }, []);
 
+  // ============================
+  // Effects
+  // ============================
+
+  // Tự động fetch disputes khi filters / page / size đổi
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    void fetchDisputes();
+  }, [fetchDisputes]);
 
-        const response = await disputeService.getAll(
-          filters,
-          currentPage,
-          pageSize,
-        );
-
-        setDisputes(response.data);
-        setTotalCount(response.pagination.total);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch disputes');
-        console.error('Error fetching disputes:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void fetchData();
-  }, [filters, currentPage, pageSize]);
-
+  // Fetch statistics 1 lần lúc mount
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setIsStatsLoading(true);
-        const stats = await disputeService.getStatistics();
-        setStatistics(stats);
-      } catch (err) {
-        console.error('Error fetching statistics:', err);
-      } finally {
-        setIsStatsLoading(false);
-      }
-    };
-
-    void fetchStats();
-  }, []);
+    void fetchStatistics();
+  }, [fetchStatistics]);
 
   return {
     // Data
@@ -293,9 +286,9 @@ export const useDispute = () => {
     fetchDisputes,
     fetchStatistics,
     fetchDisputeById,
-    fetchDisputesByTransaction,  // ✅ NEW: Fetch disputes by transaction ID
-    fetchDisputesByUser,         // ✅ NEW: Fetch disputes by user ID (bonus)
-    createDispute,
+    fetchDisputesByTransaction,
+    fetchDisputesByUser,
+    // createDispute, // Admin không dùng
     updateStatus,
     resolveDispute,
     deleteDispute,
