@@ -12,7 +12,7 @@ import { useAuthStore } from '../store';
 // ============================================
 
 const axiosInstance = axios.create({
-  baseURL: config.apiBaseUrl, // http://localhost:5005/api
+  baseURL: config.apiBaseUrl,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

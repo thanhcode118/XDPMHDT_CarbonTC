@@ -13,7 +13,7 @@ import {
   type UpdateStatusRequest,
 } from '../types/dispute.type';
 
-const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:5005/api';
+const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:7000';
 const BASE_PATH = '/admin/disputes';
 
 // Axios instance with auth
