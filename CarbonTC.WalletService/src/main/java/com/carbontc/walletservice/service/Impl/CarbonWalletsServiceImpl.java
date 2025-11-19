@@ -66,6 +66,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
     }
 
     @Override
+    @Transactional(rollbackFor = BusinessException.class)
     public void issueNewCredits(CreditIssuedEvent event) throws BusinessException {
         CarbonWallets wallets = findWalletByOwnerId(event.getOwnerUserId());
 
@@ -90,7 +91,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(rollbackFor = BusinessException.class)
     public CreditTransferResponse transferCredits(String fromUserId, CreditTransferRequestForConsumer request) throws BusinessException {
 
         CarbonWallets senderWallet = carbonWalletsRepository.findByOwnerId(fromUserId)

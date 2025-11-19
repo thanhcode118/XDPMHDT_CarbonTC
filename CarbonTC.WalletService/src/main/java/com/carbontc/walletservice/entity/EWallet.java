@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class EWallet {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<Payment> payments;
 
     // 1 ví có thể có nhiều yêu cầu rút tiền
