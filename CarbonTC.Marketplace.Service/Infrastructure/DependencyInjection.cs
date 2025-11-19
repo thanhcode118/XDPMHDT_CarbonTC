@@ -71,6 +71,7 @@ namespace Infrastructure
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<IBalanceService, RedisBalanceService>();
             services.AddScoped<ICarbonPricingService, CarbonPricingService>();
+            services.AddTransient<IExcelService, ExcelService>();
             return services;
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Application.Common.DTOs;
+using Application.Common.Features.Transactions.Commands.ExportStatement;
 using Application.Common.Features.Transactions.DTOs;
 using Application.Common.Features.Transactions.Queries.GetAllTransactions;
 using Application.Common.Features.Transactions.Queries.GetDashboardSummary;
@@ -7,7 +8,6 @@ using Application.Common.Features.Transactions.Queries.GetTransactionById;
 using Application.Common.Features.Transactions.Queries.GetWalletChartData;
 using Application.Common.Interfaces;
 using CarbonTC.API.Common;
-using Domain.Entities;
 using Domain.Enum;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -176,6 +176,51 @@ namespace CarbonTC.API.Controllers
                 return Ok(ApiResponse<TransactionDto>.SuccessResponse(transaction.Value));
             }
             return NotFound(ApiResponse<TransactionDto>.ErrorResponse(transaction.Error.Code, new List<string> { transaction.Error.Message }));
+        }
+
+        [Authorize]
+        [HttpGet("export-statement")]
+        public async Task<IActionResult> ExportStatement([FromQuery] string rangeType)
+        {
+            if (_currentUser.UserId == null)
+            {
+                return Unauthorized();
+            }
+
+            DateTime startDate = DateTime.UtcNow;
+            DateTime endDate = DateTime.UtcNow;
+
+            switch (rangeType?.ToLower())
+            {
+                case "week":
+                    startDate = DateTime.UtcNow.AddDays(-7);
+                    break;
+                case "month":
+                    startDate = DateTime.UtcNow.AddMonths(-1);
+                    break;
+                case "year":
+                    startDate = DateTime.UtcNow.AddYears(-1);
+                    break;
+                default:
+                    return BadRequest("Khoảng thời gian không hợp lệ (chọn: week, month, hoặc year).");
+            }
+
+            var command = new ExportStatementCommand(
+                _currentUser.UserId.Value,
+                startDate,
+                endDate
+            );
+
+
+            byte[] fileContent = await _mediator.Send(command);
+
+            string fileName = $"SaoKe_{command.UserId}_{DateTime.Now:yyyyMMddHHmm}.xlsx";
+
+            return File(
+                fileContent,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName
+            );
         }
     }
 }

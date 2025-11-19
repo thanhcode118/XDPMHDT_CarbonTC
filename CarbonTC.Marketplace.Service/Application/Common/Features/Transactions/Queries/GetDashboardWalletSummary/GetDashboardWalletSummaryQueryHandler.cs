@@ -63,9 +63,9 @@ namespace Application.Common.Features.Transactions.Queries.GetDashboardWalletSum
         private (int listingsFound, int listingsSold, decimal averagePrice, int successfulTransactions)
             CalculateStats(IEnumerable<Domain.Entities.Transactions> txs, Guid userId)
         {
-            var bought = txs.Where(t => t.BuyerId == userId && t.Status == TransactionStatus.Pending || t.Status == TransactionStatus.Success).ToList();
+            var bought = txs.Where(t => t.BuyerId == userId && t.Status == TransactionStatus.Success).ToList();
 
-            var sold = txs.Where(t => t.SellerId == userId && t.Status == TransactionStatus.Pending || t.Status == TransactionStatus.Success).ToList();
+            var sold = txs.Where(t => t.SellerId == userId && t.Status == TransactionStatus.Success).ToList();
 
             return (
                 listingsFound: bought.Count,
