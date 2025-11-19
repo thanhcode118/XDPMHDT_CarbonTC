@@ -1,0 +1,291 @@
+/* components/PDFViewerModal/PDFViewerModal.module.css */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: none;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  position: relative;
+  background: var(--card-bg);
+  /* ... các thuộc tính cũ ... */
+  
+  /* --- SỬA ĐOẠN NÀY --- */
+  margin: 2vh auto; /* Căn giữa dọc */
+  width: 90vw;      /* Chiếm 90% chiều rộng màn hình */
+  height: 90vh;     /* Chiếm 90% chiều cao màn hình (bắt buộc bung ra) */
+  max-width: 1200px; /* Giới hạn chiều rộng tối đa để không quá bè trên màn hình siêu rộng */
+  max-height: none;  /* Bỏ giới hạn max-height cũ */
+  /* -------------------- */
+  
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.btnClose {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.btnClose:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.modalBody {
+  padding: 0;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdfContainer {
+  width: 100%;
+  flex: 1; 
+  height: 100%; 
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  background-color: #525659; 
+}
+
+.pdfContainer iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+
+.modalFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0 0 16px 16px;
+}
+
+.btnCustom {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.btnOutlineCustom {
+  background: transparent;
+  color: var(--ev-owner-color);
+  border: 1px solid var(--ev-owner-color);
+}
+
+.btnOutlineCustom:hover {
+  background: rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+}
+
+.btnPrimaryCustom {
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.btnPrimaryCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btnSuccessCustom {
+  background: linear-gradient(to right, #10b981, #059669);
+  color: white;
+}
+
+.btnSuccessCustom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Loading state */
+.pdfLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  gap: 15px;
+}
+
+.pdfLoading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--ev-owner-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.pdfError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  gap: 15px;
+  text-align: center;
+  padding: 40px;
+}
+
+.pdfError i {
+  font-size: 3rem;
+  color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modalContent {
+    margin: 20px;
+    max-width: calc(100% - 40px);
+    max-height: calc(100vh - 40px);
+  }
+  
+  .modalHeader {
+    padding: 15px 20px;
+  }
+  
+  .modalTitle {
+    font-size: 1.1rem;
+  }
+  
+  .modalFooter {
+    padding: 15px 20px;
+    flex-direction: column;
+  }
+  
+  .btnCustom {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .pdfContainer {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+    max-height: calc(100vh - 20px);
+  }
+  
+  .modalHeader {
+    padding: 12px 15px;
+  }
+  
+  .modalFooter {
+    padding: 12px 15px;
+    gap: 8px;
+  }
+  
+  .btnCustom {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .pdfContainer {
+    min-height: 300px;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .pdfContainer iframe {
+    background: white; /* Giữ nền trắng cho PDF ngay cả trong dark mode */
+  }
+}
+
+/* Print styles */
+@media print {
+  .modalHeader,
+  .modalFooter {
+    display: none;
+  }
+  
+  .modalContent {
+    margin: 0;
+    max-width: none;
+    max-height: none;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+  }
+  
+  .modalBody {
+    padding: 0;
+  }
+  
+  .pdfContainer {
+    height: 100vh;
+  }
+}

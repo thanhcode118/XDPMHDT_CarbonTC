@@ -10,7 +10,11 @@
   --text-secondary: #aee9d1;
   --sidebar-bg: rgba(10, 31, 28, 0.92);
   --sidebar-width: 280px;
+<<<<<<< HEAD
   --ev-owner-color: #43e97b;
+=======
+  --ev-owner-color: #667eea;
+>>>>>>> 139512882d031330215dfb20c17257335014f4e1
   --carbon-shadow: 0 4px 18px rgba(67, 233, 123, 0.10);
   --border-radius: 18px;
   --input-bg: #f6faf8;

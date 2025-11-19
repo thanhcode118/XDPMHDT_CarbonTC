@@ -71,7 +71,7 @@ export interface DisputeFilters {
 
 export interface CreateDisputeRequest {
   transactionId: string;
-  raisedBy: string;
+  // raisedBy: string;
   reason: string;
   description: string;
 }

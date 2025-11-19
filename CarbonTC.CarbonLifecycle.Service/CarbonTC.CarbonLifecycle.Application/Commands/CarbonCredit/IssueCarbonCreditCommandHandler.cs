@@ -1,16 +1,15 @@
 using MediatR;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using CarbonTC.CarbonLifecycle.Domain.Repositories;
 using CarbonTC.CarbonLifecycle.Application.DTOs;
-using CarbonTC.CarbonLifecycle.Application.Abstractions.Messaging;
-using CarbonTC.CarbonLifecycle.Application.IntegrationEvents;
 using CarbonTC.CarbonLifecycle.Application.Services;
 using CarbonTC.CarbonLifecycle.Domain.Enums;
+using CarbonTC.CarbonLifecycle.Domain.Abstractions;
+using CarbonTC.CarbonLifecycle.Domain.Events;
 using DomainEntities = CarbonTC.CarbonLifecycle.Domain.Entities;
 
 namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
@@ -22,8 +21,8 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<IssueCarbonCreditCommandHandler> _logger;
-        private readonly IMessagePublisher _messagePublisher;
         private readonly IIdentityService _identityService;
+        private readonly IDomainEventDispatcher _eventDispatcher;
 
         public IssueCarbonCreditCommandHandler(
             ICarbonCreditRepository carbonCreditRepository,
@@ -31,16 +30,16 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<IssueCarbonCreditCommandHandler> logger,
-            IMessagePublisher messagePublisher,
-            IIdentityService identityService)
+            IIdentityService identityService,
+            IDomainEventDispatcher eventDispatcher)
         {
             _carbonCreditRepository = carbonCreditRepository;
             _journeyBatchRepository = journeyBatchRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
-            _messagePublisher = messagePublisher;
             _identityService = identityService;
+            _eventDispatcher = eventDispatcher;
         }
 
         public async Task<CarbonCreditDto> Handle(IssueCarbonCreditCommand request, CancellationToken cancellationToken)
@@ -180,44 +179,17 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.CarbonCredit
             _logger.LogInformation("Carbon Credit issued successfully. CreditId: {CreditId}, UserId: {UserId}, Amount: {Amount} kg CO2e",
                 newCarbonCredit.Id, newCarbonCredit.UserId, newCarbonCredit.AmountKgCO2e);
 
-            // Gửi Integration Events
-            try
-            {
-                // 1. Gửi CreditIssuedIntegrationEvent (Service Payment & Infrastructure)
-                // ReferenceId: dùng JourneyBatchId
-                var referenceId = journeyBatchId.ToString();
+            // Phát Domain Event CarbonCreditIssuedEvent
+            // Integration Events sẽ được phát hành tự động thông qua CarbonCreditIssuedIntegrationEventHandler
+            await _eventDispatcher.Dispatch(new CarbonCreditIssuedEvent(
+                journeyBatchId: journeyBatchId,
+                userId: newCarbonCredit.UserId,
+                creditId: newCarbonCredit.Id,
+                amountKgCO2e: newCarbonCredit.AmountKgCO2e
+            ));
 
-                var creditIssuedEvent = new CreditIssuedIntegrationEvent
-                {
-                    OwnerUserId = newCarbonCredit.UserId,
-                    CreditAmount = newCarbonCredit.AmountKgCO2e,
-                    ReferenceId = referenceId,
-                    IssuedAt = new DateTimeOffset(newCarbonCredit.IssueDate, TimeSpan.Zero)
-                };
-
-                await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit_issued");
-                _logger.LogInformation("Published CreditIssuedIntegrationEvent for Credit ID: {CreditId}, UserId: {UserId}, Amount: {Amount}, ReferenceId: {ReferenceId}",
-                    newCarbonCredit.Id, newCarbonCredit.UserId, newCarbonCredit.AmountKgCO2e, referenceId);
-
-                // 2. Gửi CreditInventoryUpdateIntegrationEvent (Service Marketplace/Trading)
-                var inventoryUpdateEvent = new CreditInventoryUpdateIntegrationEvent
-                {
-                    CreditId = newCarbonCredit.Id,
-                    TotalAmount = newCarbonCredit.AmountKgCO2e
-                };
-
-                await _messagePublisher.PublishIntegrationEventAsync(inventoryUpdateEvent, "credit.inventory.update");
-                _logger.LogInformation("Published CreditInventoryUpdateIntegrationEvent for Credit ID: {CreditId}, TotalAmount: {Amount}",
-                    newCarbonCredit.Id, newCarbonCredit.AmountKgCO2e);
-
-                _logger.LogInformation("Integration events published successfully for Credit ID: {CreditId}", newCarbonCredit.Id);
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi nhưng không fail toàn bộ operation vì credit đã được tạo và lưu vào DB
-                _logger.LogError(ex, "Error publishing integration events for Credit ID: {CreditId}. Credit was created successfully but events may not have been sent.",
-                    newCarbonCredit.Id);
-            }
+            _logger.LogInformation("CarbonCreditIssuedEvent dispatched for CreditId: {CreditId}. Integration events will be published automatically.",
+                newCarbonCredit.Id);
 
             // Map và trả về DTO
             return _mapper.Map<CarbonCreditDto>(newCarbonCredit);

@@ -19,7 +19,7 @@ class MarketplaceClient extends BaseServiceClient {
   ): Promise<boolean> {
     try {
       const config = this.buildAuthConfig(authToken);
-      await this.client.get(`/api/transactions/${transactionId}`, config);
+      await this.client.get(`/api/Transaction/${transactionId}`, config);
       return true;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -42,7 +42,7 @@ class MarketplaceClient extends BaseServiceClient {
   ): Promise<any> {
     try {
       const config = this.buildAuthConfig(authToken);
-      return await this.get(`/api/transactions/${transactionId}`, config);
+      return await this.get(`/api/Transaction/${transactionId}`, config);
     } catch (error) {
       logger.error(
         `[Marketplace] Failed to get transaction ${transactionId}:`,
@@ -70,8 +70,16 @@ class MarketplaceClient extends BaseServiceClient {
     listingId: string,
     authToken?: string
   ): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    return await this.get(`/api/listings/${listingId}`, config);
+    try {
+      const config = this.buildAuthConfig(authToken);
+      return await this.get(`/api/listings/${listingId}`, config);
+    } catch (error) {
+      logger.error(
+        `[Marketplace] Failed to get listing ${listingId}:`,
+        error
+      );
+      throw error;
+    }
   }
 
   /**
@@ -93,6 +101,25 @@ class MarketplaceClient extends BaseServiceClient {
     }
   }
 
+  async getListings(
+    filters?: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      ownerId?: string;
+    },
+    authToken?: string
+  ): Promise<any> {
+    try {
+      const config = this.buildAuthConfig(authToken);
+      config.params = filters;
+      return await this.get('/api/listings', config);
+    } catch (error) {
+      logger.error('[Marketplace] Failed to get listings:', error);
+      throw error;
+    }
+  }
+
   /**
    * Get all transactions with filters
    */
@@ -102,12 +129,29 @@ class MarketplaceClient extends BaseServiceClient {
       limit?: number;
       status?: string;
       userId?: string;
+      transactionId?: string;
     },
     authToken?: string
   ): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    config.params = filters;
-    return await this.get('/api/transactions', config);
+    try {
+      const config = this.buildAuthConfig(authToken);
+      config.params = filters;
+      return await this.get('/api/Transaction', config);
+    } catch (error) {
+      logger.error('[Marketplace] Failed to get transactions:', error);
+      throw error;
+    }
+  }
+
+  async updateTransactionStatusViaEvent(
+    transactionId: string,
+    status: string,
+    notes?: string
+  ): Promise<void> {
+    // This is handled via RabbitMQ, not HTTP
+    logger.info(
+      `[Marketplace] Transaction status update will be sent via RabbitMQ - Transaction: ${transactionId}, Status: ${status}`
+    );
   }
 }
 

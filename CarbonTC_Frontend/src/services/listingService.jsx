@@ -1,7 +1,7 @@
 import apiClientPD from './apiClientPD.jsx';
 
 export const getUserIdFromToken = () => {
-    const token = localStorage.getItem("userToken");
+    const token = localStorage.getItem("accessToken") || localStorage.getItem("userToken");
     if (!token) return null;
 
     try {

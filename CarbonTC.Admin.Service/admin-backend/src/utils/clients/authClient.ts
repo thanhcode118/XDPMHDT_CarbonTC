@@ -11,9 +11,11 @@ class AuthClient extends BaseServiceClient {
   }
 
   /**
-   * Get user details by ID
+   * Get user by ID
+   * @param userId - User ID
+   * @param authToken - Optional auth token to forward
    */
-  async getUserDetails(userId: string, authToken?: string): Promise<any> {
+  async getUserById(userId: string, authToken?: string): Promise<any> {
     try {
       const config = this.buildAuthConfig(authToken);
       return await this.get(`/api/users/${userId}`, config);
@@ -24,9 +26,29 @@ class AuthClient extends BaseServiceClient {
   }
 
   /**
+   * Get multiple users by IDs
+   */
+  async getUsersByIds(
+    userIds: string[],
+    authToken?: string
+  ): Promise<any[]> {
+    try {
+      const config = this.buildAuthConfig(authToken);
+      config.params = { ids: userIds.join(',') };
+      return await this.get('/api/users/batch', config);
+    } catch (error) {
+      logger.error('[Auth] Failed to get users by IDs:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Check if user exists
    */
-  async checkUserExists(userId: string, authToken?: string): Promise<boolean> {
+  async checkUserExists(
+    userId: string,
+    authToken?: string
+  ): Promise<boolean> {
     try {
       const config = this.buildAuthConfig(authToken);
       await this.client.get(`/api/users/${userId}`, config);
@@ -44,52 +66,127 @@ class AuthClient extends BaseServiceClient {
    * Get user profile
    */
   async getUserProfile(userId: string, authToken?: string): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    return await this.get(`/api/users/${userId}/profile`, config);
+    try {
+      const config = this.buildAuthConfig(authToken);
+      return await this.get(`/api/users/${userId}/profile`, config);
+    } catch (error) {
+      logger.error(`[Auth] Failed to get user profile ${userId}:`, error);
+      throw error;
+    }
   }
 
   /**
-   * Get multiple users
+   * Get basic user info (id, name, email, role)
+   * Used for enriching data in responses
    */
-  async getUsers(
-    filters?: {
-      page?: number;
-      limit?: number;
-      role?: string;
-      status?: string;
-    },
+  async getUserBasicInfo(
+    userId: string,
+    authToken?: string
+  ): Promise<{ 
+    userId: string; 
+    fullName: string; 
+    email: string; 
+    role?: string 
+  } | null> {
+    try {
+      const config = this.buildAuthConfig(authToken);
+      const user = await this.get(`/api/users/${userId}`, config);
+
+      return {
+        userId: user.userId || userId,
+        fullName: user.fullName || 'Unknown User',
+        email: user.email || '',
+        role: user.role
+      };
+    } catch (error) {
+      logger.warn(
+        `[Auth] Failed to get basic info for user ${userId}, returning null:`,
+        error
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Validate JWT token
+   */
+  async validateToken(token: string): Promise<any> {
+    try {
+      const config = this.buildAuthConfig(token);
+      return await this.post('/api/auth/validate', {}, config);
+    } catch (error) {
+      logger.error('[Auth] Token validation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user role
+   */
+  async getUserRole(userId: string, authToken?: string): Promise<string> {
+    try {
+      const config = this.buildAuthConfig(authToken);
+      const user = await this.get(`/api/users/${userId}`, config);
+      return user.role || 'USER';
+    } catch (error) {
+      logger.error(`[Auth] Failed to get user role for ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Block user account
+   */
+  async blockUser(
+    userId: string,
+    reason: string,
     authToken?: string
   ): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    config.params = filters;
-    return await this.get('/api/users', config);
+    try {
+      const config = this.buildAuthConfig(authToken);
+      return await this.post(
+        `/api/users/${userId}/block`,
+        { reason },
+        config
+      );
+    } catch (error) {
+      logger.error(`[Auth] Failed to block user ${userId}:`, error);
+      throw error;
+    }
   }
 
   /**
-   * Verify JWT token (if Auth Service has this endpoint)
-   */
-  async verifyToken(token: string): Promise<any> {
-    return await this.post('/api/auth/verify', { token });
-  }
-
-  /**
-   * Block user (Admin action via Auth Service)
-   */
-  async blockUser(userId: string, reason: string, authToken?: string): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    return await this.post(
-      `/api/users/${userId}/block`,
-      { reason },
-      config
-    );
-  }
-
-  /**
-   * Unblock user
+   * Unblock user account
    */
   async unblockUser(userId: string, authToken?: string): Promise<any> {
-    const config = this.buildAuthConfig(authToken);
-    return await this.post(`/api/users/${userId}/unblock`, {}, config);
+    try {
+      const config = this.buildAuthConfig(authToken);
+      return await this.post(`/api/users/${userId}/unblock`, {}, config);
+    } catch (error) {
+      logger.error(`[Auth] Failed to unblock user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user status
+   */
+  async updateUserStatus(
+    userId: string,
+    status: 'Active' | 'Inactive' | 'Blocked',
+    authToken?: string
+  ): Promise<any> {
+    try {
+      const config = this.buildAuthConfig(authToken);
+      return await this.patch(
+        `/api/users/${userId}/status`,
+        { status },
+        config
+      );
+    } catch (error) {
+      logger.error(`[Auth] Failed to update user status ${userId}:`, error);
+      throw error;
+    }
   }
 }
 

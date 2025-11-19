@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Box, Typography } from '@mui/material';
 
 import { CustomTable } from '../../components/tables';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -9,7 +8,6 @@ import { getDisputeColumns } from './tableColumns/disputeColumns';
 import {
   StatisticsCards,
   DisputeFilters,
-  CreateDisputeDialog,
   DisputeDetailDialog,
 } from './components/Dispute';
 import type { Dispute } from '../../types/dispute.type';
@@ -24,7 +22,6 @@ function Disputes() {
     filters,
     isLoading,
     isStatsLoading,
-    createDispute,
     updateStatus,
     resolveDispute,
     deleteDispute,
@@ -33,7 +30,6 @@ function Disputes() {
     fetchDisputeById,
   } = useDispute();
 
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(
     null,
@@ -55,14 +51,6 @@ function Disputes() {
     }
   };
 
-  const handleCreateSubmit = async (data: any) => {
-    const result = await createDispute(data);
-    if (result.success) {
-      setCreateDialogOpen(false);
-      // Success feedback could be added here
-    }
-  };
-
   const columns = getDisputeColumns({
     onView: handleViewDetail,
     onDelete: handleDelete,
@@ -74,29 +62,13 @@ function Disputes() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            Dispute Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Handle buyer-seller disputes
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          New Dispute
-        </Button>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Dispute Management
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Review and handle buyer-seller disputes submitted by users
+        </Typography>
       </Box>
 
       <StatisticsCards statistics={statistics} isLoading={isStatsLoading} />
@@ -112,14 +84,6 @@ function Disputes() {
         onPageChange={handlePageChange}
         isLoading={isLoading}
         noDataMessage="No disputes found"
-        // getRowId={(row) => row.disputeId}
-      />
-
-      {/* Create Dialog */}
-      <CreateDisputeDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSubmit={handleCreateSubmit}
       />
 
       {/* Detail Dialog */}

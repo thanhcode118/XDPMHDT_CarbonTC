@@ -16,4 +16,6 @@ public interface EWalletService {
     EWalletResponse getMyWalletByUserId(String userId) throws BusinessException;
     EWallet findWalletByUserId(String userId) throws BusinessException;
     List<TransactionLogResponse> getTransactionHistoryByUserId(String userId) throws BusinessException;
+    EWalletResponse debit(Long walletId, BigDecimal amount, String description) throws BusinessException;
+    EWalletResponse credit(Long walletId, BigDecimal amount, String description) throws BusinessException;
 }

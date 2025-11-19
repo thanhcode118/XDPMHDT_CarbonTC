@@ -147,6 +147,59 @@ public class EWalletServiceImpl implements EWalletService {
                 .toList();
     }
 
+    @Override
+    @Transactional(rollbackFor = BusinessException.class)
+    public EWalletResponse debit(Long walletId, BigDecimal amount, String description) throws BusinessException {
+
+        EWallet eWallet = eWalletRepository.findById(walletId)
+                .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
+
+        // CHỈ KIỂM TRA SỐ DƯ
+        if (eWallet.getBalance().compareTo(amount) < 0) {
+            throw new BusinessException("Số dư không đủ để thực hiện giao dịch.");
+        }
+
+        eWallet.setBalance(eWallet.getBalance().subtract(amount));
+        eWallet.setUpdatedAt(LocalDateTime.now());
+        EWallet eWalletSaved = eWalletRepository.save(eWallet);
+
+        // Ghi log (dùng description được truyền vào)
+        TransactionLog log = new TransactionLog();
+        log.setWallet(eWalletSaved);
+        log.setAmount(amount);
+        log.setType("DEBIT");
+        log.setStatus("SUCCESS");
+        log.setDescription(description);
+        transactionLogRepository.save(log);
+
+        return mapToResponse(eWalletSaved);
+    }
+
+    /**
+     * HÀM MỚI: Dùng để cộng tiền (cho người bán)
+     */
+    @Override
+    @Transactional(rollbackFor = BusinessException.class)
+    public EWalletResponse credit(Long walletId, BigDecimal amount, String description) throws BusinessException {
+
+        EWallet eWallet = eWalletRepository.findById(walletId)
+                .orElseThrow(() -> new BusinessException("Ví không tồn tại"));
+
+        eWallet.setBalance(eWallet.getBalance().add(amount));
+        eWallet.setUpdatedAt(LocalDateTime.now());
+        EWallet eWalletSaved = eWalletRepository.save(eWallet);
+
+        TransactionLog log = new TransactionLog();
+        log.setWallet(eWalletSaved);
+        log.setAmount(amount);
+        log.setType("CREDIT");
+        log.setStatus("SUCCESS");
+        log.setDescription(description);
+        transactionLogRepository.save(log);
+
+        return mapToResponse(eWalletSaved);
+    }
+
     // HEPPLER METHOD MAPPER
     public EWalletResponse mapToResponse(EWallet eWallet) {
         return modelMapper.map(eWallet, EWalletResponse.class);

@@ -1,17 +1,19 @@
 import axios from 'axios';
 
-import type {
-  CreateDisputeRequest,
-  Dispute,
-  DisputeDetail,
-  DisputeFilters,
-  DisputeStatistics,
-  PaginatedResponse,
-  ResolveDisputeRequest,
-  UpdateStatusRequest,
+import {
+  DisputeStatus,
+  ResolutionType,
+  type CreateDisputeRequest,
+  type Dispute,
+  type DisputeDetail,
+  type DisputeFilters,
+  type DisputeStatistics,
+  type PaginatedResponse,
+  type ResolveDisputeRequest,
+  type UpdateStatusRequest,
 } from '../types/dispute.type';
 
-const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:5005/api';
+const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:7000';
 const BASE_PATH = '/admin/disputes';
 
 // Axios instance with auth
@@ -74,7 +76,7 @@ export const disputeService = {
     // ✅ Transform: Add `id` field for DataGrid compatibility
     const transformedData = response.data.data.map((dispute: any) => ({
       ...dispute,
-      id: dispute.disputeId, // Map disputeId to id for MUI DataGrid
+      id: dispute.disputeId,
     }));
 
     return transformPaginatedResponse<Dispute>({
@@ -84,8 +86,13 @@ export const disputeService = {
   },
 
   // Get dispute statistics
-  async getStatistics(): Promise<DisputeStatistics> {
-    const response = await axiosInstance.get(`${BASE_PATH}/statistics`);
+  async getStatistics(filters?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<DisputeStatistics> {
+    const response = await axiosInstance.get(`${BASE_PATH}/statistics`, {
+      params: filters,
+    });
     return unwrapResponse<DisputeStatistics>(response.data);
   },
 
@@ -94,7 +101,6 @@ export const disputeService = {
     const response = await axiosInstance.get(`${BASE_PATH}/${disputeId}`);
     const data = unwrapResponse<DisputeDetail>(response.data);
 
-    // ✅ Add id field for consistency
     return {
       ...data,
       id: data.disputeId,
@@ -120,7 +126,6 @@ export const disputeService = {
     const response = await axiosInstance.get(`${BASE_PATH}/user/${userId}`);
     const disputes = unwrapResponse<Dispute[]>(response.data);
 
-    // ✅ Add id field to each dispute
     return disputes.map((dispute) => ({
       ...dispute,
       id: dispute.disputeId,
@@ -132,7 +137,6 @@ export const disputeService = {
     const response = await axiosInstance.post(BASE_PATH, data);
     const dispute = unwrapResponse<Dispute>(response.data);
 
-    // ✅ Add id field
     return {
       ...dispute,
       id: dispute.disputeId,
@@ -162,13 +166,19 @@ export const disputeService = {
     disputeId: string,
     data: ResolveDisputeRequest,
   ): Promise<Dispute> {
+    const backendPayload = {
+      status: data.resolution === ResolutionType.APPROVE
+        ? DisputeStatus.RESOLVED
+        : DisputeStatus.REJECTED,
+      resolutionNotes: data.resolutionNotes,
+    };
+
     const response = await axiosInstance.post(
       `${BASE_PATH}/${disputeId}/resolve`,
-      data,
+      backendPayload,
     );
     const dispute = unwrapResponse<Dispute>(response.data);
 
-    // ✅ Add id field
     return {
       ...dispute,
       id: dispute.disputeId,

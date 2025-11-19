@@ -32,7 +32,6 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
         private readonly IMapper _mapper;
         private readonly ILogger<ReviewVerificationRequestCommandHandler> _logger;
         private readonly IMediator _mediator; // Inject Mediator để gửi Audit command
-        private readonly IMessagePublisher _messagePublisher;
 
         // Bỏ IWalletService vì chúng ta dùng Event-Driven
         // private readonly IWalletService _walletService;
@@ -47,7 +46,6 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
             IMapper mapper,
             ILogger<ReviewVerificationRequestCommandHandler> logger,
             IMediator mediator,
-            IMessagePublisher messagePublisher,
             ICarbonCreditRepository carbonCreditRepository
             /* IWalletService walletService */)
         {
@@ -60,7 +58,6 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
             _mapper = mapper;
             _logger = logger;
             _mediator = mediator;
-            _messagePublisher = messagePublisher;
             _carbonCreditRepository = carbonCreditRepository;
             // _walletService = walletService;
         }
@@ -164,56 +161,6 @@ namespace CarbonTC.CarbonLifecycle.Application.Commands.VerificationRequest
 
             // 4. Lưu thay đổi vào DB (cập nhật status của Request và Batch)
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            // THÊM LOGIC PUBLISH SAU KHI SAVE THÀNH CÔNG
-            if (reviewData.IsApproved)
-            {
-                // Truy vấn lại Credit vừa tạo ra (Giả định 1 Batch chỉ tạo ra 1 Credit)
-                var newCredits = await _carbonCreditRepository.GetByVerificationRequestIdAsync(verificationRequest.Id);
-                var newCredit = newCredits.FirstOrDefault();
-
-                if (newCredit != null)
-                {
-                    try
-                    {
-                        // 1. Gửi CreditIssuedIntegrationEvent (Service Payment & Infrastructure)
-                        var creditIssuedEvent = new CreditIssuedIntegrationEvent
-                        {
-                            OwnerUserId = newCredit.UserId,
-                            CreditAmount = newCredit.AmountKgCO2e,
-                            ReferenceId = verificationRequest.JourneyBatchId.ToString(), // Dùng Batch ID làm Reference
-                            IssuedAt = new DateTimeOffset(newCredit.IssueDate, TimeSpan.Zero),
-                        };
-                        // Routing Key: credit_issued (for wallet service)
-                        await _messagePublisher.PublishIntegrationEventAsync(creditIssuedEvent, "credit_issued");
-                        _logger.LogInformation("Published CreditIssuedIntegrationEvent for Credit ID: {CreditId}, UserId: {UserId}, Amount: {Amount}",
-                            newCredit.Id, newCredit.UserId, newCredit.AmountKgCO2e);
-
-                        // 2. Gửi CreditInventoryUpdateIntegrationEvent (Service Marketplace/Trading)
-                        var inventoryUpdateEvent = new CreditInventoryUpdateIntegrationEvent
-                        {
-                            CreditId = newCredit.Id,
-                            TotalAmount = newCredit.AmountKgCO2e,
-                        };
-                        // Routing Key: credit.inventory.update
-                        await _messagePublisher.PublishIntegrationEventAsync(inventoryUpdateEvent, "credit.inventory.update");
-                        _logger.LogInformation("Published CreditInventoryUpdateIntegrationEvent for Credit ID: {CreditId}, TotalAmount: {Amount}",
-                            newCredit.Id, newCredit.AmountKgCO2e);
-
-                        _logger.LogInformation("Integration events published successfully for Credit ID: {CreditId}", newCredit.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log lỗi nhưng không fail toàn bộ operation vì credit đã được tạo và lưu vào DB
-                        _logger.LogError(ex, "Error publishing integration events for Credit ID: {CreditId} after verification approval. Credit was created successfully but events may not have been sent.",
-                            newCredit.Id);
-                    }
-                }
-                else
-                {
-                    _logger.LogError("Carbon Credit entity not found after approval for VerificationRequestId: {VerificationRequestId}", verificationRequest.Id);
-                }
-            }
 
             // 5. Ghi Audit Log (sau khi SaveChanges thành công)
             // Sử dụng entity đã được tracked thay vì query lại để tránh DbContext threading issues

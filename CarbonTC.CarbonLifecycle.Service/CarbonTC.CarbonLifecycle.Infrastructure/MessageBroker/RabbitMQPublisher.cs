@@ -93,7 +93,13 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
 
         private void DeclareQueuesAndBindings()
         {
-            // Queue cho credit.issued
+            // Exchange name cho credit events (Wallet Service yêu cầu exchange này)
+            const string creditExchangeName = "carbonlifecycle.events";
+            
+            // Đảm bảo exchange được khai báo
+            EnsureExchangeDeclared(creditExchangeName);
+
+            // Queue cho credit.issued (internal queue)
             _channel.QueueDeclare(
                 queue: "credit.issued.queue",
                 durable: _settings.Durable,
@@ -102,14 +108,34 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                 arguments: null
             );
             
+            // Bind với routing key "credit_issued" để nhận message
+            // Sử dụng exchange "carbonlifecycle.events" để khớp với Wallet Service
             _channel.QueueBind(
                 queue: "credit.issued.queue",
-                exchange: _settings.ExchangeName,
-                routingKey: "credit.issued",
+                exchange: creditExchangeName,
+                routingKey: "credit_issued",
                 arguments: null
             );
 
-            // Queue cho credit.inventory.update
+            // Queue cho wallet_service_credit_queue (Wallet Service queue)
+            // Wallet service đang listen queue này với routing key "credit_issued" trên exchange "carbonlifecycle.events"
+            _channel.QueueDeclare(
+                queue: "wallet_service_credit_queue",
+                durable: _settings.Durable,
+                exclusive: false,
+                autoDelete: _settings.AutoDelete,
+                arguments: null
+            );
+            
+            // Bind wallet service queue với routing key "credit_issued" trên exchange "carbonlifecycle.events"
+            _channel.QueueBind(
+                queue: "wallet_service_credit_queue",
+                exchange: creditExchangeName,
+                routingKey: "credit_issued",
+                arguments: null
+            );
+
+            // Queue cho credit.inventory.update (Marketplace Service queue)
             _channel.QueueDeclare(
                 queue: "credit.inventory.update.queue",
                 durable: _settings.Durable,
@@ -118,9 +144,10 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                 arguments: null
             );
             
+            // Bind với exchange "carbonlifecycle.events" để nhận message từ CreditInventoryUpdateIntegrationEvent
             _channel.QueueBind(
                 queue: "credit.inventory.update.queue",
-                exchange: _settings.ExchangeName,
+                exchange: creditExchangeName,
                 routingKey: "credit.inventory.update",
                 arguments: null
             );
@@ -174,19 +201,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                 {
                     EnsureConnection();
                     // Gọi một hàm publish message mới cho các sự kiện generic
+                    // PublishGenericMessage sẽ log chi tiết, không cần log ở đây
                     PublishGenericMessage(@event, routingKey);
-
-                    // Xác định exchange name cho log
-                    string exchangeNameForLog = @event is CreditIssuedIntegrationEvent 
-                        ? "carbonlifecycle.events" 
-                        : _settings.ExchangeName;
-
-                    _logger.LogInformation(
-                        "Published integration event: {EventType} to Exchange: {Exchange}, RoutingKey: {RoutingKey}",
-                        @event.GetType().Name,
-                        exchangeNameForLog,
-                        routingKey ?? GenerateGenericRoutingKey(@event) // Dùng fallback mới
-                    );
 
                     return;
                 }
@@ -245,9 +261,9 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
             var finalRoutingKey = routingKey ?? GenerateGenericRoutingKey(@event);
 
             // Xác định exchange dựa trên loại event
-            // Wallet service yêu cầu exchange "carbonlifecycle.events" cho CreditIssuedIntegrationEvent
+            // Tất cả credit-related events đều dùng exchange "carbonlifecycle.events"
             string exchangeName;
-            if (@event is CreditIssuedIntegrationEvent)
+            if (@event is CreditIssuedIntegrationEvent || @event is CreditInventoryUpdateIntegrationEvent)
             {
                 exchangeName = "carbonlifecycle.events";
                 // Đảm bảo exchange được khai báo
@@ -265,8 +281,9 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.MessageBroker
                 body: body
             );
 
-            _logger.LogDebug(
-                "Message published successfully. Exchange: {Exchange}, RoutingKey: {RoutingKey}, MessageId: {MessageId}, MessageSize: {Size} bytes",
+            _logger.LogInformation(
+                "Message published successfully. EventType: {EventType}, Exchange: {Exchange}, RoutingKey: {RoutingKey}, MessageId: {MessageId}, MessageSize: {Size} bytes",
+                @event.GetType().Name,
                 exchangeName,
                 finalRoutingKey,
                 properties.MessageId,

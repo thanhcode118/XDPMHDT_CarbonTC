@@ -40,7 +40,7 @@ export const CreateDisputeDialog: React.FC<CreateDisputeDialogProps> = ({
 }) => {
   const [formData, setFormData] = useState<CreateDisputeRequest>({
     transactionId: '',
-    raisedBy: '',
+    // raisedBy: '',
     reason: '',
     description: '',
   });
@@ -52,7 +52,6 @@ export const CreateDisputeDialog: React.FC<CreateDisputeDialogProps> = ({
   ) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -72,9 +71,9 @@ export const CreateDisputeDialog: React.FC<CreateDisputeDialogProps> = ({
     if (!formData.transactionId.trim()) {
       newErrors.transactionId = 'Transaction ID is required';
     }
-    if (!formData.raisedBy.trim()) {
-      newErrors.raisedBy = 'User ID is required';
-    }
+    // if (!formData.raisedBy.trim()) {
+    //   newErrors.raisedBy = 'User ID is required';
+    // }
     if (!formData.reason) {
       newErrors.reason = 'Reason is required';
     }
@@ -96,7 +95,7 @@ export const CreateDisputeDialog: React.FC<CreateDisputeDialogProps> = ({
   const handleClose = () => {
     setFormData({
       transactionId: '',
-      raisedBy: '',
+      // raisedBy: '',
       reason: '',
       description: '',
     });
@@ -120,7 +119,7 @@ export const CreateDisputeDialog: React.FC<CreateDisputeDialogProps> = ({
             placeholder="Enter transaction ID"
           />
 
-          <Input
+          {/* <Input
             label="Raised By (User ID) *"
             name="raisedBy"
             value={formData.raisedBy}
@@ -128,7 +127,7 @@ export const CreateDisputeDialog: React.FC<CreateDisputeDialogProps> = ({
             isError={!!errors.raisedBy}
             errorText={errors.raisedBy}
             placeholder="Enter user ID"
-          />
+          /> */}
 
           <FormControl fullWidth error={!!errors.reason}>
             <InputLabel>Reason *</InputLabel>

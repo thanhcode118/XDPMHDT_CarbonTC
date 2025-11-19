@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -17,5 +18,5 @@ public class CreditTransferResponse {
     private BigDecimal amount;
     private TransferType transferType;
     private String referenceId;
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }

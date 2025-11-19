@@ -123,6 +123,21 @@ namespace Domain.Entities
             AddDomainEvent(new ListingPriceUpdatedDomainEvent(Id, newPrice));
         }
 
+        public void RollbackQuantity(decimal quantity)
+        {
+            if (quantity <= 0)
+                throw new DomainException("Rollback quantity must be greater than zero.");
+
+            Quantity += quantity;
+
+            if (Status == ListingStatus.Sold || Status == ListingStatus.Closed)
+            {
+                Status = ListingStatus.Open;
+                ClosedAt = null;
+            }
+            UpdatedAt = DateTime.UtcNow;
+        }
+
         public void Cancel()
         {
             if (Status != ListingStatus.Open)

@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional; // Đảm bảo
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -68,11 +69,11 @@ public class RabbitMQConsumerService {
             log.info("Giao dịch {}: Tổng tiền {}, Phí {}, Người bán nhận {}",
                     event.getTransactionId(), event.getMoneyAmount(), platformFee, amountSellerReceives);
 
-            // 3. Trừ tiền người mua
-            eWalletService.withdraw(buyerEwallet.getWalletId(), event.getMoneyAmount());
+            String debitDesc = "Thanh toán cho giao dịch " + event.getTransactionId();
+            eWalletService.debit(buyerEwallet.getWalletId(), event.getMoneyAmount(), debitDesc);
 
-            // 4. Cộng tiền cho người bán (đã trừ phí)
-            eWalletService.deposit(sellerEwallet.getWalletId(), amountSellerReceives);
+            String creditDesc = "Nhận tiền từ giao dịch " + event.getTransactionId();
+            eWalletService.credit(sellerEwallet.getWalletId(), amountSellerReceives, creditDesc);
 
             // 5. Chuyển tín chỉ
             CreditTransferRequestForConsumer transferRequest = new CreditTransferRequestForConsumer();
@@ -95,7 +96,7 @@ public class RabbitMQConsumerService {
                     .transactionId(event.getTransactionId())
                     .status("COMPLETED")
                     .certificateId(newCert.getCertificateId())
-                    .completedAt(LocalDateTime.now())
+                    .completedAt(OffsetDateTime.now())
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.completed", completedEvent);
 
@@ -109,7 +110,7 @@ public class RabbitMQConsumerService {
                     .transactionId(event.getTransactionId())
                     .status("FAILED")
                     .message(e.getMessage())
-                    .completedAt(LocalDateTime.now())
+                    .completedAt(OffsetDateTime.now())
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.failed", failed);
 
@@ -121,7 +122,7 @@ public class RabbitMQConsumerService {
                     .transactionId(event.getTransactionId())
                     .status("FAILED")
                     .message("Lỗi hệ thống: " + e.getMessage())
-                    .completedAt(LocalDateTime.now())
+                    .completedAt(OffsetDateTime.now())
                     .build();
             rabbitTemplate.convertAndSend(RabbitMQConfig.TRANSACTION_EXCHANGE, "transaction.failed", failed);
 

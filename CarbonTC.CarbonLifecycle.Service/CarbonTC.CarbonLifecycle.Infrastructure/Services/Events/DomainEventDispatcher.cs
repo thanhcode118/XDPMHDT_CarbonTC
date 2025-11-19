@@ -22,6 +22,8 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             ILogger<DomainEventDispatcher> logger,
             IMediator mediator)
         {
+            // IMessagePublisher vẫn được giữ lại để tương thích, nhưng không sử dụng trực tiếp
+            // Integration Events sẽ được gửi bởi handlers thông qua IMessagePublisher
             _messagePublisher = messagePublisher ?? throw new ArgumentNullException(nameof(messagePublisher));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator)); 
@@ -67,30 +69,10 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             if (domainEvent == null)
                 throw new ArgumentNullException(nameof(domainEvent));
 
-            // === 1. Gửi ra RabbitMQ (External) ===
-            try
-            {
-                var routingKey = GenerateRoutingKey(domainEvent);
-                await _messagePublisher.PublishAsync(domainEvent, routingKey);
-
-                _logger.LogInformation(
-                    "Domain event dispatched externally: {EventType}, RoutingKey: {RoutingKey}, OccurredOn: {OccurredOn}",
-                    domainEvent.GetType().Name,
-                    routingKey,
-                    domainEvent.OccurredOn
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Failed to dispatch domain event externally: {EventType}",
-                    domainEvent.GetType().Name
-                );
-                // Cân nhắc có nên throw hay không, tạm thời để tiếp tục
-            }
-
-            // === 2. Gửi vào MediatR (Internal) NẾU đây là sự kiện Domain thuần túy ===
+            // Domain Events chỉ nên được dispatch nội bộ qua MediatR
+            // Integration Events sẽ được gửi lên RabbitMQ bởi các handlers tương ứng
+            // Điều này tránh Dual Write pattern và Message Duplication
+            
             if (IsPureDomainEvent(domainEvent))
             {
                 try
@@ -98,11 +80,12 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
                     // Bọc sự kiện domain trong INotification wrapper
                     var notification = new DomainEventNotification<TEvent>(domainEvent);
 
-                    // Publish nội bộ
+                    // Publish nội bộ qua MediatR để handlers xử lý
+                    // Handlers sẽ chuyển đổi Domain Events thành Integration Events và gửi lên RabbitMQ
                     await _mediator.Publish(notification);
 
                     _logger.LogInformation(
-                        "Domain event dispatched internally via MediatR: {EventType}",
+                        "[DomainEventDispatcher] Domain event dispatched internally via MediatR: {EventType}. Integration events will be published by handlers if needed.",
                         domainEvent.GetType().Name
                     );
                 }
@@ -115,6 +98,13 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
                     );
                     throw; // Lỗi dispatch nội bộ thì nên throw
                 }
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Domain event {EventType} is not a pure domain event and will not be dispatched.",
+                    domainEvent.GetType().Name
+                );
             }
         }
 
@@ -130,21 +120,20 @@ namespace CarbonTC.CarbonLifecycle.Infrastructure.Services.Events
             return true;
         }
 
-        // Sửa hàm này để thêm 2 DTOs 
+        // Hàm này không còn được sử dụng vì Domain Events không còn được gửi trực tiếp lên RabbitMQ
+        // Integration Events sẽ được gửi bởi handlers với routing keys phù hợp
+        // Giữ lại để tương thích nếu cần trong tương lai
         private string GenerateRoutingKey<TEvent>(TEvent domainEvent) where TEvent : IDomainEvent
         {
             var eventTypeName = domainEvent.GetType().Name;
 
             return eventTypeName switch
             {
-                // 1. Dành cho Service 4 (Wallet)
+                // Integration Events routing keys (được sử dụng bởi handlers)
                 nameof(CreditIssuedIntegrationEvent) => "credit_issued",
-
-                // 2. Dành cho Service 3 (Marketplace)
-                //  dùng key "credit.inventory.update" để gửi
-                // Service 3 sẽ BIND "credit_inventory_queue" của họ vào key này
                 nameof(CreditInventoryUpdateIntegrationEvent) => "credit.inventory.update",
 
+                // Domain Events routing keys (không còn được sử dụng trực tiếp)
                 nameof(JourneyBatchSubmittedForVerificationEvent) => "carbonlifecycle.journeybatch.submitted",
                 nameof(VerificationRequestApprovedEvent) => "carbonlifecycle.verification.approved",
                 nameof(VerificationRequestRejectedEvent) => "carbonlifecycle.verification.rejected",
