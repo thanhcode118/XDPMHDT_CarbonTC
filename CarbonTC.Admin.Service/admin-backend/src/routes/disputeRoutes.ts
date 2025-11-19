@@ -181,7 +181,6 @@ router.get(
 router.get(
   '/transaction/:transactionId',
   authenticate,
-  requireAdminOrCVA,
   disputeController.getDisputesByTransaction
 );
 

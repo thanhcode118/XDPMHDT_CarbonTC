@@ -39,14 +39,14 @@ interface ApiResponse<T> {
 export const dashboardApi = {
   getOverview: async (): Promise<SystemOverview> => {
       const response = await walletServiceAxios.get<ApiResponse<SystemOverview>>(
-        '/admin/dashboard/overview'
+        '/admin-dashboard/overview'
       );
       return response.data.data;
     },
 
   getFees: async (startDate: string, endDate: string): Promise<number> => {
     const response = await walletServiceAxios.get<ApiResponse<number>>(
-      '/admin/dashboard/fees',
+      '/admin-dashboard/fees',
       {
         params: { startDate, endDate }
       }

@@ -25,7 +25,9 @@ const roleMap: Record<string, UserRole> = {
   'EVOwner': UserRole.EV_OWNER,
   'EV_OWNER': UserRole.EV_OWNER,
   'Buyer': UserRole.BUYER,
-  'BUYER': UserRole.BUYER
+  'BUYER': UserRole.BUYER,
+  'CreditBuyer': UserRole.BUYER,  
+  'CREDIT_BUYER': UserRole.BUYER
 };
 
 export const authenticate = async (

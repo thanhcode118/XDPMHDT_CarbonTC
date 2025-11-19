@@ -46,21 +46,21 @@ interface ApiResponse<T> {
 export const walletApi = {
   getPendingRequests: async (): Promise<WithdrawRequest[]> => {
     const response = await walletServiceAxios.get<ApiResponse<WithdrawRequest[]>>(
-      '/admin/dashboard/pending'
+      '/admin-dashboard/pending'
     );
     return response.data.data;
   },
 
   approveRequest: async (requestId: number): Promise<WithdrawRequest> => {
     const response = await walletServiceAxios.post<ApiResponse<WithdrawRequest>>(
-      `/admin/dashboard/${requestId}/approve`
+      `/admin-dashboard/${requestId}/approve`
     );
     return response.data.data;
   },
 
   rejectRequest: async (requestId: number): Promise<WithdrawRequest> => {
     const response = await walletServiceAxios.post<ApiResponse<WithdrawRequest>>(
-      `/admin/dashboard/${requestId}/reject`
+      `/admin-dashboard/${requestId}/reject`
     );
     return response.data.data;
   },

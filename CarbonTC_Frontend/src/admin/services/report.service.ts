@@ -36,7 +36,7 @@ export const reportApi = {
 
   getFees: async (startDate: string, endDate: string): Promise<number> => {
     const response = await walletServiceAxios.get<ApiResponse<number>>(
-      '/admin/dashboard/fees',
+      '/admin-dashboard/fees',
       {
         params: { startDate, endDate },
       }

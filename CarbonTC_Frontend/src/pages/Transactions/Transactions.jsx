@@ -6,6 +6,7 @@ import TransactionFilter from '../../components/TransactionFilter/TransactionFil
 import TransactionItem from '../../components/TransactionItemTrading/TransactionItem';
 import TransactionDetailModal from '../../components/TransactionDetailModal/TransactionDetailModal';
 import Pagination from '../../components/Pagination/Pagination';
+import PDFViewerModal from '../../components/PDFViewerModal/PDFViewerModal';
 import { useSidebar } from '../../hooks/useSidebar';
 import { useNotification } from '../../hooks/useNotification';
 import { getCertificate } from '../../services/transactionService';
@@ -34,6 +35,9 @@ const Transactions = () => {
 
   const [statsData, setStatsData] = useState(null); 
   const [statsLoading, setStatsLoading] = useState(true);
+
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState('');
 
   const [activeTab, setActiveTab] = useState('sales'); // 'sales' hoặc 'purchases'
   const [queryParams, setQueryParams] = useState({ // State cho bộ lọc
@@ -240,18 +244,11 @@ const Transactions = () => {
       if (response.data && response.data.success) {
         const certificateUrl = response.data.data.certificate_url;
         
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = certificateUrl;
+        // Lưu URL và hiển thị modal
+        setPdfUrl(certificateUrl);
+        setShowPdfModal(true);
+        showNotification('Đã tải chứng nhận thành công!', 'success');
         
-        document.body.appendChild(iframe);
-        
-        iframe.onload = () => {
-          showNotification('Đã tải xong, đang mở cửa sổ in...', 'success');
-          iframe.contentWindow.focus();
-          iframe.contentWindow.print();
-        };
-
       } else {
         showNotification(response.data.message || 'Không thể lấy chứng nhận.', 'error');
       }
@@ -387,6 +384,13 @@ const Transactions = () => {
         transaction={selectedTransaction}
         onDownloadCertificate={handleDownloadCertificate}
         isDownloading={isDownloading}
+      />
+
+      <PDFViewerModal
+        show={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        pdfUrl={pdfUrl}
+        title="Chứng nhận giao dịch"
       />
     </div>
   );
