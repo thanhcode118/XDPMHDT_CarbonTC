@@ -10,6 +10,7 @@ import {
 } from '../types';
 import { publishMessage, EXCHANGES, ROUTING_KEYS } from '../config/rabbitmq';
 import logger from '../utils/logger';
+import { mapTransactionStatus } from '../utils/transactionStatus';
 
 class DisputeService {
     async createDispute(
@@ -44,7 +45,25 @@ class DisputeService {
                 );
             }
 
-            // Tạo dispute mới với các giá trị mặc định
+            try {
+                const marketplaceClient = (await import('../utils/clients/marketplaceClient')).default;
+                const transactionExists = await marketplaceClient.checkTransactionExists(
+                    data.transactionId,
+                    authToken
+                );
+
+                if (!transactionExists) {
+                    throw new NotFoundError(
+                        `Transaction ${data.transactionId} không tồn tại trong hệ thống`
+                    );
+                }
+            } catch (error) {
+                logger.error('Error checking transaction existence:', error);
+                throw new ValidationError(
+                    `Không thể xác thực transaction ${data.transactionId}. Vui lòng kiểm tra lại.`
+                );
+            }
+
             const dispute = new Dispute({
                 transactionId: data.transactionId,
                 raisedBy,
@@ -88,28 +107,82 @@ class DisputeService {
             // Convert to plain object for enrichment
             let enrichedDispute: any = dispute.toJSON();
 
-            // ENRICH: Fetch transaction details from Marketplace Service
             try {
                 const marketplaceClient = (await import('../utils/clients/marketplaceClient')).default;
-                const transaction = await marketplaceClient.getTransactionDetails(
+                const transactionResponse = await marketplaceClient.getTransactionDetails(
                     dispute.transactionId,
                     authToken
                 );
                 
+                // Extract transaction data from response wrapper
+                const transaction = transactionResponse?.data || transactionResponse;
+
                 if (transaction) {
+                    logger.info(
+                        `Fetched transaction ${dispute.transactionId}: buyerId=${transaction.buyerId}, sellerId=${transaction.sellerId}, status=${transaction.status}`
+                    );
+
+                    let buyerInfo = null;
+                    if (transaction.buyerId) {
+                        try {
+                            const authClient = (await import('../utils/clients/authClient')).default;
+                            buyerInfo = await authClient.getUserBasicInfo(transaction.buyerId, authToken);
+                            
+                            if (buyerInfo) {
+                                logger.info(
+                                    `Enriched buyer info for ${transaction.buyerId}: ${buyerInfo.fullName}`
+                                );
+                            }
+                        } catch (err) {
+                            logger.warn(
+                                `Failed to fetch buyer info for ${transaction.buyerId}:`,
+                                err
+                            );
+                        }
+                    }
+
+                    let sellerInfo = null;
+                    if (transaction.sellerId) {
+                        try {
+                            const authClient = (await import('../utils/clients/authClient')).default;
+                            sellerInfo = await authClient.getUserBasicInfo(transaction.sellerId, authToken);
+                            
+                            if (sellerInfo) {
+                                logger.info(
+                                    `Enriched seller info for ${transaction.sellerId}: ${sellerInfo.fullName}`
+                                );
+                            }
+                        } catch (err) {
+                            logger.warn(
+                                `Failed to fetch seller info for ${transaction.sellerId}:`,
+                                err
+                            );
+                        }
+                    }
+
                     enrichedDispute.transactionDetails = {
-                        buyerId: transaction.buyerId,
-                        buyerName: transaction.buyerName || transaction.buyerId,
-                        sellerId: transaction.sellerId,
-                        sellerName: transaction.sellerName || transaction.sellerId,
-                        amount: transaction.totalAmount || transaction.amount,
-                        quantity: transaction.quantity,
+                        transactionId: transaction.id || dispute.transactionId,
                         listingId: transaction.listingId,
-                        status: transaction.status
+                        quantity: transaction.quantity,
+                        amount: transaction.totalAmount || transaction.amount || 0,
+                        statusCode: transaction.status,
+                        status: mapTransactionStatus(transaction.status),
+                        buyerId: transaction.buyerId,
+                        buyerName: buyerInfo?.fullName || 'Unknown Buyer',
+                        buyerEmail: buyerInfo?.email || null,
+                        sellerId: transaction.sellerId,
+                        sellerName: sellerInfo?.fullName || 'Unknown Seller',
+                        sellerEmail: sellerInfo?.email || null,
+                        createdAt: transaction.createdAt,
+                        completedAt: transaction.completedAt
                     };
 
                     logger.info(
-                        `Enriched dispute ${disputeId} with transaction details from ${dispute.transactionId}`
+                        `✅ Fully enriched dispute ${disputeId} with transaction, buyer, and seller details`
+                    );
+                } else {
+                    logger.warn(
+                        `Transaction ${dispute.transactionId} returned empty response`
                     );
                 }
             } catch (err) {
@@ -120,7 +193,7 @@ class DisputeService {
                 // Continue without transaction details - not critical
             }
 
-            // ENRICH: Fetch user details from Auth Service
+            // ENRICH: Fetch user details from Auth Service (dispute creator)
             try {
                 const authClient = (await import('../utils/clients/authClient')).default;
                 const userInfo = await authClient.getUserBasicInfo(dispute.raisedBy, authToken);
@@ -130,12 +203,12 @@ class DisputeService {
                     enrichedDispute.raisedByEmail = userInfo.email;
 
                     logger.info(
-                        `Enriched dispute ${disputeId} with user details for ${dispute.raisedBy}`
+                        `Enriched dispute ${disputeId} with creator details for ${dispute.raisedBy}`
                     );
                 }
             } catch (err) {
                 logger.warn(
-                    `Failed to fetch user details for ${dispute.raisedBy}:`,
+                    `Failed to fetch creator details for ${dispute.raisedBy}:`,
                     err
                 );
                 // Continue without user details - not critical

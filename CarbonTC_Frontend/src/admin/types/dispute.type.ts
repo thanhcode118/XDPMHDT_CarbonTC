@@ -1,5 +1,3 @@
-// Dispute Types & Interfaces
-
 export enum DisputeStatus {
   PENDING = 'Pending',
   UNDER_REVIEW = 'UnderReview',
@@ -10,6 +8,47 @@ export enum DisputeStatus {
 export enum ResolutionType {
   APPROVE = 'Approve',
   REJECT = 'Reject',
+}
+
+export enum TransactionStatusCode {
+  PENDING = 1,
+  SUCCESS = 2,
+  FAILED = 3,
+  REFUNDED = 4,
+  DISPUTED = 5,
+}
+
+export const TransactionStatusLabels: Record<number, string> = {
+  1: 'Pending',
+  2: 'Success',
+  3: 'Failed',
+  4: 'Refunded',
+  5: 'Disputed',
+};
+
+export interface TransactionDetails {
+  transactionId: string;
+  listingId: string;
+  quantity: number;
+  amount: number;
+
+  // Status - both code and label
+  statusCode: number;
+  status: string;
+
+  // Buyer info - enriched from Auth Service
+  buyerId: string;
+  buyerName: string;
+  buyerEmail?: string | null;
+
+  // Seller info - enriched from Auth Service
+  sellerId: string;
+  sellerName: string;
+  sellerEmail?: string | null;
+
+  // Dates
+  createdAt?: string;
+  completedAt?: string | null;
 }
 
 export enum ActionType {
@@ -34,15 +73,7 @@ export interface Dispute {
 }
 
 export interface DisputeDetail extends Dispute {
-  transactionDetails?: {
-    buyerId: string;
-    buyerName: string;
-    sellerId: string;
-    sellerName: string;
-    amount: number;
-    quantity: number;
-    listingId: string;
-  };
+  transactionDetails?: TransactionDetails;
 }
 
 export interface DisputeStatistics {
@@ -98,3 +129,20 @@ export interface PaginatedResponse<T> {
     totalPages: number;
   };
 }
+
+export const getTransactionStatusColor = (statusCode: number): 'success' | 'warning' | 'error' | 'info' | 'default' => {
+  switch (statusCode) {
+    case TransactionStatusCode.PENDING:
+      return 'warning';
+    case TransactionStatusCode.SUCCESS:
+      return 'success';
+    case TransactionStatusCode.FAILED:
+      return 'error';
+    case TransactionStatusCode.REFUNDED:
+      return 'info';
+    case TransactionStatusCode.DISPUTED:
+      return 'warning';
+    default:
+      return 'default';
+  }
+};

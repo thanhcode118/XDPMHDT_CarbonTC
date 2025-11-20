@@ -25,7 +25,7 @@ import {
 import { Close, Edit, Save } from '@mui/icons-material';
 
 import { Input } from '../../../../components/fields';
-import { formatDateTime } from '../../../../utils';
+import { formatDateTime, formatCurrency } from '../../../../utils';
 import {
   ActionType,
   DisputeStatus,
@@ -33,6 +33,7 @@ import {
   type DisputeDetail,
   type ResolveDisputeRequest,
   type UpdateStatusRequest,
+  getTransactionStatusColor,
 } from '../../../../types/dispute.type';
 
 interface DisputeDetailDialogProps {
@@ -94,6 +95,7 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
     const data = await fetchDisputeById(disputeId);
 
     if (data) {
+      console.log('📦 Loaded dispute data:', data);
       setDispute(data);
       setSelectedStatus(data.status);
     }
@@ -125,7 +127,6 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
     setError('');
 
     try {
-      // If resolution is filled, resolve the dispute
       if (resolution && resolutionNotes.trim()) {
         const resolveData: ResolveDisputeRequest = {
           resolution: resolution as ResolutionType,
@@ -146,7 +147,6 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
           return;
         }
       }
-      // Otherwise, just update status if changed
       else if (selectedStatus !== dispute.status) {
         const result = await onUpdateStatus(dispute.disputeId, {
           status: selectedStatus,
@@ -159,7 +159,6 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
         }
       }
 
-      // Reload dispute data
       await loadDispute();
       setMode('view');
       handleCancelEdit();
@@ -228,12 +227,11 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
               </Alert>
             )}
 
-            {/* Read-only Information Section */}
             <Box sx={{ mb: mode === 'edit' ? 3 : 0 }}>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
-                    Status
+                    Dispute Status
                   </Typography>
                   <Box mt={0.5}>
                     <Chip
@@ -257,12 +255,17 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
                   <Typography variant="caption" color="text.secondary">
                     Raised By
                   </Typography>
-                  <Typography variant="body2">
-                    {dispute.raisedByName || dispute.raisedBy}
+                  <Typography variant="body2" fontWeight="medium">
+                    {dispute.raisedByName || 'Unknown User'}
                   </Typography>
                   {dispute.raisedByEmail && (
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" display="block">
                       {dispute.raisedByEmail}
+                    </Typography>
+                  )}
+                  {!dispute.raisedByName && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      ID: {dispute.raisedBy?.substring(0, 8)}...
                     </Typography>
                   )}
                 </Grid>
@@ -271,40 +274,98 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
                   <Typography variant="caption" color="text.secondary">
                     Transaction ID
                   </Typography>
-                  <Typography variant="body2">{dispute.transactionId}</Typography>
+                  <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                    {dispute.transactionId?.substring(0, 16)}...
+                  </Typography>
                 </Grid>
 
                 {dispute.transactionDetails && (
                   <>
+                    <Grid size={{ xs: 12 }}>
+                      <Divider sx={{ my: 1 }}>
+                        <Chip label="Transaction Details" size="small" />
+                      </Divider>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Transaction Status
+                      </Typography>
+                      <Box mt={0.5}>
+                        <Chip
+                          label={dispute.transactionDetails.status || 'Unknown'}
+                          color={getTransactionStatusColor(dispute.transactionDetails.statusCode)}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </Box>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Transaction Amount
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {dispute.transactionDetails.quantity} credits × {formatCurrency(dispute.transactionDetails.amount / dispute.transactionDetails.quantity)}
+                      </Typography>
+                      <Typography variant="body1" fontWeight="bold" color="primary.main">
+                        Total: {formatCurrency(dispute.transactionDetails.amount)}
+                      </Typography>
+                    </Grid>
+
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <Typography variant="caption" color="text.secondary">
                         Buyer
                       </Typography>
-                      <Typography variant="body2">
-                        {dispute.transactionDetails.buyerName}
+                      <Typography variant="body2" fontWeight="medium">
+                        {dispute.transactionDetails.buyerName || 'Unknown Buyer'}
                       </Typography>
+                      {dispute.transactionDetails.buyerEmail && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {dispute.transactionDetails.buyerEmail}
+                        </Typography>
+                      )}
+                      {!dispute.transactionDetails.buyerName || dispute.transactionDetails.buyerName === 'Unknown Buyer' ? (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          ID: {dispute.transactionDetails.buyerId?.substring(0, 8)}...
+                        </Typography>
+                      ) : null}
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <Typography variant="caption" color="text.secondary">
                         Seller
                       </Typography>
-                      <Typography variant="body2">
-                        {dispute.transactionDetails.sellerName}
+                      <Typography variant="body2" fontWeight="medium">
+                        {dispute.transactionDetails.sellerName || 'Unknown Seller'}
                       </Typography>
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Amount
-                      </Typography>
-                      <Typography variant="body2">
-                        {dispute.transactionDetails.quantity} credits ($
-                        {dispute.transactionDetails.amount})
-                      </Typography>
+                      {dispute.transactionDetails.sellerEmail && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {dispute.transactionDetails.sellerEmail}
+                        </Typography>
+                      )}
+                      {!dispute.transactionDetails.sellerName || dispute.transactionDetails.sellerName === 'Unknown Seller' ? (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          ID: {dispute.transactionDetails.sellerId?.substring(0, 8)}...
+                        </Typography>
+                      ) : null}
                     </Grid>
                   </>
                 )}
+
+                {!dispute.transactionDetails && (
+                  <Grid size={{ xs: 12 }}>
+                    <Alert severity="warning" sx={{ mt: 1 }}>
+                      Transaction details could not be loaded. The transaction may not exist or there was an error fetching details.
+                    </Alert>
+                  </Grid>
+                )}
+
+                <Grid size={{ xs: 12 }}>
+                  <Divider sx={{ my: 1 }}>
+                    <Chip label="Dispute Details" size="small" />
+                  </Divider>
+                </Grid>
 
                 <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">
@@ -344,7 +405,6 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
               </Grid>
             </Box>
 
-            {/* Edit Mode Actions Section */}
             {mode === 'edit' && (
               <>
                 <Divider sx={{ my: 2 }} />
@@ -353,7 +413,6 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
                     🔧 ACTIONS
                   </Typography>
 
-                  {/* Quick Status Update */}
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="subtitle2" gutterBottom>
                       Quick Status Update
@@ -439,7 +498,7 @@ export const DisputeDetailDialog: React.FC<DisputeDetailDialogProps> = ({
                                 Return {dispute.transactionDetails.quantity} credits to buyer
                               </li>
                               <li>
-                                Deduct ${dispute.transactionDetails.amount} from seller
+                                Deduct {formatCurrency(dispute.transactionDetails.amount)} from seller
                               </li>
                               <li>Update transaction status to Refunded</li>
                             </ul>
