@@ -176,8 +176,8 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - SERVER_PORT=5004
-      - VNPAY_TMN_CODE=JTWT0WYG
-      - VNPAY_HASH_SECRET=TGMEKWOC5FCMO8NH3CEK4CB4ZHH3SQUY
+      - VNPAY_TMN_CODE=FU1RI8XX
+      - VNPAY_HASH_SECRET=LOGT5VD9DW8XT70U0QQ3F26ZS1IIKBPG
       - VNPAY_RETURN_URL=http://localhost:5004/api/payments/vnpay-return
       - VNPAY_IPN_URL=https://a32fea6d8c0c.ngrok-free.app/api/payments/vnpay-ipn
       - JWT_SECRET=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
