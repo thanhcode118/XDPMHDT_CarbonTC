@@ -15,10 +15,10 @@ namespace Infrastructure
 {
     public partial class CarbonSuggestedPrice
     {
-        public const string RetrainFilePath =  @"C:\Workspace\c#\TrainModelCarbon\TrainModelCarbon\train_data.csv";
+        public const string RetrainFilePath =  @"C:\Workspace\c#\XDPMHDT_CarbonTC\CarbonTC.Marketplace.Service\Infrastructure\train_data.csv";
         public const char RetrainSeparatorChar = ',';
         public const bool RetrainHasHeader =  true;
-        public const bool RetrainAllowQuoting =  false;
+        public const bool RetrainAllowQuoting =  true;
 
          /// <summary>
         /// Train a new model with the provided dataset.
@@ -94,7 +94,7 @@ namespace Infrastructure
             var pipeline = mlContext.Transforms.Categorical.OneHotEncoding(new []{new InputOutputColumnPair(@"CreditType", @"CreditType"),new InputOutputColumnPair(@"VerificationStandard", @"VerificationStandard")}, outputKind: OneHotEncodingEstimator.OutputKind.Indicator)      
                                     .Append(mlContext.Transforms.ReplaceMissingValues(new []{new InputOutputColumnPair(@"Vintage", @"Vintage"),new InputOutputColumnPair(@"Quantity", @"Quantity"),new InputOutputColumnPair(@"MarketSupply_SameType", @"MarketSupply_SameType"),new InputOutputColumnPair(@"MarketDemand_RecentVolume", @"MarketDemand_RecentVolume")}))      
                                     .Append(mlContext.Transforms.Concatenate(@"Features", new []{@"CreditType",@"VerificationStandard",@"Vintage",@"Quantity",@"MarketSupply_SameType",@"MarketDemand_RecentVolume"}))      
-                                    .Append(mlContext.Regression.Trainers.LightGbm(new LightGbmRegressionTrainer.Options(){NumberOfLeaves=2719,NumberOfIterations=1366,MinimumExampleCountPerLeaf=20,LearningRate=0.20217863096110203,LabelColumnName=@"PricePerCredit",FeatureColumnName=@"Features",Booster=new GradientBooster.Options(){SubsampleFraction=0.9999997766729865,FeatureFraction=0.9346261953192353,L1Regularization=5.709268398137758E-10,L2Regularization=0.6593840726325488},MaximumBinCountPerFeature=186}));
+                                    .Append(mlContext.Regression.Trainers.LightGbm(new LightGbmRegressionTrainer.Options(){NumberOfLeaves=4,NumberOfIterations=8602,MinimumExampleCountPerLeaf=23,LearningRate=0.04837302246700096,LabelColumnName=@"PricePerCredit",FeatureColumnName=@"Features",Booster=new GradientBooster.Options(){SubsampleFraction=0.9999997766729865,FeatureFraction=0.9541775159095575,L1Regularization=5.127233246405095E-10,L2Regularization=0.04214447658018253},MaximumBinCountPerFeature=237}));
 
             return pipeline;
         }

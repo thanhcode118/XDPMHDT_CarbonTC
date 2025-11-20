@@ -2,10 +2,9 @@
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.IO;
+using System.Collections.Generic;
 namespace Infrastructure
 {
     public partial class CarbonSuggestedPrice
@@ -85,7 +84,7 @@ namespace Infrastructure
 
         #endregion
 
-        private static string MLNetModelPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "CarbonSuggestedPrice.mlnet");
+        private static string MLNetModelPath = Path.GetFullPath("CarbonSuggestedPrice.mlnet");
 
         public static readonly Lazy<PredictionEngine<ModelInput, ModelOutput>> PredictEngine = new Lazy<PredictionEngine<ModelInput, ModelOutput>>(() => CreatePredictEngine(), true);
 
