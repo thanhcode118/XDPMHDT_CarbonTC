@@ -83,9 +83,8 @@ Dự án được thiết kế để chạy hoàn toàn trên Docker. Đảm b�
     docker compose up -d --build
     ```
 4.  Sau khi các container đã khởi động, bạn có thể truy cập:
-    * **Frontend (User):** `http://localhost:5173`
-    * **Frontend (Admin):** `http://localhost:5174`
-    * **API Gateway:** `http://localhost:5000`
+    * **Frontend :** `http://localhost:5173`
+    * **API Gateway:** `http://localhost:7000`
     * **RabbitMQ Dashboard:** `http://localhost:15672` (Login: `guest` / `guest`)
 Để tắt toàn bộ hệ thống:
 ```bash
