@@ -131,9 +131,9 @@ function Wallet() {
           sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
         >
           <Tab label="All" value="All" />
-          <Tab label="Pending" value="Pending" />
-          <Tab label="Approved" value="Approved" />
-          <Tab label="Rejected" value="Rejected" />
+          <Tab label="PENDING" value="PENDING" />
+          <Tab label="APPROVED" value="APPROVED" />
+          <Tab label="REJECTED" value="REJECTED" />
         </Tabs>
 
         <FilterBar

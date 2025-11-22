@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { walletApi, type WithdrawRequest } from '../../../services/wallet.service';
 
-export type WithdrawStatus = 'All' | 'Pending' | 'Approved' | 'Rejected';
+export type WithdrawStatus = 'All' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface UseWalletReturn {
   requests: WithdrawRequest[];
@@ -91,11 +91,11 @@ export const useWallet = (): UseWalletReturn => {
 
   const stats = {
     total: requests.length,
-    pending: requests.filter((r) => r.status === 'Pending').length,
-    approved: requests.filter((r) => r.status === 'Approved').length,
-    rejected: requests.filter((r) => r.status === 'Rejected').length,
+    pending: requests.filter((r) => r.status === 'PENDING').length,
+    approved: requests.filter((r) => r.status === 'APPROVED').length,
+    rejected: requests.filter((r) => r.status === 'REJECTED').length,
     totalPendingAmount: requests
-      .filter((r) => r.status === 'Pending')
+      .filter((r) => r.status === 'PENDING')
       .reduce((sum, r) => sum + r.amount, 0),
   };
 

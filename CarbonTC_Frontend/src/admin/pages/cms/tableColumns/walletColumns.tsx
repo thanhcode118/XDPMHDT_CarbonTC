@@ -58,10 +58,10 @@ export const getWalletColumns = ({
     width: 120,
     renderCell: (params) => {
       const statusColors = {
-        Pending: 'warning',
-        Approved: 'success',
-        Rejected: 'error',
-        Paid: 'info',
+        PENDING: 'warning',
+        APPROVE: 'success',
+        REJECTED: 'error',
+        PAID: 'info',
       } as const;
 
       return (
@@ -79,7 +79,7 @@ export const getWalletColumns = ({
     width: 120,
     sortable: false,
     renderCell: (params) => {
-      const isPending = params.row.status === 'Pending';
+      const isPending = params.row.status === 'PENDING';
 
       if (!isPending) {
         return <span style={{ color: '#9e9e9e' }}>—</span>;

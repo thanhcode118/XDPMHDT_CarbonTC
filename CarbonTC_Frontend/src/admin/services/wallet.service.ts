@@ -28,7 +28,7 @@ export interface WithdrawRequest {
   userId: string;
   walletId: number;
   amount: number;
-  status: 'Pending' | 'Approved' | 'Rejected' | 'Paid';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
   bankAccountNumber: string;
   bankName: string;
   requestedAt: string;

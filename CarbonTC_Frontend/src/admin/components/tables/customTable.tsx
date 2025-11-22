@@ -65,6 +65,7 @@ export default function CustomTable<T extends Record<string, any>>({
   onRowClick,
   onCellClick,
   noDataMessage = 'No data to display',
+  getRowId,
   // rowSelectionModel = [],
 }: CustomTableProps<T>): React.JSX.Element {
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -121,7 +122,7 @@ export default function CustomTable<T extends Record<string, any>>({
         rows={items}
         rowHeight={rowHeight}
         rowCount={totalCount}
-        getRowId={(row) => row.id}
+        getRowId={getRowId || ((row) => row.id)}
         columns={columnHeaders}
         loading={isLoading}
         checkboxSelection={checkboxSelection}
