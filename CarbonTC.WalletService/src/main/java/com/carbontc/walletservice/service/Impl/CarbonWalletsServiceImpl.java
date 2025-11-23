@@ -158,7 +158,7 @@ public class CarbonWalletsServiceImpl implements CarbonWalletsService {
                     .type(calculatedType)
                     .amount(t.getAmount())
                     .price(t.getTotalPrice())
-                    .co2Reduced(t.getAmount().multiply(BigDecimal.valueOf(1000)))
+                    .co2Reduced(t.getAmount().multiply(BigDecimal.valueOf(1)))
                     .status(t.getStatus())
                     .build();
 

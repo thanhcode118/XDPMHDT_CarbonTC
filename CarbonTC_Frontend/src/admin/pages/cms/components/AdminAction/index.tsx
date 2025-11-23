@@ -1,3 +1,3 @@
-export { default as AdminActionStats } from './AdminActionStats';
+export { default as AdminActionStats } from './adminActionStats';
 export { default as AdminActionTable } from './adminActionTable';
-export { default as AdminActionDetailDialog } from './AdminActionDetailDialog';
+export { default as AdminDetailDialog } from './adminDetailDialog';
