@@ -163,7 +163,7 @@ namespace CarbonTC.API.Controllers
             return Unauthorized();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(
             [FromRoute] Guid id,
