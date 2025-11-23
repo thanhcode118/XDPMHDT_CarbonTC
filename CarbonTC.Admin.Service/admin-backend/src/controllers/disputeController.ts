@@ -21,10 +21,16 @@ class DisputeController {
       ? authHeader.split(' ')[1] 
       : undefined;
 
+    // Extract IP address and user agent for audit trail
+    const ipAddress = req.ip || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+
     const dispute = await disputeService.createDispute(
       { transactionId, reason, description },
       raisedBy,
-      authToken
+      authToken,
+      ipAddress,
+      userAgent
     );
 
     return ApiResponseHelper.created(
@@ -142,15 +148,24 @@ class DisputeController {
     async (req: AuthRequest, res: Response) => {
       const { disputeId } = req.params;
       const { status } = req.body;
+      const adminId = req.user!.userId;
+      
       const authHeader = req.headers.authorization;
       const authToken = authHeader?.startsWith('Bearer ') 
         ? authHeader.split(' ')[1] 
         : undefined;
 
+      // Extract IP address and user agent for audit trail
+      const ipAddress = req.ip || req.socket.remoteAddress;
+      const userAgent = req.headers['user-agent'];
+
       const dispute = await disputeService.updateDisputeStatus(
         disputeId,
         status,
-        authToken
+        authToken,
+        adminId,
+        ipAddress,
+        userAgent
       );
 
       return ApiResponseHelper.success(
@@ -170,16 +185,23 @@ class DisputeController {
     const { disputeId } = req.params;
     const { status, resolutionNotes } = req.body;
     const resolvedBy = req.user!.userId;
+    
     const authHeader = req.headers.authorization;
     const authToken = authHeader?.startsWith('Bearer ') 
       ? authHeader.split(' ')[1] 
       : undefined;
 
+    // Extract IP address and user agent for audit trail
+    const ipAddress = req.ip || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+
     const dispute = await disputeService.resolveDispute(
       disputeId,
       { status, resolutionNotes },
       resolvedBy,
-      authToken
+      authToken,
+      ipAddress,
+      userAgent
     );
 
     return ApiResponseHelper.success(
@@ -196,8 +218,18 @@ class DisputeController {
    */
   deleteDispute = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { disputeId } = req.params;
+    const deletedBy = req.user!.userId;
 
-    await disputeService.deleteDispute(disputeId);
+    // Extract IP address and user agent for audit trail
+    const ipAddress = req.ip || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+
+    await disputeService.deleteDispute(
+      disputeId,
+      deletedBy,
+      ipAddress,
+      userAgent
+    );
 
     return ApiResponseHelper.success(
       res,

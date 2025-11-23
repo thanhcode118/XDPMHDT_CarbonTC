@@ -218,7 +218,37 @@ class AdminActionService {
         createdAt: { $gte: startDate, $lte: endDate }
       });
 
+      const actionsByType: Record<string, number> = {};
+      stats.forEach((item: any) => {
+        actionsByType[item.actionType] = item.count;
+      });
+
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const thisWeek = await AdminAction.countDocuments({
+        createdAt: { $gte: weekAgo }
+      });
+
+      const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const thisMonth = await AdminAction.countDocuments({
+        createdAt: { $gte: monthAgo }
+      });
+
+      const mostCommonAction = stats.length > 0 ? stats[0].actionType : '';
+      const lastAction = await AdminAction.findOne()
+        .sort({ createdAt: -1 })
+        .lean();
+      
+      const lastActivity = lastAction 
+        ? lastAction.createdAt.toISOString()
+        : '';
+
       return {
+        totalActions: total,
+        thisWeek,
+        thisMonth,
+        mostCommonAction,
+        lastActivity,
+        actionsByType,
         total,
         byActionType: stats,
         period: {
