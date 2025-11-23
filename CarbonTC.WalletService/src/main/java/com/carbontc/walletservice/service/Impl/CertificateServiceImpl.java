@@ -196,7 +196,7 @@ public class CertificateServiceImpl implements CertificateService {
             Table table = new Table(new float[]{200f, 300f});
             addTableRow(table, "Mã giao dịch:", transactionId, font, fontBold);
             addTableRow(table, "Người sở hữu:", buyerUserId, font, fontBold);
-            addTableRow(table, "Số lượng tín chỉ:", creditAmount + " tCO₂", font, fontBold);
+            addTableRow(table, "Số lượng tín chỉ:", creditAmount + " kg CO₂", font, fontBold);
             addTableRow(table, "Ngày phát hành:", cert.getIssuedAt().format(formatter), font, fontBold);
             addTableRow(table, "Mã xác thực:", cert.getUniqueHash(), font, fontBold);
             addTableRow(table, "Số serial:", serialNumber, font, fontBold);
