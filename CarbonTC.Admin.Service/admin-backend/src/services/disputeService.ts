@@ -6,9 +6,11 @@ import {
   DisputeStatus,
   NotFoundError,
   ValidationError,
-  ConflictError
+  ConflictError,
+  AdminActionType
 } from '../types';
 import { publishMessage, EXCHANGES, ROUTING_KEYS } from '../config/rabbitmq';
+import adminActionService from './adminActionService';
 import logger from '../utils/logger';
 import { mapTransactionStatus } from '../utils/transactionStatus';
 
@@ -16,7 +18,9 @@ class DisputeService {
     async createDispute(
         data: CreateDisputeDTO, 
         raisedBy: string,
-        authToken?: string
+        authToken?: string,
+        ipAddress?: string,
+        userAgent?: string
     ): Promise<any> {
         try {
             // ✅ Validate transactionId must be UUID format
@@ -80,6 +84,25 @@ class DisputeService {
                 User: ${raisedBy}, 
                 Transaction: ${data.transactionId}, 
                 Status: ${dispute.status}`
+            );
+
+            // 🔥 LOG ADMIN ACTION
+            await adminActionService.logAction(
+                {
+                    actionType: AdminActionType.CREATE_DISPUTE,
+                    targetId: dispute.disputeId,
+                    description: `Created dispute for transaction ${data.transactionId}: ${data.reason}`,
+                    actionDetails: {
+                        disputeId: dispute.disputeId,
+                        transactionId: data.transactionId,
+                        reason: data.reason,
+                        description: data.description,
+                        status: dispute.status
+                    }
+                },
+                raisedBy,
+                ipAddress,
+                userAgent
             );
 
             // Publish event đến RabbitMQ
@@ -301,7 +324,10 @@ class DisputeService {
     async updateDisputeStatus(
         disputeId: string,
         status: DisputeStatus,
-        authToken?: string
+        authToken?: string,
+        adminId?: string,
+        ipAddress?: string,
+        userAgent?: string
     ): Promise<any> {
         try {
             const dispute = await Dispute.findOne({ disputeId });
@@ -332,6 +358,27 @@ class DisputeService {
                 `Dispute ${disputeId} status updated: ${oldStatus} -> ${status}`
             );
 
+            // 🔥 LOG ADMIN ACTION
+            if (adminId) {
+                await adminActionService.logAction(
+                    {
+                        actionType: AdminActionType.UPDATE_DISPUTE_STATUS,
+                        targetId: disputeId,
+                        description: `Updated dispute status from ${oldStatus} to ${status}`,
+                        actionDetails: {
+                            disputeId,
+                            transactionId: dispute.transactionId,
+                            oldStatus,
+                            newStatus: status,
+                            resolvedAt: dispute.resolvedAt
+                        }
+                    },
+                    adminId,
+                    ipAddress,
+                    userAgent
+                );
+            }
+
             await this.publishDisputeEvent(dispute, 'status_updated');
 
             return await this.getDisputeById(disputeId, authToken);
@@ -345,7 +392,9 @@ class DisputeService {
         disputeId: string,
         resolution: ResolveDisputeDTO,
         resolvedBy: string,
-        authToken?: string
+        authToken?: string,
+        ipAddress?: string,
+        userAgent?: string
     ): Promise<any> {
         try {
             const dispute = await Dispute.findOne({ disputeId });
@@ -362,6 +411,7 @@ class DisputeService {
                 throw new ValidationError('Tranh chấp đã bị từ chối');
             }
 
+            const oldStatus = dispute.status;
             dispute.status = resolution.status;
             dispute.resolutionNotes = resolution.resolutionNotes;
             dispute.resolvedAt = new Date();
@@ -369,6 +419,27 @@ class DisputeService {
 
             logger.info(
                 `Dispute ${disputeId} resolved by ${resolvedBy} with status: ${resolution.status}`
+            );
+
+            // 🔥 LOG ADMIN ACTION
+            await adminActionService.logAction(
+                {
+                    actionType: AdminActionType.RESOLVE_DISPUTE,
+                    targetId: disputeId,
+                    description: `Resolved dispute with status: ${resolution.status}`,
+                    actionDetails: {
+                        disputeId,
+                        transactionId: dispute.transactionId,
+                        oldStatus,
+                        newStatus: resolution.status,
+                        resolutionNotes: resolution.resolutionNotes,
+                        resolvedBy,
+                        resolvedAt: dispute.resolvedAt
+                    }
+                },
+                resolvedBy,
+                ipAddress,
+                userAgent
             );
             
             // Publish resolved event
@@ -381,7 +452,12 @@ class DisputeService {
         }
     }
 
-    async deleteDispute(disputeId: string): Promise<void> {
+    async deleteDispute(
+        disputeId: string,
+        deletedBy: string,
+        ipAddress?: string,
+        userAgent?: string
+    ): Promise<void> {
         try {
             const dispute = await Dispute.findOne({ disputeId });
 
@@ -395,12 +471,34 @@ class DisputeService {
                 );
             }
 
+            const oldStatus = dispute.status;
             dispute.status = DisputeStatus.REJECTED;
             dispute.resolutionNotes = 'Tranh chấp đã bị hủy bởi người dùng';
             dispute.resolvedAt = new Date();
             await dispute.save();
 
             logger.info(`Dispute ${disputeId} deleted (soft delete -> Rejected)`);
+
+            // 🔥 LOG ADMIN ACTION
+            await adminActionService.logAction(
+                {
+                    actionType: AdminActionType.DELETE_DISPUTE,
+                    targetId: disputeId,
+                    description: `Deleted dispute (soft delete)`,
+                    actionDetails: {
+                        disputeId,
+                        transactionId: dispute.transactionId,
+                        oldStatus,
+                        newStatus: DisputeStatus.REJECTED,
+                        resolutionNotes: dispute.resolutionNotes,
+                        deletedBy,
+                        deletedAt: dispute.resolvedAt
+                    }
+                },
+                deletedBy,
+                ipAddress,
+                userAgent
+            );
         } catch (error) {
             logger.error('Error deleting dispute:', error);
             throw error;
