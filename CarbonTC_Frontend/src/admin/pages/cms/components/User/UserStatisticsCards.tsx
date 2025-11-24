@@ -1,15 +1,16 @@
 import { Box, Card, CardContent, Grid, Skeleton, Typography } from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import PersonIcon from '@mui/icons-material/Person';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import DirectionsCarFilledRoundedIcon from '@mui/icons-material/DirectionsCarFilledRounded';
+import VerifiedUserRoundedIcon from '@mui/icons-material/VerifiedUserRounded';
+import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
 
 import type { UserStatistics } from '../../../../types/user.types';
 import { formatInteger } from '../../../../utils/number';
+import { brand, green, orange, red } from '../../../../../common/color';
 
 interface UserStatisticsCardsProps {
   statistics: UserStatistics | null;
@@ -67,8 +68,8 @@ export const UserStatisticsCards = ({
           <StatCard
             title="Total Users"
             value={statistics?.totalUsers || 0}
-            icon={<PeopleIcon fontSize="large" />}
-            color="#2196f3"
+            icon={<PeopleAltRoundedIcon fontSize="large" />}
+            color= {brand[500]}
             isLoading={isLoading}
           />
         </Grid>
@@ -77,8 +78,8 @@ export const UserStatisticsCards = ({
           <StatCard
             title="Active Users"
             value={statistics?.activeUsers || 0}
-            icon={<CheckCircleIcon fontSize="large" />}
-            color="#4caf50"
+            icon={<CheckCircleRoundedIcon fontSize="large" />}
+            color= {green[600]}
             isLoading={isLoading}
           />
         </Grid>
@@ -87,8 +88,8 @@ export const UserStatisticsCards = ({
           <StatCard
             title="Inactive Users"
             value={statistics?.inactiveUsers || 0}
-            icon={<CancelIcon fontSize="large" />}
-            color="#f44336"
+            icon={<CancelRoundedIcon fontSize="large" />}
+            color= {red[600]}
             isLoading={isLoading}
           />
         </Grid>
@@ -97,8 +98,8 @@ export const UserStatisticsCards = ({
           <StatCard
             title="Pending CVA"
             value={statistics?.pendingVerifiers || 0}
-            icon={<HourglassEmptyIcon fontSize="large" />}
-            color="#ff9800"
+            icon={<HourglassTopRoundedIcon fontSize="large" />}
+            color= {orange[600]}
             isLoading={isLoading}
           />
         </Grid>
@@ -107,7 +108,7 @@ export const UserStatisticsCards = ({
           <StatCard
             title="EV Owners"
             value={statistics?.byRole?.evOwner || 0}
-            icon={<DirectionsCarIcon fontSize="large" />}
+            icon={<DirectionsCarFilledRoundedIcon fontSize="large" />}
             color="#9c27b0"
             isLoading={isLoading}
           />
@@ -127,7 +128,7 @@ export const UserStatisticsCards = ({
           <StatCard
             title="CVA Verifiers"
             value={statistics?.byRole?.cva || 0}
-            icon={<VerifiedUserIcon fontSize="large" />}
+            icon={<VerifiedUserRoundedIcon fontSize="large" />}
             color="#3f51b5"
             isLoading={isLoading}
           />
@@ -137,8 +138,8 @@ export const UserStatisticsCards = ({
           <StatCard
             title="Administrators"
             value={statistics?.byRole?.admin || 0}
-            icon={<PersonIcon fontSize="large" />}
-            color="#f44336"
+            icon={<PersonRoundedIcon fontSize="large" />}
+            color= {red[500]}
             isLoading={isLoading}
           />
         </Grid>

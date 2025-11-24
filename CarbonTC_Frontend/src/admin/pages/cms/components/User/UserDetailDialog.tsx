@@ -11,13 +11,14 @@ import {
   Chip,
   CircularProgress,
 } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import EmailIcon from '@mui/icons-material/Email';
-import PhoneIcon from '@mui/icons-material/Phone';
-import HomeIcon from '@mui/icons-material/Home';
-import BusinessIcon from '@mui/icons-material/Business';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
+import ContactPhoneRoundedIcon from '@mui/icons-material/ContactPhoneRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
+import LabelRoundedIcon from '@mui/icons-material/LabelRounded';
 import BadgeIcon from '@mui/icons-material/Badge';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 
 import type { UserDetail } from '../../../../types/user.types';
 import {
@@ -46,7 +47,7 @@ const InfoRow = ({
   value: string | null | undefined;
 }) => (
   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-    <Box sx={{ color: 'primary.main', mt: 0.5 }}>{icon}</Box>
+    <Box sx={{  mt: 0.5 }}>{icon}</Box>
     <Box sx={{ flex: 1 }}>
       <Typography variant="body2" color="text.secondary" gutterBottom>
         {label}
@@ -66,7 +67,7 @@ export const UserDetailDialog = ({
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <PersonIcon color="primary" />
+          <PersonRoundedIcon />
           <Typography variant="h6">User Details</Typography>
         </Box>
       </DialogTitle>
@@ -94,28 +95,28 @@ export const UserDetailDialog = ({
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <InfoRow
-                    icon={<PersonIcon />}
+                    icon={<PersonRoundedIcon />}
                     label="Full Name"
                     value={user.fullName}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <InfoRow
-                    icon={<EmailIcon />}
+                    icon={<EmailRoundedIcon />}
                     label="Email"
                     value={user.email}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <InfoRow
-                    icon={<PhoneIcon />}
+                    icon={<ContactPhoneRoundedIcon />}
                     label="Phone Number"
                     value={formatPhoneGrid(user.phoneNumber)}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-                    <Box sx={{ color: 'primary.main', mt: 0.5 }}>
+                    <Box sx={{ mt: 0.5 }}>
                       <BadgeIcon />
                     </Box>
                     <Box sx={{ flex: 1 }}>
@@ -132,8 +133,8 @@ export const UserDetailDialog = ({
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-                    <Box sx={{ color: 'primary.main', mt: 0.5 }}>
-                      <BadgeIcon />
+                    <Box sx={{ mt: 0.5 }}>
+                      <LabelRoundedIcon />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -160,7 +161,7 @@ export const UserDetailDialog = ({
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12 }}>
                   <InfoRow
-                    icon={<HomeIcon />}
+                    icon={<HomeRoundedIcon />}
                     label="Address"
                     value={user.address}
                   />
@@ -169,7 +170,7 @@ export const UserDetailDialog = ({
                   <>
                     <Grid size={{ xs: 12, md: 6 }}>
                       <InfoRow
-                        icon={<BusinessIcon />}
+                        icon={<BusinessRoundedIcon />}
                         label="Company Name"
                         value={user.companyName}
                       />
@@ -188,7 +189,6 @@ export const UserDetailDialog = ({
 
             <Divider sx={{ my: 3 }} />
 
-            {/* Timestamps */}
             <Box>
               <Typography variant="h6" gutterBottom>
                 Timestamps
@@ -196,7 +196,7 @@ export const UserDetailDialog = ({
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <InfoRow
-                    icon={<CalendarTodayIcon />}
+                    icon={<CalendarMonthRoundedIcon />}
                     label="Created At"
                     value={formatDateTime(user.createdAt)}
                   />
@@ -204,7 +204,7 @@ export const UserDetailDialog = ({
                 {user.updatedAt && (
                   <Grid size={{ xs: 12, md: 6 }}>
                     <InfoRow
-                      icon={<CalendarTodayIcon />}
+                      icon={<CalendarMonthRoundedIcon />}
                       label="Updated At"
                       value={formatDateTime(user.updatedAt)}
                     />
