@@ -1,28 +1,12 @@
-// export const config = {
-//   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
-//   loginUrl: import.meta.env.VITE_LOGIN_URL || 'http://localhost:5173/login',
-//   adminAppUrl: import.meta.env.VITE_ADMIN_APP_URL || 'http://localhost:5173',
-//   appName: 'Carbon Credit Admin',
-//   version: '1.0.0',
-// };
-
-// ============================================
 // Environment Configuration for Admin Service
 // ============================================
 
 export const config = {
-  // Admin Service (Port 5005) - Service chính của Admin FE
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:7000',
-
-  // Auth Service (Port 5001) - Xác thực & quản lý users
   authServiceUrl: import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:5001/api',
-
-  // Other Services (Optional - for future direct calls)
   carbonServiceUrl: import.meta.env.VITE_CARBON_SERVICE_URL || 'http://localhost:5002/api',
   marketplaceServiceUrl: import.meta.env.VITE_MARKETPLACE_SERVICE_URL || 'http://localhost:7000/api',
   walletServiceUrl: import.meta.env.VITE_WALLET_SERVICE_URL || 'http://localhost:5004/api',
-
-  // App URLs
   loginUrl: import.meta.env.VITE_LOGIN_URL || 'http://localhost:5173/login',
   adminAppUrl: import.meta.env.VITE_ADMIN_APP_URL || 'http://localhost:5173',
   adminBasePath: import.meta.env.VITE_ADMIN_BASE_PATH || '/admin',

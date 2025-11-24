@@ -33,6 +33,8 @@ export const getDisputeColumns = ({
     field: 'disputeId',
     headerName: 'ID',
     width: 120,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => (
       <Tooltip title={params.value}>
         <span>{params.value?.substring(0, 8)}...</span>
@@ -43,6 +45,8 @@ export const getDisputeColumns = ({
     field: 'transactionId',
     headerName: 'Transaction',
     width: 130,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => (
       <Tooltip title={params.value}>
         <span>{params.value?.substring(0, 10)}...</span>
@@ -53,6 +57,8 @@ export const getDisputeColumns = ({
     field: 'raisedBy',
     headerName: 'User',
     width: 150,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => (
       <Box>
         <div>{params.row.raisedByName || params.value?.substring(0, 10)}</div>
@@ -68,11 +74,15 @@ export const getDisputeColumns = ({
     field: 'reason',
     headerName: 'Reason',
     width: 150,
+    align: 'center',
+    headerAlign: 'center',
   },
   {
     field: 'status',
     headerName: 'Status',
     width: 130,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => (
       <Chip
         label={params.value}
@@ -85,12 +95,16 @@ export const getDisputeColumns = ({
     field: 'createdAt',
     headerName: 'Created',
     width: 180,
+    align: 'center',
+    headerAlign: 'center',
     valueFormatter: (value) => formatDateTime(value),
   },
   {
     field: 'actions',
     headerName: 'Actions',
     width: 120,
+    align: 'center',
+    headerAlign: 'center',
     sortable: false,
     renderCell: (params) => (
       <Box sx={{ display: 'flex', gap: 0.5 }}>

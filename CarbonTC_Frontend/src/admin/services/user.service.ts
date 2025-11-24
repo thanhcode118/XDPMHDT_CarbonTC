@@ -1,6 +1,6 @@
 import type { AxiosResponse } from 'axios';
 
-import axiosInstance from '../lib/axios';
+import { authServiceAxios } from '../lib/axios';
 import type {
   PaginatedUsersResponse,
   User,
@@ -9,6 +9,7 @@ import type {
   UserStatistics,
 } from '../types/user.types';
 
+console.log('🔍 Auth Service Base URL:', authServiceAxios.defaults.baseURL);
 
 const mapRoleName = (roleName: string): string => {
   const roleMap: Record<string, string> = {
@@ -22,7 +23,7 @@ const mapRoleName = (roleName: string): string => {
 
 const transformUser = (backendUser: any): User => ({
   id: backendUser.id,
-  userId: backendUser.id, // Backend uses single 'id' field
+  userId: backendUser.id,
   fullName: backendUser.fullName || null,
   email: backendUser.email,
   phoneNumber: backendUser.phoneNumber || null,
@@ -100,7 +101,7 @@ export const getAllUsers = async (
     ...filters,
   };
 
-  const response: AxiosResponse<any> = await axiosInstance.get(
+  const response: AxiosResponse<any> = await authServiceAxios.get(
     '/Users',
     { params },
   );
@@ -154,7 +155,7 @@ const getAllUsersForStats = async (): Promise<User[]> => {
 
 export const getUserStatistics = async (): Promise<UserStatistics> => {
   try {
-    const response: AxiosResponse<any> = await axiosInstance.get(
+    const response: AxiosResponse<any> = await authServiceAxios.get(
       '/Users/statistics',
     );
 
@@ -209,7 +210,7 @@ export const getUserStatistics = async (): Promise<UserStatistics> => {
 };
 
 export const getUserById = async (userId: string): Promise<UserDetail> => {
-  const response: AxiosResponse<any> = await axiosInstance.get(
+  const response: AxiosResponse<any> = await authServiceAxios.get(
     `/Users/${userId}`,
   );
 
@@ -234,7 +235,7 @@ export const getUserById = async (userId: string): Promise<UserDetail> => {
 
 export const getPendingVerifiers = async (): Promise<User[]> => {
   try {
-    const response: AxiosResponse<any> = await axiosInstance.get(
+    const response: AxiosResponse<any> = await authServiceAxios.get(
       '/Users/pending-verifiers',
     );
 
@@ -258,15 +259,15 @@ export const getPendingVerifiers = async (): Promise<User[]> => {
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-  await axiosInstance.delete(`/api/Users/${userId}`);
+  await authServiceAxios.delete(`/Users/${userId}`);
 };
 
 export const approveVerifier = async (userId: string): Promise<void> => {
-  await axiosInstance.post(`/api/Users/${userId}/approve`);
+  await authServiceAxios.post(`/Users/${userId}/approve`);
 };
 
 export const rejectVerifier = async (userId: string): Promise<void> => {
-  await axiosInstance.post(`/api/Users/${userId}/reject`);
+  await authServiceAxios.post(`/Users/${userId}/reject`);
 };
 
 export const userService = {

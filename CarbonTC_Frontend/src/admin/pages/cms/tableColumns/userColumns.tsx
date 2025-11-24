@@ -14,6 +14,7 @@ import {
   UserStatusLabels,
 } from '../../../types/user.types';
 import { formatPhoneGrid } from '../../../utils/number';
+import { errorColor, successColor } from '../../../../common/color';
 
 interface UserColumnsProps {
   onViewDetail: (user: User) => void;
@@ -34,7 +35,7 @@ export const getUserColumns = ({
     {
       field: 'id',
       headerName: 'User ID',
-      minWidth: 100,
+      minWidth: 150,
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => (
@@ -46,7 +47,7 @@ export const getUserColumns = ({
     {
       field: 'fullName',
       headerName: 'Full Name',
-      width: 200,
+      minWidth: 180,
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => params.value || '-',
@@ -69,7 +70,7 @@ export const getUserColumns = ({
     {
       field: 'role',
       headerName: 'Role',
-      minWidth: 100,
+      minWidth: 150,
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => (
@@ -118,7 +119,15 @@ export const getUserColumns = ({
       const isPending = user.status === 'INACTIVE';
 
       return (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%'
+          }}
+        >
           <Tooltip title="View Details">
             <IconButton
               size="small"
@@ -126,7 +135,6 @@ export const getUserColumns = ({
                 e.stopPropagation();
                 onViewDetail(user);
               }}
-              color="primary"
             >
               <VisibilityIcon fontSize="small" />
             </IconButton>
@@ -141,7 +149,7 @@ export const getUserColumns = ({
                     e.stopPropagation();
                     onApprove?.(user);
                   }}
-                  color="success"
+                  sx={{ color: successColor }}
                 >
                   <CheckCircleIcon fontSize="small" />
                 </IconButton>
@@ -154,9 +162,9 @@ export const getUserColumns = ({
                     e.stopPropagation();
                     onReject?.(user);
                   }}
-                  color="error"
+                  sx={{ color: errorColor }}
                 >
-                  <CancelIcon fontSize="small" />
+                  <CancelIcon />
                 </IconButton>
               </Tooltip>
             </>
@@ -170,9 +178,9 @@ export const getUserColumns = ({
                   e.stopPropagation();
                   onDelete(user);
                 }}
-                color="error"
+                sx={{ color: errorColor }}
               >
-                <DeleteIcon fontSize="small" />
+                <DeleteIcon />
               </IconButton>
             </Tooltip>
           )}

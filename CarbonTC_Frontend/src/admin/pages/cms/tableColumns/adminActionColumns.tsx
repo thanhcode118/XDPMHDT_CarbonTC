@@ -15,6 +15,8 @@ export const adminActionColumns = (
     field: 'actionType',
     headerName: 'Action Type',
     width: 180,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params: GridRenderCellParams<AdminAction>) => {
       const actionType = params.value as string;
       const label = ActionTypeLabels[actionType] || actionType;
@@ -35,6 +37,8 @@ export const adminActionColumns = (
     headerName: 'Description',
     flex: 1,
     minWidth: 250,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params: GridRenderCellParams<AdminAction>) => (
       <Tooltip title={params.value || ''} arrow>
         <span
@@ -53,6 +57,8 @@ export const adminActionColumns = (
     field: 'targetId',
     headerName: 'Target ID',
     width: 200,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params: GridRenderCellParams<AdminAction>) => (
       <Tooltip title={params.value || ''} arrow>
         <span
@@ -73,6 +79,8 @@ export const adminActionColumns = (
     field: 'createdAt',
     headerName: 'Date',
     width: 200,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params: GridRenderCellParams<AdminAction>) => (
       <Tooltip title={formatDateTime(params.value)} arrow>
         <span>{formatRelativeTime(params.value)}</span>
@@ -83,6 +91,8 @@ export const adminActionColumns = (
     field: 'actions',
     headerName: 'Actions',
     width: 100,
+    align: 'center',
+    headerAlign: 'center',
     sortable: false,
     filterable: false,
     disableColumnMenu: true,

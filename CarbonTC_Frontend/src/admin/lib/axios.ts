@@ -17,7 +17,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  // withCredentials: true,
 });
 
 // ============================================
@@ -67,6 +67,7 @@ axiosInstance.interceptors.response.use(
 
     return response;
   },
+
   async (error: AxiosError) => {
     const originalRequest = error.config;
 
@@ -129,7 +130,7 @@ export const createServiceAxios = (serviceUrl: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    withCredentials: true,
+    // withCredentials: true,
   });
 };
 
@@ -138,5 +139,124 @@ export const authServiceAxios = createServiceAxios(config.authServiceUrl);
 export const carbonServiceAxios = createServiceAxios(config.carbonServiceUrl);
 export const marketplaceServiceAxios = createServiceAxios(config.marketplaceServiceUrl);
 export const walletServiceAxios = createServiceAxios(config.walletServiceUrl);
+
+// ============================================
+// AUTH SERVICE INTERCEPTORS
+// ============================================
+authServiceAxios.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = useAuthStore.getState().token;
+    const user = useAuthStore.getState().user;
+
+    // Log request details in development
+    if (import.meta.env.DEV) {
+      console.group('📤 [Auth Service Request]');
+      // console.log('URL:', config.baseURL + config.url);
+      console.log('Method:', config.method?.toUpperCase());
+      console.log('Has Token:', !!token);
+      console.log('User Role:', user?.role);
+      console.groupEnd();
+    }
+
+    // Attach Authorization header
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error: AxiosError) => {
+    console.error('❌ [Auth Service Request Error]:', error);
+    return Promise.reject(error);
+  },
+);
+
+authServiceAxios.interceptors.response.use(
+  (response: AxiosResponse) => {
+    // Log response in development
+    if (import.meta.env.DEV) {
+      console.group('📥 [Auth Service Response]');
+      console.log('URL:', response.config.url);
+      console.log('Status:', response.status);
+      console.log('Data:', response.data);
+      console.groupEnd();
+    }
+
+    return response;
+  },
+  async (error: AxiosError) => {
+    // Log error details
+    console.group('❌ [Auth Service Response Error]');
+    console.log('URL:', error.config?.url);
+    console.log('Status:', error.response?.status);
+    console.log('Message:', error.message);
+    console.log('Response Data:', error.response?.data);
+    console.groupEnd();
+
+    // 401 Unauthorized - Token expired or invalid
+    if (error.response?.status === 401) {
+      console.warn('⚠️ [Auth Service] 401 Unauthorized - Logging out...');
+
+      // Clear auth state
+      useAuthStore.getState().logout();
+
+      // Redirect to login
+      setTimeout(() => {
+        window.location.href = config.loginUrl;
+      }, 1000);
+
+      return Promise.reject(error);
+    }
+
+    // 403 Forbidden - No permission
+    if (error.response?.status === 403) {
+      console.error('🚫 [Auth Service] 403 Forbidden - Access Denied');
+    }
+
+    // 500 Internal Server Error
+    if (error.response?.status === 500) {
+      console.error('💥 [Auth Service] 500 Internal Server Error:', error.response.data);
+    }
+
+    // Network Error - Service might be down
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.error('🔌 [Auth Service] Network Error - Is Auth Service (port 5001) running?');
+      console.error('   Expected URL:', config.authServiceUrl);
+    }
+
+    return Promise.reject(error);
+  },
+);
+
+// ============================================
+// WALLET SERVICE INTERCEPTORS (Optional - if needed)
+// ============================================
+walletServiceAxios.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = useAuthStore.getState().token;
+
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error);
+  },
+);
+
+walletServiceAxios.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout();
+      setTimeout(() => {
+        window.location.href = config.loginUrl;
+      }, 1000);
+    }
+    return Promise.reject(error);
+  },
+);
 
 export default axiosInstance;

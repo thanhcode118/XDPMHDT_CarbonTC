@@ -18,6 +18,8 @@ export const getWalletColumns = ({
     field: 'userId',
     headerName: 'User ID',
     width: 200,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => (
       <Tooltip title={params.value}>
         <span>{params.value?.slice(0, 8)}...</span>
@@ -28,8 +30,8 @@ export const getWalletColumns = ({
     field: 'amount',
     headerName: 'Amount (VND)',
     width: 150,
-    align: 'right',
-    headerAlign: 'right',
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => (
       <Box sx={{ fontWeight: 600, color: 'primary.main' }}>
         {formatNumber(params.value)}
@@ -40,22 +42,30 @@ export const getWalletColumns = ({
     field: 'bankAccountNumber',
     headerName: 'Bank Account',
     width: 180,
+    align: 'center',
+    headerAlign: 'center',
   },
   {
     field: 'bankName',
     headerName: 'Bank Name',
     width: 150,
+    align: 'center',
+    headerAlign: 'center',
   },
   {
     field: 'requestedAt',
     headerName: 'Requested At',
     width: 180,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => formatDateTime(params.value),
   },
   {
     field: 'status',
     headerName: 'Status',
     width: 120,
+    align: 'center',
+    headerAlign: 'center',
     renderCell: (params) => {
       const statusColors = {
         PENDING: 'warning',
@@ -77,6 +87,8 @@ export const getWalletColumns = ({
     field: 'actions',
     headerName: 'Actions',
     width: 120,
+    align: 'center',
+    headerAlign: 'center',
     sortable: false,
     renderCell: (params) => {
       const isPending = params.row.status === 'PENDING';
