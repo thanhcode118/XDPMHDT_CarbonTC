@@ -36,7 +36,7 @@ export const useUser = () => {
     try {
       setIsLoading(true);
       const response: PaginatedUsersResponse = await userService.getAllUsers(
-        currentPage + 1,
+        currentPage + 1, // MUI DataGrid is 0-based, backend is 1-based
         pageSize,
         filters,
       );
@@ -83,12 +83,13 @@ export const useUser = () => {
 
   const fetchPendingVerifiers = useCallback(async () => {
     try {
-      // const verifiers = await userService.getPendingVerifiers();
-      // setPendingVerifiers(verifiers);
-      setPendingVerifiers([]);
-      console.warn('⚠️ Pending verifiers endpoint not available yet');
+      // Service now handles 404 gracefully, so we can safely call it
+      const verifiers = await userService.getPendingVerifiers();
+      setPendingVerifiers(verifiers);
     } catch (error) {
       console.error('Error fetching pending verifiers:', error);
+      // Don't show notification for this - it's not critical
+      setPendingVerifiers([]);
     }
   }, []);
 

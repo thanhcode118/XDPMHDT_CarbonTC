@@ -45,9 +45,9 @@ export interface UserFilters {
 export interface PaginatedUsersResponse {
   data: User[];
   pagination: {
-    total: number;
     page: number;
-    limit: number;
+    pageSize: number;
+    total: number;
     totalPages: number;
   };
 }
