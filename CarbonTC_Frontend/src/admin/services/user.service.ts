@@ -101,7 +101,7 @@ export const getAllUsers = async (
   };
 
   const response: AxiosResponse<any> = await axiosInstance.get(
-    '/api/Users',
+    '/Users',
     { params },
   );
 
@@ -155,7 +155,7 @@ const getAllUsersForStats = async (): Promise<User[]> => {
 export const getUserStatistics = async (): Promise<UserStatistics> => {
   try {
     const response: AxiosResponse<any> = await axiosInstance.get(
-      '/api/Users/statistics',
+      '/Users/statistics',
     );
 
     console.log('📊 Statistics response:', response.data);
@@ -210,7 +210,7 @@ export const getUserStatistics = async (): Promise<UserStatistics> => {
 
 export const getUserById = async (userId: string): Promise<UserDetail> => {
   const response: AxiosResponse<any> = await axiosInstance.get(
-    `/api/Users/${userId}`,
+    `/Users/${userId}`,
   );
 
   const backendUser = response.data.data || response.data;
@@ -235,7 +235,7 @@ export const getUserById = async (userId: string): Promise<UserDetail> => {
 export const getPendingVerifiers = async (): Promise<User[]> => {
   try {
     const response: AxiosResponse<any> = await axiosInstance.get(
-      '/api/Users/pending-verifiers',
+      '/Users/pending-verifiers',
     );
 
     const backendData = response.data.data || response.data;
