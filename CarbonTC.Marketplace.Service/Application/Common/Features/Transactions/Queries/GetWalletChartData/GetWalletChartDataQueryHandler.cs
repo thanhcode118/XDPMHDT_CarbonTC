@@ -67,12 +67,12 @@ namespace Application.Common.Features.Transactions.Queries.GetWalletChartData
 
                 if (tx.BuyerId == userId)
                 {
-                    earnedData[dayIndex]++;
+                    earnedData[dayIndex] += tx.Quantity;
                 }
 
                 if (tx.SellerId == userId)
                 {
-                    soldData[dayIndex]++;
+                    soldData[dayIndex] += tx.Quantity;
                 }
             }
 
@@ -128,12 +128,12 @@ namespace Application.Common.Features.Transactions.Queries.GetWalletChartData
 
                 if (tx.BuyerId == userId)
                 {
-                    earnedData[dayIndex]++;
+                    earnedData[dayIndex] += tx.Quantity;
                 }
 
                 if (tx.SellerId == userId)
                 {
-                    soldData[dayIndex]++;
+                    soldData[dayIndex] += tx.Quantity;
                 }
             }
 
@@ -183,12 +183,12 @@ namespace Application.Common.Features.Transactions.Queries.GetWalletChartData
 
                 if (tx.BuyerId == userId)
                 {
-                    earnedData[monthIndex]++;
+                    earnedData[monthIndex] += tx.Quantity;
                 }
 
                 if (tx.SellerId == userId)
                 {
-                    soldData[monthIndex]++;
+                    soldData[monthIndex] += tx.Quantity;
                 }
             }
 

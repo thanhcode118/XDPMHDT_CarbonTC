@@ -28,7 +28,7 @@ const Dashboard = () => {
   const params = {
     pageNumber: 1,
     pageSize: 5,
-    status: 1 
+    status: 2 
   };
 
   const toggleSidebar = () => {
