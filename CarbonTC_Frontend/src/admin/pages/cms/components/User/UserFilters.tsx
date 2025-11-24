@@ -27,12 +27,11 @@ export const UserFilters = ({
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  // Update filters when debounced search changes
   useEffect(() => {
     if (debouncedSearch !== filters.search) {
       onFilterChange({ ...filters, search: debouncedSearch });
     }
-  });
+  }, [debouncedSearch]);
 
   const handleRoleChange = (role: string) => {
     onFilterChange({ ...filters, role: role || undefined });
@@ -57,7 +56,7 @@ export const UserFilters = ({
     <Card sx={{ mb: 3, p: 0 }}>
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <FilterListIcon sx={{ mr: 1 }} color="primary" />
+          <FilterListIcon sx={{ mr: 1 }} />
           <Box sx={{ flex: 1, fontWeight: 600, fontSize: '1.1rem' }}>
             Filters
           </Box>
