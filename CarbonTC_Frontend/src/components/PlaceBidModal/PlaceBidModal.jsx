@@ -571,13 +571,13 @@ const PlaceBidModal = ({
                                             required
                                             disabled={isSubmitting}
                                         />
-                                        <span className={styles.bidInputAddon}>VNĐ/tín chỉ</span>
+                                        <span className={styles.bidInputAddon}>VNĐ</span>
                                     </div>
                                     {bidError ? (
                                         <small className={styles.textDanger}>{bidError}</small>
                                     ) : (
                                         <small className={styles.textSecondary}>
-                                            Giá tối thiểu: {minBidAmount.toLocaleString()} VNĐ/tín chỉ
+                                            Giá tối thiểu: {minBidAmount.toLocaleString()} VNĐ
                                         </small>
                                     )}
                                     

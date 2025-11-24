@@ -123,7 +123,7 @@ const AuctionForm = ({
           
           <div className="col-md-6">
             <label htmlFor="startPrice" className={styles.formLabel}>
-              Giá khởi điểm (VNĐ/tín chỉ)
+              Tổng giá khởi điểm (VNĐ)
             </label>
             <input
               type="number"

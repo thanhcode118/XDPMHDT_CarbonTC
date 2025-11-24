@@ -131,10 +131,10 @@ const PurchaseSuccessModal = ({
               
               <div className={styles.summaryItem}>
                 <span className={styles.summaryLabel}>Giá đã đặt:</span>
-                <span className={styles.summaryValue}>{formatCurrency(pricePerUnit)} VNĐ/tín chỉ</span>
+                <span className={styles.summaryValue}>{formatCurrency(pricePerUnit)} VNĐ</span>
               </div>
               
-              <div className={styles.summaryItem}>
+              {/* <div className={styles.summaryItem}>
                 <span className={styles.summaryLabel}>Số lượng:</span>
                 <span className={styles.summaryValue}>{quantity} tín chỉ</span>
               </div>
@@ -144,12 +144,12 @@ const PurchaseSuccessModal = ({
                 <span className={`${styles.summaryValue} ${styles.totalAmount}`}>
                   {formatCurrency(pricePerUnit*quantity)} VNĐ
                 </span>
-              </div>
+              </div> */}
               
-              <div className={styles.summaryItem}>
+              {/* <div className={styles.summaryItem}>
                 <span className={styles.summaryLabel}>Thời gian đặt giá:</span>
                 <span className={styles.summaryValue}>{formatBidTime(bidTime)}</span>
-              </div>
+              </div> */}
             </div>
           )}
 

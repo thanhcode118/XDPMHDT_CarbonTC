@@ -36,7 +36,8 @@ import {
     stopConnection, 
     joinAuctionGroup, 
     leaveAuctionGroup, 
-    registerAuctionEvents 
+    registerAuctionEvents,
+    removeAuctionListeners 
 } from '../../services/signalrService';
 import UserSelector from '../../components/UserSelector/UserSelector';
 import { toast, ToastContainer } from 'react-toastify';
@@ -548,28 +549,33 @@ const fetchInventory = async (creditId) => {
 
 
   useEffect(() => {
-    const setupSignalR = async () => {
-      try {
-        // Chờ cho đến khi startConnection() THỰC SỰ hoàn thành
-        const conn = await startConnection(); 
+    let isMounted = true;
 
-        if (conn) {
-          registerAuctionEvents({
-            onBidPlaced: handleRealtimeBid,
-            onEndAuction: handleRealtimeEndAuction,
-            onUserOutbid: handleRealtimeOutbid
-          });
-          } else {
-            console.error("❌ Không thể đăng ký SignalR events: Kết nối thất bại.");
+    const setupSignalR = async () => {
+        try {
+            const conn = await startConnection();
+
+            if (isMounted && conn) {
+                registerAuctionEvents({
+                    onBidPlaced: handleRealtimeBid,
+                    onEndAuction: handleRealtimeEndAuction,
+                    onUserOutbid: handleRealtimeOutbid
+                });
+            }
+        } catch (err) {
+            console.error("Lỗi nghiêm trọng khi khởi tạo SignalR:", err);
+        }
+      };
+
+      setupSignalR();
+
+      return () => {
+          isMounted = false;
+          if (selectedListing) {
+            leaveAuctionGroup(selectedListing.id);
           }
-      } catch (err) {
-        console.error("Lỗi nghiêm trọng khi khởi tạo SignalR:", err);
-      }
-     };  
-     setupSignalR(); 
-     return () => {
-      stopConnection();
-     };
+          
+      };
   }, [handleRealtimeBid, handleRealtimeEndAuction, handleRealtimeOutbid]);
   
   useEffect(() => {

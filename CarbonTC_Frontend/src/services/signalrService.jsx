@@ -44,30 +44,44 @@ const createConnection = () => {
 };
 
 export const startConnection = () => {
+    // 1. Nếu đang có promise kết nối (đang connecting), trả về chính nó để không gọi start lần 2
     if (connectionPromise) {
         return connectionPromise;
     }
 
+    // 2. Nếu connection đã tồn tại và ĐÃ KẾT NỐI, không cần làm gì cả
+    if (connection && connection.state === signalR.HubConnectionState.Connected) {
+        console.log("⚠️ SignalR already connected.");
+        return Promise.resolve(connection);
+    }
+
     connectionPromise = new Promise((resolve, reject) => {
         const run = async () => {
-            connection = createConnection();
+            // 3. Nếu connection chưa có hoặc đã bị ngắt, tạo mới
+            if (!connection || connection.state === signalR.HubConnectionState.Disconnected) {
+                connection = createConnection();
+            }
+            
             if (!connection) {
-                console.error("Không thể tạo connection (thiếu token?)");
-                connectionPromise = null;
-                return reject(new Error("Thiếu token"));
+                 connectionPromise = null;
+                 return reject(new Error("Thiếu token"));
             }
 
-            connectionCount++;
-            console.log(`🔄 Creating new SignalR connection #${connectionCount}`);
-
-            try {
-                await connection.start();
-                console.log("✅ SignalR Connected successfully.");
-                resolve(connection);
-            } catch (err) {
-                console.error("❌ SignalR Connection failed: ", err);
-                connectionPromise = null;
-                reject(err);
+            // Chỉ start nếu trạng thái là Disconnected
+            if (connection.state === signalR.HubConnectionState.Disconnected) {
+                try {
+                    connectionCount++;
+                    console.log(`🔄 Creating new SignalR connection #${connectionCount}`);
+                    await connection.start();
+                    console.log("✅ SignalR Connected successfully.");
+                    resolve(connection);
+                } catch (err) {
+                    console.error("❌ SignalR Connection failed: ", err);
+                    connectionPromise = null; // Reset promise nếu lỗi để lần sau thử lại
+                    reject(err);
+                }
+            } else {
+                 resolve(connection);
             }
         };
 
@@ -152,10 +166,24 @@ export const registerAuctionEvents = (handlers) => {
 };
 
 export const stopConnection = async () => {
-    if (connection) {
-        await connection.stop();
-        connection = null;
-        connectionPromise = null; 
-        console.log("SignalR Connection stopped.");
+    if (connection && connection.state === signalR.HubConnectionState.Connected) {
+        try {
+            await connection.stop();
+            console.log("SignalR Connection stopped.");
+        } catch (err) {
+            console.error("Error stopping connection:", err);
+        }
+    }
+    connectionPromise = null; 
+};
+
+export const removeAuctionListeners = () => {
+    const conn = getConnection();
+    if (conn) {
+        console.log("🔕 Gỡ bỏ các sự kiện đấu giá (Cleanup)");
+        // .off("tên_sự_kiện") không tham số sẽ gỡ bỏ TẤT CẢ handler của sự kiện đó
+        conn.off("bidplaced");
+        conn.off("auctionended");
+        conn.off("useroutbid");
     }
 };
