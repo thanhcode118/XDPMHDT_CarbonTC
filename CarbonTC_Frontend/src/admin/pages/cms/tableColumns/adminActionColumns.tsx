@@ -14,7 +14,7 @@ export const adminActionColumns = (
   {
     field: 'actionType',
     headerName: 'Action Type',
-    width: 180,
+    minWidth: 180,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params: GridRenderCellParams<AdminAction>) => {
@@ -56,7 +56,7 @@ export const adminActionColumns = (
   {
     field: 'targetId',
     headerName: 'Target ID',
-    width: 200,
+    minWidth: 200,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params: GridRenderCellParams<AdminAction>) => (
@@ -66,8 +66,6 @@ export const adminActionColumns = (
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            fontFamily: 'monospace',
-            fontSize: '0.875rem',
           }}
         >
           {params.value ? `${String(params.value).substring(0, 20)}...` : '-'}
@@ -78,7 +76,7 @@ export const adminActionColumns = (
   {
     field: 'createdAt',
     headerName: 'Date',
-    width: 200,
+    minWidth: 200,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params: GridRenderCellParams<AdminAction>) => (
@@ -90,7 +88,7 @@ export const adminActionColumns = (
   {
     field: 'actions',
     headerName: 'Actions',
-    width: 100,
+    minWidth: 100,
     align: 'center',
     headerAlign: 'center',
     sortable: false,
@@ -98,8 +96,7 @@ export const adminActionColumns = (
     disableColumnMenu: true,
     renderCell: (params: GridRenderCellParams<AdminAction>) => (
       <IconButton
-        size="small"
-        color="primary"
+        // size="small"
         onClick={() => onViewDetail?.(params.row.actionId)}
       >
         <VisibilityIcon fontSize="small" />

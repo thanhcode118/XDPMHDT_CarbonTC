@@ -17,7 +17,7 @@ export const getWalletColumns = ({
   {
     field: 'userId',
     headerName: 'User ID',
-    width: 200,
+    minWidth: 200,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => (
@@ -29,7 +29,7 @@ export const getWalletColumns = ({
   {
     field: 'amount',
     headerName: 'Amount (VND)',
-    width: 150,
+    minWidth: 150,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => (
@@ -41,21 +41,21 @@ export const getWalletColumns = ({
   {
     field: 'bankAccountNumber',
     headerName: 'Bank Account',
-    width: 180,
+    minWidth: 180,
     align: 'center',
     headerAlign: 'center',
   },
   {
     field: 'bankName',
     headerName: 'Bank Name',
-    width: 150,
+    minWidth: 150,
     align: 'center',
     headerAlign: 'center',
   },
   {
     field: 'requestedAt',
     headerName: 'Requested At',
-    width: 180,
+    minWidth: 180,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => formatDateTime(params.value),
@@ -63,7 +63,7 @@ export const getWalletColumns = ({
   {
     field: 'status',
     headerName: 'Status',
-    width: 120,
+    minWidth: 120,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => {
@@ -86,7 +86,7 @@ export const getWalletColumns = ({
   {
     field: 'actions',
     headerName: 'Actions',
-    width: 120,
+    minWidth: 120,
     align: 'center',
     headerAlign: 'center',
     sortable: false,
@@ -98,7 +98,15 @@ export const getWalletColumns = ({
       }
 
       return (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%'
+          }}
+        >
           <Tooltip title="Approve">
             <IconButton
               size="small"

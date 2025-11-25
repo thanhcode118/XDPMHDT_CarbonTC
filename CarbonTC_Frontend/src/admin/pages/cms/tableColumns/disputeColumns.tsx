@@ -4,6 +4,7 @@ import type { GridColDef } from '@mui/x-data-grid';
 
 import { formatDateTime } from '../../../utils';
 import { DisputeStatus, type Dispute } from '../../../types/dispute.type';
+import { red } from '../../../../common/color';
 
 const getStatusColor = (status: DisputeStatus) => {
   switch (status) {
@@ -32,38 +33,38 @@ export const getDisputeColumns = ({
   {
     field: 'disputeId',
     headerName: 'ID',
-    width: 120,
+    minWidth: 150,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => (
       <Tooltip title={params.value}>
-        <span>{params.value?.substring(0, 8)}...</span>
+        <span>{params.value?.substring(0, 12)}...</span>
       </Tooltip>
     ),
   },
   {
     field: 'transactionId',
     headerName: 'Transaction',
-    width: 130,
+    minWidth: 150,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => (
       <Tooltip title={params.value}>
-        <span>{params.value?.substring(0, 10)}...</span>
+        <span>{params.value?.substring(0, 12)}...</span>
       </Tooltip>
     ),
   },
   {
     field: 'raisedBy',
     headerName: 'User',
-    width: 150,
+    minWidth: 150,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => (
       <Box>
-        <div>{params.row.raisedByName || params.value?.substring(0, 10)}</div>
+        <div>{params.row.raisedByName || params.value?.substring(0, 12)}...</div>
         {params.row.raisedByEmail && (
-          <div style={{ fontSize: '0.75rem', color: '#666' }}>
+          <div>
             {params.row.raisedByEmail}
           </div>
         )}
@@ -73,14 +74,14 @@ export const getDisputeColumns = ({
   {
     field: 'reason',
     headerName: 'Reason',
-    width: 150,
+    minWidth: 220,
     align: 'center',
     headerAlign: 'center',
   },
   {
     field: 'status',
     headerName: 'Status',
-    width: 130,
+    minWidth: 130,
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => (
@@ -94,7 +95,7 @@ export const getDisputeColumns = ({
   {
     field: 'createdAt',
     headerName: 'Created',
-    width: 180,
+    minWidth: 200,
     align: 'center',
     headerAlign: 'center',
     valueFormatter: (value) => formatDateTime(value),
@@ -102,23 +103,34 @@ export const getDisputeColumns = ({
   {
     field: 'actions',
     headerName: 'Actions',
-    width: 120,
+    minWidth: 120,
     align: 'center',
     headerAlign: 'center',
     sortable: false,
     renderCell: (params) => (
-      <Box sx={{ display: 'flex', gap: 0.5 }}>
+      <Box
+        sx={{
+            display: 'flex',
+            gap: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%'
+        }}
+      >
         <Tooltip title="View Details">
           <IconButton size="small" onClick={() => onView(params.row)}>
-            <Visibility fontSize="small" />
+            <Visibility />
           </IconButton>
         </Tooltip>
         {(params.row.status === DisputeStatus.PENDING ||
           params.row.status === DisputeStatus.UNDER_REVIEW) && (
           <Tooltip title="Delete">
             <IconButton
-              size="small"
-              color="error"
+              // size="small"
+              sx={{
+                color: red[500],
+                '&:hover': { backgroundColor: red[100] },
+              }}
               onClick={() => onDelete(params.row.disputeId)}
             >
               <Delete fontSize="small" />
