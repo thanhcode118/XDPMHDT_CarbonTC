@@ -12,7 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 
-import type { UserFilters as UserFiltersType, UserRole } from '../../../../types/user.types';
+import type { UserFilters as UserFiltersType } from '../../../../types/user.types';
 import { useDebounce } from '../../../../hooks/useDebounce';
 
 interface UserFiltersProps {
@@ -31,7 +31,7 @@ export const UserFilters = ({
     if (debouncedSearch !== filters.search) {
       onFilterChange({ ...filters, search: debouncedSearch });
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, filters, onFilterChange]);
 
   const handleRoleChange = (role: string) => {
     onFilterChange({ ...filters, role: role || undefined });

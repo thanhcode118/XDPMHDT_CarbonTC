@@ -21,6 +21,24 @@ const mapRoleName = (roleName: string): string => {
   return roleMap[roleName] || roleName;
 };
 
+const mapRoleToBackend = (role: string): string => {
+  const roleMap: Record<string, string> = {
+    'EV_OWNER': 'EVOwner',
+    'BUYER': 'CreditBuyer',
+    'CVA': 'CVA',
+    'ADMIN': 'Admin',
+  };
+  return roleMap[role] || role;
+};
+
+const mapStatusToBackend = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    'ACTIVE': 'Active',
+    'INACTIVE': 'Inactive',
+  };
+  return statusMap[status] || status;
+};
+
 const transformUser = (backendUser: any): User => ({
   id: backendUser.id,
   userId: backendUser.id,
@@ -98,9 +116,26 @@ export const getAllUsers = async (
   const params: Record<string, unknown> = {
     pageNumber: page,
     pageSize: limit,
-    ...filters,
+    // ...filters,
   };
 
+  if (filters?.search) {
+    params.searchTerm = filters.search;     // ✅ map đúng tên BE
+  }
+  if (filters?.role) {
+    params.role = mapRoleToBackend(filters.role);
+  }
+  if (filters?.status) {
+    params.status = mapStatusToBackend(filters.status);
+  }
+  if (filters?.fromDate) {
+    params.fromDate = filters.fromDate;
+  }
+  if (filters?.toDate) {
+    params.toDate = filters.toDate;
+  }
+
+  console.log('📤 Sending params to backend:', params);
   const response: AxiosResponse<any> = await authServiceAxios.get(
     '/Users',
     { params },
