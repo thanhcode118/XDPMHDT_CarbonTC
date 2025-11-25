@@ -19,6 +19,10 @@ class ReportController {
     const { type, period, startDate, endDate } = req.body;
     const generatedBy = req.user!.userId;
 
+    // Get IP and user agent for audit logging
+    const ipAddress = req.ip || req.socket.remoteAddress;
+    const userAgent = req.get('user-agent');
+
     const report = await reportService.generateReport(
       {
         type,
@@ -26,7 +30,8 @@ class ReportController {
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined
       },
-      generatedBy
+      generatedBy,
+      { ipAddress, userAgent }
     );
 
     return ApiResponseHelper.created(
@@ -126,8 +131,13 @@ class ReportController {
    */
   deleteReport = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { reportId } = req.params;
+    const adminId = req.user!.userId;
 
-    await reportService.deleteReport(reportId);
+    // Get IP and user agent for audit logging
+    const ipAddress = req.ip || req.socket.remoteAddress;
+    const userAgent = req.get('user-agent');
+
+    await reportService.deleteReport(reportId, adminId, { ipAddress, userAgent });
 
     return ApiResponseHelper.success(
       res,
@@ -143,9 +153,16 @@ class ReportController {
    */
   deleteOldReports = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { days = 90 } = req.query;
+    const adminId = req.user!.userId;
+
+    // Get IP and user agent for audit logging
+    const ipAddress = req.ip || req.socket.remoteAddress;
+    const userAgent = req.get('user-agent');
 
     const deletedCount = await reportService.deleteOldReports(
-      parseInt(days as string)
+      parseInt(days as string),
+      adminId,
+      { ipAddress, userAgent }
     );
 
     return ApiResponseHelper.success(

@@ -5,10 +5,16 @@ import {
   ReportType,
   ReportPeriod,
   NotFoundError,
-  ValidationError
+  ValidationError,
+  AdminActionType
 } from '../types';
 import logger from '../utils/logger';
-// import axios from 'axios';
+import adminActionService from './adminActionService';
+
+interface AuditContext {
+  ipAddress?: string;
+  userAgent?: string;
+}
 
 /**
  * Report Service
@@ -21,7 +27,8 @@ class ReportService {
    */
   async generateReport(
     data: GenerateReportDTO,
-    generatedBy: string
+    generatedBy: string,
+    auditContext?: AuditContext
   ): Promise<IPlatformReportDocument> {
     try {
       // Calculate date range based on period
@@ -53,6 +60,24 @@ class ReportService {
 
       logger.info(
         `Report generated: ${report.reportId} - ${data.type} (${data.period})`
+      );
+
+      // Log admin action
+      await adminActionService.logAction(
+        {
+          actionType: AdminActionType.GENERATE_REPORT,
+          targetId: report.reportId,
+          description: `Generated ${data.type} report for ${data.period} period`,
+          actionDetails: {
+            reportType: data.type,
+            period: data.period,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString()
+          }
+        },
+        generatedBy,
+        auditContext?.ipAddress,
+        auditContext?.userAgent
       );
 
       return report;
@@ -156,12 +181,35 @@ class ReportService {
   /**
    * Delete report
    */
-  async deleteReport(reportId: string): Promise<void> {
+  async deleteReport(
+    reportId: string,
+    adminId: string,
+    auditContext?: AuditContext
+  ): Promise<void> {
     try {
+      // Get report first for logging details
       const report = await this.getReportById(reportId);
+      
       await PlatformReport.deleteOne({ reportId });
 
-      logger.info(`Report deleted: ${reportId}`);
+      logger.info(`Report deleted: ${reportId} by admin ${adminId}`);
+
+      // Log admin action
+      await adminActionService.logAction(
+        {
+          actionType: AdminActionType.DELETE_REPORT,
+          targetId: reportId,
+          description: `Deleted ${report.type} report (${report.period})`,
+          actionDetails: {
+            reportType: report.type,
+            period: report.period,
+            generatedAt: report.generatedAt.toISOString()
+          }
+        },
+        adminId,
+        auditContext?.ipAddress,
+        auditContext?.userAgent
+      );
     } catch (error) {
       logger.error('Error deleting report:', error);
       throw error;
@@ -171,16 +219,39 @@ class ReportService {
   /**
    * Delete old reports (cleanup)
    */
-  async deleteOldReports(days: number = 90): Promise<number> {
+  async deleteOldReports(
+    days: number = 90,
+    adminId: string,
+    auditContext?: AuditContext
+  ): Promise<number> {
     try {
       const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
       const result = await PlatformReport.deleteMany({
         generatedAt: { $lt: cutoffDate }
       });
 
-      logger.info(`Deleted ${result.deletedCount} old reports (older than ${days} days)`);
+      const deletedCount = result.deletedCount || 0;
+
+      logger.info(`Deleted ${deletedCount} old reports (older than ${days} days) by admin ${adminId}`);
       
-      return result.deletedCount || 0;
+      // Log admin action
+      await adminActionService.logAction(
+        {
+          actionType: AdminActionType.CLEANUP_OLD_REPORTS,
+          targetId: 'bulk-cleanup',
+          description: `Cleaned up ${deletedCount} old reports (older than ${days} days)`,
+          actionDetails: {
+            days,
+            deletedCount,
+            cutoffDate: cutoffDate.toISOString()
+          }
+        },
+        adminId,
+        auditContext?.ipAddress,
+        auditContext?.userAgent
+      );
+
+      return deletedCount;
     } catch (error) {
       logger.error('Error deleting old reports:', error);
       throw error;
@@ -332,12 +403,19 @@ class ReportService {
       return { error: 'Failed to fetch transaction statistics' };
     }
   }
+
+  /**
+   * Aggregate revenue statistics
+   */
   private async aggregateRevenueStats(
     startDate: Date,
     endDate: Date
   ): Promise<Record<string, any>> {
     try {
+      // Call Payment Service API to get revenue stats
       const paymentServiceUrl = process.env.PAYMENT_SERVICE_URL;
+      
+      // Mock data for now (replace with actual API call)
       return {
         totalRevenue: 15000,
         platformFees: 750,
@@ -354,11 +432,19 @@ class ReportService {
       return { error: 'Failed to fetch revenue statistics' };
     }
   }
+
+  /**
+   * Aggregate carbon statistics
+   */
   private async aggregateCarbonStats(
     startDate: Date,
     endDate: Date
   ): Promise<Record<string, any>> {
     try {
+      // Call Carbon Service API to get carbon stats
+      const carbonServiceUrl = process.env.CARBON_SERVICE_URL;
+      
+      // Mock data for now (replace with actual API call)
       return {
         totalCreditsIssued: 5000,
         totalCreditsTraded: 3200,

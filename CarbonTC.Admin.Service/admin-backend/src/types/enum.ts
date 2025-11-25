@@ -41,5 +41,8 @@ export enum AdminActionType {
   UNFREEZE_LISTING = 'UnfreezeListing',
   UPDATE_CONFIG = 'UpdateConfig',
   ISSUE_CERTIFICATE = 'IssueCertificate',
-  REVOKE_CERTIFICATE = 'RevokeCertificate'
+  REVOKE_CERTIFICATE = 'RevokeCertificate',
+  GENERATE_REPORT = 'GenerateReport',
+  DELETE_REPORT = 'DeleteReport',
+  CLEANUP_OLD_REPORTS = 'CleanupOldReports'
 }
