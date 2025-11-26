@@ -15,11 +15,11 @@ import PrivateRoute from '../routes/PrivateRoute';
 
 // Lazy load pages
 const Dashboard = lazy(() => import('../pages/cms/Dashboard'));
-const ListingsAndOrders = lazy(() => import('../pages/cms/ListingsAndOrders'));
+// const ListingsAndOrders = lazy(() => import('../pages/cms/ListingsAndOrders'));
 const Users = lazy(() => import('../pages/cms/Users'));
 const Disputes = lazy(() => import('../pages/cms/Disputes'));
 const Report = lazy(() => import('../pages/cms/Reports'));
-const Certificates = lazy(() => import('../pages/cms/Certificates'));
+// const Certificates = lazy(() => import('../pages/cms/Certificates'));
 const Wallet = lazy(() => import('../pages/cms/Wallet'));
 const Settings = lazy(() => import('../pages/cms/Settings'));
 const Profile = lazy(() => import('../pages/cms/Profile'));
@@ -46,11 +46,11 @@ function AppRouter() {
               {/* Admin pages */}
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="users" element={<Users />} />
-              <Route path="listing-and-orders" element={<ListingsAndOrders />} />
+              {/* <Route path="listing-and-orders" element={<ListingsAndOrders />} /> */}
               <Route path="disputes" element={<Disputes />} />
-              <Route path="reports" element={<Report />} />
-              <Route path="certificates" element={<Certificates />} />
+              {/* <Route path="certificates" element={<Certificates />} /> */}
               <Route path="wallet" element={<Wallet />} />
+              <Route path="reports" element={<Report />} />
               <Route path="settings" element={<Settings />} />
               <Route path="profile" element={<Profile />} />
             </Route>

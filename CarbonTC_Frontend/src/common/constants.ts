@@ -17,7 +17,7 @@ export const ROUTES = {
   ADMIN: {
     BASE: join(BASE_PATH, ''),
     DASHBOARD: join(BASE_PATH, 'dashboard'),
-    LISTING_AND_ORDERS: join(BASE_PATH, 'listing-and-orders'),
+    // LISTING_AND_ORDERS: join(BASE_PATH, 'listing-and-orders'),
 
     USERS: join(BASE_PATH, 'users'),
     USER_DETAIL: join(BASE_PATH, 'users/:id'),
@@ -27,8 +27,8 @@ export const ROUTES = {
 
     REPORTS: join(BASE_PATH, 'reports'),
 
-    CERTIFICATES: join(BASE_PATH, 'certificates'),
-    CERTIFICATE_DETAIL: join(BASE_PATH, 'certificates/:id'),
+    // CERTIFICATES: join(BASE_PATH, 'certificates'),
+    // CERTIFICATE_DETAIL: join(BASE_PATH, 'certificates/:id'),
 
     WALLET: join(BASE_PATH, 'wallet'),
     SETTINGS: join(BASE_PATH, 'settings'),
@@ -81,9 +81,9 @@ export function getRoutePath(
 export const DEFAULT_ROUTE_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
   users: 'Users',
-  'listing-and-orders': 'Listings & Orders',
+  // 'listing-and-orders': 'Listings & Orders',
   disputes: 'Disputes',
-  certificates: 'Certificates',
+  // certificates: 'Certificates',
   reports: 'Reports & KPI',
   wallet: 'Wallet',
   settings: 'Settings',

@@ -3,9 +3,9 @@ import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded';
 import GavelRoundedIcon from '@mui/icons-material/GavelRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+// import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import SpaceDashboardRoundedIcon from '@mui/icons-material/SpaceDashboardRounded';
-import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
+// import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
 import { Box, List } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -32,22 +32,22 @@ const menuItems: MenuItem[] = [
     icon: <GroupRoundedIcon />,
     path: ROUTES.ADMIN.USERS,
   },
-  {
-    text: 'Listings & Orders',
-    icon: <ShoppingCartRoundedIcon />,
-    path: ROUTES.ADMIN.LISTING_AND_ORDERS,
-  },
+  // {
+  //   text: 'Listings & Orders',
+  //   icon: <ShoppingCartRoundedIcon />,
+  //   path: ROUTES.ADMIN.LISTING_AND_ORDERS,
+  // },
   {
     text: 'Disputes',
     icon: <GavelRoundedIcon />,
     path: ROUTES.ADMIN.DISPUTES,
     badge: 3, // Example: pending disputes count
   },
-  {
-    text: 'Certificates',
-    icon: <VerifiedRoundedIcon />,
-    path: ROUTES.ADMIN.CERTIFICATES,
-  },
+  // {
+  //   text: 'Certificates',
+  //   icon: <VerifiedRoundedIcon />,
+  //   path: ROUTES.ADMIN.CERTIFICATES,
+  // },
   {
     text: 'Reports & KPI',
     icon: <AssessmentRoundedIcon />,
